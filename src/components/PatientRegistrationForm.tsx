@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/FormInput';
 import { FormSelect } from '@/components/ui/FormSelect';
@@ -8,10 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Patient, PatientFormData, BLOOD_GROUPS, CHRONIC_CONDITIONS } from '@/types/patient';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import {
   User,
-  Phone,
-  Calendar,
   Heart,
   AlertTriangle,
   Shield,
@@ -112,43 +110,81 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
 
     setIsSubmitting(true);
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const patient: Patient = {
-      id: uuidv4(),
-      fullName: formData.fullName.trim(),
-      dateOfBirth: formData.dateOfBirth,
-      phoneNumber: formData.phoneNumber.replace(/\D/g, ''),
-      gender: formData.gender as Patient['gender'],
-      bloodGroup: formData.bloodGroup as Patient['bloodGroup'],
-      height: formData.height,
-      weight: formData.weight,
-      allergies: formData.allergies
+    try {
+      const allergiesArray = formData.allergies
         .split(',')
         .map((a) => a.trim())
-        .filter(Boolean),
-      chronicConditions: selectedConditions,
-      emergencyContact: formData.emergencyContact.replace(/\D/g, ''),
-      insuranceProvider: formData.insuranceProvider || undefined,
-      policyNumber: formData.policyNumber || undefined,
-      tpaContact: formData.tpaContact || undefined,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+        .filter(Boolean);
 
-    // Save to localStorage for offline support
-    const existingPatients = JSON.parse(localStorage.getItem('patients') || '[]');
-    existingPatients.push(patient);
-    localStorage.setItem('patients', JSON.stringify(existingPatients));
+      const { data, error } = await supabase
+        .from('patients')
+        .insert({
+          full_name: formData.fullName.trim(),
+          date_of_birth: formData.dateOfBirth,
+          phone_number: formData.phoneNumber.replace(/\D/g, ''),
+          gender: formData.gender,
+          blood_group: formData.bloodGroup || null,
+          height: formData.height || null,
+          weight: formData.weight || null,
+          allergies: allergiesArray,
+          chronic_conditions: selectedConditions,
+          emergency_contact: formData.emergencyContact.replace(/\D/g, ''),
+          insurance_provider: formData.insuranceProvider || null,
+          policy_number: formData.policyNumber || null,
+          tpa_contact: formData.tpaContact || null,
+        })
+        .select()
+        .single();
 
-    toast({
-      title: 'Patient Registered Successfully!',
-      description: `Health Card ID: ${patient.id.slice(0, 8).toUpperCase()}`,
-    });
+      if (error) {
+        if (error.code === '23505') {
+          toast({
+            title: 'Duplicate Phone Number',
+            description: 'A patient with this phone number already exists.',
+            variant: 'destructive',
+          });
+        } else {
+          throw error;
+        }
+        setIsSubmitting(false);
+        return;
+      }
 
-    setIsSubmitting(false);
-    onPatientRegistered(patient);
+      const patient: Patient = {
+        id: data.id,
+        fullName: data.full_name,
+        dateOfBirth: data.date_of_birth,
+        phoneNumber: data.phone_number,
+        gender: data.gender as Patient['gender'],
+        bloodGroup: (data.blood_group || '') as Patient['bloodGroup'],
+        height: data.height || '',
+        weight: data.weight || '',
+        allergies: data.allergies || [],
+        chronicConditions: data.chronic_conditions || [],
+        emergencyContact: data.emergency_contact,
+        insuranceProvider: data.insurance_provider || undefined,
+        policyNumber: data.policy_number || undefined,
+        tpaContact: data.tpa_contact || undefined,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      };
+
+      toast({
+        title: 'Patient Registered Successfully!',
+        description: `Health Card ID: ${patient.id.slice(0, 8).toUpperCase()}`,
+      });
+
+      onPatientRegistered(patient);
+    } catch (error) {
+      console.error('Error registering patient:', error);
+      toast({
+        title: 'Registration Failed',
+        description: 'There was an error saving the patient data. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStepIndicator = () => (
