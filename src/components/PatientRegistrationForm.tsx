@@ -509,6 +509,15 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         />
       </div>
 
+      <DocumentUpload
+        documents={[]}
+        onChange={() => {}}
+        pendingFiles={pendingFiles}
+        onPendingChange={setPendingFiles}
+      />
+
+
+
       {/* Summary */}
       <div className="mt-8 p-5 md:p-6 bg-muted/60 border border-border rounded-2xl space-y-4">
         <h3 className="font-display font-semibold text-foreground text-base md:text-lg">
