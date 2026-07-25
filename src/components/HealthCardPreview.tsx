@@ -13,6 +13,26 @@ interface HealthCardPreviewProps {
 
 export const HealthCardPreview = ({ patient, onBack }: HealthCardPreviewProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [openingPath, setOpeningPath] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const openDocument = async (path: string) => {
+    setOpeningPath(path);
+    try {
+      const url = await getSignedDocumentUrl(path);
+      if (!url) throw new Error('No URL');
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: 'Could not open file',
+        description: 'The document link could not be generated. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setOpeningPath(null);
+    }
+  };
 
   const handlePrint = () => {
     window.print();
