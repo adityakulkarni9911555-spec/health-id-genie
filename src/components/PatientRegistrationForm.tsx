@@ -10,6 +10,11 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { enqueuePatient } from '@/lib/offlineQueue';
+import { DocumentUpload } from '@/components/DocumentUpload';
+import {
+  uploadPatientDocuments,
+  persistPatientDocuments,
+} from '@/lib/patientDocuments';
 import {
   User,
   Heart,
