@@ -188,13 +188,13 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
   };
 
   const renderStepIndicator = () => (
-    <div className="flex items-center justify-center gap-2 mb-8">
+    <div className="flex items-center justify-center gap-2 sm:gap-3 mb-8 md:mb-10">
       {[1, 2, 3].map((step) => (
         <div key={step} className="flex items-center">
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
+            className={`w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
               step === currentStep
-                ? 'bg-primary text-primary-foreground scale-110'
+                ? 'bg-primary text-primary-foreground scale-110 shadow-lg shadow-primary/25'
                 : step < currentStep
                 ? 'bg-success text-success-foreground'
                 : 'bg-muted text-muted-foreground'
@@ -204,7 +204,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
           </div>
           {step < totalSteps && (
             <div
-              className={`w-12 h-1 mx-1 rounded-full transition-colors duration-300 ${
+              className={`w-10 sm:w-16 md:w-20 h-1 mx-1 sm:mx-2 rounded-full transition-colors duration-300 ${
                 step < currentStep ? 'bg-success' : 'bg-muted'
               }`}
             />
@@ -214,17 +214,18 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     </div>
   );
 
+
   const renderStep1 = () => (
-    <div className="space-y-6 animate-slide-up">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-          <User className="w-6 h-6 text-primary" />
+    <div className="space-y-6 md:space-y-7 animate-slide-up">
+      <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
+        <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <User className="w-6 h-6 md:w-7 md:h-7 text-primary" />
         </div>
         <div>
-          <h2 className="font-display text-xl font-semibold text-foreground">
+          <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground tracking-tight">
             Personal Information
           </h2>
-          <p className="text-muted-foreground text-sm">Basic details about the patient</p>
+          <p className="text-muted-foreground text-sm md:text-base">Basic details about the patient</p>
         </div>
       </div>
 
@@ -237,7 +238,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         required
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
         <FormInput
           label="Date of Birth"
           type="date"
@@ -276,21 +277,22 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     </div>
   );
 
+
   const renderStep2 = () => (
-    <div className="space-y-6 animate-slide-up">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
-          <Heart className="w-6 h-6 text-destructive" />
+    <div className="space-y-6 md:space-y-7 animate-slide-up">
+      <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
+        <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
+          <Heart className="w-6 h-6 md:w-7 md:h-7 text-destructive" />
         </div>
         <div>
-          <h2 className="font-display text-xl font-semibold text-foreground">
+          <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground tracking-tight">
             Medical Information
           </h2>
-          <p className="text-muted-foreground text-sm">Health-related details</p>
+          <p className="text-muted-foreground text-sm md:text-base">Health-related details</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
         <FormSelect
           label="Blood Group"
           placeholder="Select"
@@ -321,21 +323,22 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
           <AlertTriangle className="w-4 h-4 text-warning" />
           Chronic Conditions
         </Label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {CHRONIC_CONDITIONS.map((condition) => (
             <label
               key={condition}
-              className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+              className={`flex items-center gap-3 min-h-[56px] px-4 py-3 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none ${
                 selectedConditions.includes(condition)
-                  ? 'border-primary bg-primary/5'
+                  ? 'border-primary bg-primary/5 shadow-sm'
                   : 'border-input bg-card hover:border-primary/50'
               }`}
             >
               <Checkbox
                 checked={selectedConditions.includes(condition)}
                 onCheckedChange={() => toggleCondition(condition)}
+                className="h-5 w-5"
               />
-              <span className="text-sm font-medium">{condition}</span>
+              <span className="text-sm md:text-base font-medium">{condition}</span>
             </label>
           ))}
         </div>
@@ -349,9 +352,8 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
           placeholder="Enter allergies separated by commas (e.g., Penicillin, Peanuts)"
           value={formData.allergies}
           onChange={(e) => updateField('allergies', e.target.value)}
-          className="min-h-[80px] text-base border-2 border-input bg-card rounded-xl focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+          className="min-h-[96px] text-base p-4 border-2 border-input bg-card rounded-xl focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
         />
-
       </div>
 
       <FormInput
@@ -367,17 +369,18 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     </div>
   );
 
+
   const renderStep3 = () => (
-    <div className="space-y-6 animate-slide-up">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
-          <Shield className="w-6 h-6 text-accent-foreground" />
+    <div className="space-y-6 md:space-y-7 animate-slide-up">
+      <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
+        <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+          <Shield className="w-6 h-6 md:w-7 md:h-7 text-accent-foreground" />
         </div>
         <div>
-          <h2 className="font-display text-xl font-semibold text-foreground">
+          <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground tracking-tight">
             Insurance Details
           </h2>
-          <p className="text-muted-foreground text-sm">Optional insurance information</p>
+          <p className="text-muted-foreground text-sm md:text-base">Optional insurance information</p>
         </div>
       </div>
 
@@ -388,67 +391,72 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         onChange={(e) => updateField('insuranceProvider', e.target.value)}
       />
 
-      <FormInput
-        label="Policy Number"
-        placeholder="Enter policy number"
-        value={formData.policyNumber}
-        onChange={(e) => updateField('policyNumber', e.target.value)}
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
+        <FormInput
+          label="Policy Number"
+          placeholder="Enter policy number"
+          value={formData.policyNumber}
+          onChange={(e) => updateField('policyNumber', e.target.value)}
+        />
 
-      <FormInput
-        label="TPA Contact"
-        placeholder="Third Party Administrator contact"
-        value={formData.tpaContact}
-        onChange={(e) => updateField('tpaContact', e.target.value)}
-      />
+        <FormInput
+          label="TPA Contact"
+          placeholder="Third Party Administrator contact"
+          value={formData.tpaContact}
+          onChange={(e) => updateField('tpaContact', e.target.value)}
+        />
+      </div>
 
       {/* Summary */}
-      <div className="mt-8 p-6 bg-muted rounded-2xl space-y-4">
-        <h3 className="font-display font-semibold text-foreground">Registration Summary</h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+      <div className="mt-8 p-5 md:p-6 bg-muted/60 border border-border rounded-2xl space-y-4">
+        <h3 className="font-display font-semibold text-foreground text-base md:text-lg">
+          Registration Summary
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 text-sm">
           <div>
-            <p className="text-muted-foreground">Name</p>
-            <p className="font-medium text-foreground">{formData.fullName || '-'}</p>
+            <p className="text-muted-foreground text-xs uppercase tracking-wider">Name</p>
+            <p className="font-medium text-foreground mt-1">{formData.fullName || '-'}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Phone</p>
-            <p className="font-medium text-foreground">{formData.phoneNumber || '-'}</p>
+            <p className="text-muted-foreground text-xs uppercase tracking-wider">Phone</p>
+            <p className="font-medium text-foreground mt-1">{formData.phoneNumber || '-'}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Blood Group</p>
-            <p className="font-medium text-foreground">{formData.bloodGroup || '-'}</p>
+            <p className="text-muted-foreground text-xs uppercase tracking-wider">Blood Group</p>
+            <p className="font-medium text-foreground mt-1">{formData.bloodGroup || '-'}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Emergency Contact</p>
-            <p className="font-medium text-foreground">{formData.emergencyContact || '-'}</p>
+            <p className="text-muted-foreground text-xs uppercase tracking-wider">Emergency</p>
+            <p className="font-medium text-foreground mt-1">{formData.emergencyContact || '-'}</p>
           </div>
         </div>
       </div>
     </div>
   );
 
+
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-3xl mx-auto">
       {renderStepIndicator()}
 
-      <div className="form-section">
+      <div className="form-section p-5 sm:p-7 md:p-9">
         {currentStep === 1 && renderStep1()}
         {currentStep === 2 && renderStep2()}
         {currentStep === 3 && renderStep3()}
 
-        <div className="flex justify-between mt-8 pt-6 border-t border-border">
+        <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 sm:gap-4 mt-8 md:mt-10 pt-6 md:pt-7 border-t border-border">
           <Button
             variant="outline"
             onClick={handleBack}
             disabled={currentStep === 1}
-            className="btn-touch"
+            className="btn-touch w-full sm:w-auto"
           >
             <ChevronLeft className="w-5 h-5 mr-2" />
             Back
           </Button>
 
           {currentStep < totalSteps ? (
-            <Button onClick={handleNext} className="btn-touch">
+            <Button onClick={handleNext} className="btn-touch w-full sm:w-auto">
               Next
               <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
@@ -456,7 +464,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="btn-touch bg-success hover:bg-success/90"
+              className="btn-touch w-full sm:w-auto bg-success hover:bg-success/90"
             >
               {isSubmitting ? (
                 <>
@@ -476,3 +484,4 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     </div>
   );
 };
+

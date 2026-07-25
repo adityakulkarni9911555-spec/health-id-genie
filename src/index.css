@@ -167,12 +167,13 @@
   }
 
   .input-large {
-    @apply h-14 text-lg px-4 rounded-xl;
+    @apply h-14 md:h-16 text-base md:text-lg px-4 md:px-5 rounded-xl;
   }
 
   .btn-touch {
-    @apply min-h-[56px] px-8 text-lg font-medium rounded-xl;
+    @apply min-h-[56px] md:min-h-[60px] px-6 md:px-8 text-base md:text-lg font-medium rounded-xl;
   }
+
 
   .hero-surface {
     background-image: var(--gradient-hero);

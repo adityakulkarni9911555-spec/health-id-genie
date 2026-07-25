@@ -63,7 +63,7 @@ const Index = () => {
               </p>
 
               {/* Features */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10 max-w-3xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 mt-10 max-w-3xl mx-auto">
                 <FeatureCard
                   icon={<ShieldCheck className="w-5 h-5" />}
                   title="Secure by design"
@@ -80,6 +80,7 @@ const Index = () => {
                   description="All medical info in one place"
                 />
               </div>
+
             </div>
 
             {/* Registration Form */}

@@ -63,11 +63,11 @@ Generated: ${new Date().toLocaleString()}
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-4 no-print">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 no-print">
         <Button
           variant="outline"
           onClick={onBack}
-          className="btn-touch flex-1"
+          className="btn-touch w-full"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Register Another
@@ -76,7 +76,7 @@ Generated: ${new Date().toLocaleString()}
         <Button
           variant="outline"
           onClick={handleDownload}
-          className="btn-touch flex-1"
+          className="btn-touch w-full"
         >
           <Download className="w-5 h-5 mr-2" />
           Download Card
@@ -84,7 +84,7 @@ Generated: ${new Date().toLocaleString()}
 
         <Button
           onClick={handlePrint}
-          className="btn-touch flex-1"
+          className="btn-touch w-full"
         >
           <Printer className="w-5 h-5 mr-2" />
           Print Card
@@ -96,7 +96,8 @@ Generated: ${new Date().toLocaleString()}
         <h3 className="font-display text-lg font-semibold text-foreground mb-4">
           Full Patient Details
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+
           <DetailItem label="Patient ID" value={patient.id.slice(0, 8).toUpperCase()} />
           <DetailItem label="Full Name" value={patient.fullName} />
           <DetailItem label="Date of Birth" value={new Date(patient.dateOfBirth).toLocaleDateString()} />
