@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { PatientRegistrationForm } from '@/components/PatientRegistrationForm';
 import { HealthCardPreview } from '@/components/HealthCardPreview';
 import { Logo } from '@/components/Logo';
+import { SyncStatusBanner } from '@/components/SyncStatusBanner';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { Patient } from '@/types/patient';
-import { Heart, ShieldCheck, Smartphone, Sparkles } from 'lucide-react';
+import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff } from 'lucide-react';
 
 const Index = () => {
   const [registeredPatient, setRegisteredPatient] = useState<Patient | null>(null);
+  const isOnline = useOnlineStatus();
 
   const handlePatientRegistered = (patient: Patient) => {
     setRegisteredPatient(patient);
@@ -33,14 +36,30 @@ const Index = () => {
             </div>
 
             <div className="hidden md:flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-success/10 text-success text-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-soft" />
-                <span className="font-medium">Secure & Online</span>
-              </div>
+              {isOnline ? (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-success/10 text-success text-sm">
+                  <Wifi className="w-3.5 h-3.5" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-soft" />
+                  <span className="font-medium">Secure & Online</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning/10 text-warning text-sm">
+                  <WifiOff className="w-3.5 h-3.5" />
+                  <span className="font-medium">Offline — saving locally</span>
+                </div>
+              )}
             </div>
+            {!isOnline && (
+              <div className="md:hidden flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-warning/10 text-warning text-xs">
+                <WifiOff className="w-3 h-3" />
+                <span className="font-medium">Offline</span>
+              </div>
+            )}
           </div>
         </div>
       </header>
+
+      <SyncStatusBanner />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-10 md:py-16">
