@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Patient, PatientFormData, BLOOD_GROUPS, CHRONIC_CONDITIONS } from '@/types/patient';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { enqueuePatient } from '@/lib/offlineQueue';
 import {
   User,
   Heart,
@@ -45,6 +47,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const isOnline = useOnlineStatus();
 
   const totalSteps = 3;
 
