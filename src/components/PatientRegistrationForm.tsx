@@ -49,8 +49,10 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
   const [formData, setFormData] = useState<PatientFormData>(initialFormData);
   const [errors, setErrors] = useState<Partial<Record<keyof PatientFormData, string>>>({});
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const { toast } = useToast();
   const isOnline = useOnlineStatus();
 
