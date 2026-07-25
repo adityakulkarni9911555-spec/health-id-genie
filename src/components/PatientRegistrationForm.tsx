@@ -10,6 +10,11 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { enqueuePatient } from '@/lib/offlineQueue';
+import { DocumentUpload } from '@/components/DocumentUpload';
+import {
+  uploadPatientDocuments,
+  persistPatientDocuments,
+} from '@/lib/patientDocuments';
 import {
   User,
   Heart,
@@ -44,8 +49,10 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
   const [formData, setFormData] = useState<PatientFormData>(initialFormData);
   const [errors, setErrors] = useState<Partial<Record<keyof PatientFormData, string>>>({});
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const { toast } = useToast();
   const isOnline = useOnlineStatus();
 
@@ -191,6 +198,26 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         return;
       }
 
+      let uploadedDocs: Patient['documents'] = [];
+      if (pendingFiles.length > 0) {
+        setUploadStatus(`Uploading ${pendingFiles.length} file(s)…`);
+        try {
+          uploadedDocs = await uploadPatientDocuments(data.id, pendingFiles);
+          await persistPatientDocuments(data.id, uploadedDocs);
+        } catch (uploadErr) {
+          console.error('Document upload failed:', uploadErr);
+          toast({
+            title: 'Files not uploaded',
+            description:
+              'Patient was registered but the attached files failed to upload. You can retry from the record.',
+            variant: 'destructive',
+          });
+          uploadedDocs = [];
+        } finally {
+          setUploadStatus(null);
+        }
+      }
+
       const patient: Patient = {
         id: data.id,
         fullName: data.full_name,
@@ -206,6 +233,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         insuranceProvider: data.insurance_provider || undefined,
         policyNumber: data.policy_number || undefined,
         tpaContact: data.tpa_contact || undefined,
+        documents: uploadedDocs,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
       };
@@ -481,6 +509,15 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         />
       </div>
 
+      <DocumentUpload
+        documents={[]}
+        onChange={() => {}}
+        pendingFiles={pendingFiles}
+        onPendingChange={setPendingFiles}
+      />
+
+
+
       {/* Summary */}
       <div className="mt-8 p-5 md:p-6 bg-muted/60 border border-border rounded-2xl space-y-4">
         <h3 className="font-display font-semibold text-foreground text-base md:text-lg">
@@ -543,7 +580,11 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  {isOnline ? 'Saving to cloud…' : 'Saving on device…'}
+                  {uploadStatus
+                    ? uploadStatus
+                    : isOnline
+                    ? 'Saving to cloud…'
+                    : 'Saving on device…'}
                 </>
               ) : (
                 <>

@@ -1,3 +1,11 @@
+export interface PatientDocumentRef {
+  path: string;
+  name: string;
+  type: string;
+  size: number;
+  uploadedAt: string;
+}
+
 export interface Patient {
   id: string;
   fullName: string;
@@ -13,6 +21,7 @@ export interface Patient {
   insuranceProvider?: string;
   policyNumber?: string;
   tpaContact?: string;
+  documents?: PatientDocumentRef[];
   createdAt: string;
   updatedAt: string;
 }

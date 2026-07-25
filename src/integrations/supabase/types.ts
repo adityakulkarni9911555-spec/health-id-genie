@@ -21,6 +21,7 @@ export type Database = {
           chronic_conditions: string[] | null
           created_at: string
           date_of_birth: string
+          documents: Json
           emergency_contact: string
           full_name: string
           gender: string
@@ -39,6 +40,7 @@ export type Database = {
           chronic_conditions?: string[] | null
           created_at?: string
           date_of_birth: string
+          documents?: Json
           emergency_contact: string
           full_name: string
           gender: string
@@ -57,6 +59,7 @@ export type Database = {
           chronic_conditions?: string[] | null
           created_at?: string
           date_of_birth?: string
+          documents?: Json
           emergency_contact?: string
           full_name?: string
           gender?: string

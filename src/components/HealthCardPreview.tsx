@@ -1,8 +1,10 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { HealthCard } from '@/components/HealthCard';
 import { Patient } from '@/types/patient';
-import { Download, Printer, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Download, Printer, ArrowLeft, CheckCircle2, FileText, ExternalLink, Loader2 } from 'lucide-react';
+import { getSignedDocumentUrl } from '@/lib/patientDocuments';
+import { useToast } from '@/hooks/use-toast';
 
 interface HealthCardPreviewProps {
   patient: Patient;
@@ -11,6 +13,26 @@ interface HealthCardPreviewProps {
 
 export const HealthCardPreview = ({ patient, onBack }: HealthCardPreviewProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [openingPath, setOpeningPath] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const openDocument = async (path: string) => {
+    setOpeningPath(path);
+    try {
+      const url = await getSignedDocumentUrl(path);
+      if (!url) throw new Error('No URL');
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: 'Could not open file',
+        description: 'The document link could not be generated. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setOpeningPath(null);
+    }
+  };
 
   const handlePrint = () => {
     window.print();
@@ -128,7 +150,51 @@ Generated: ${new Date().toLocaleString()}
             <DetailItem label="Policy Number" value={patient.policyNumber} />
           )}
         </div>
+
+        {patient.documents && patient.documents.length > 0 && (
+          <div className="mt-6 pt-6 border-t border-border">
+            <h4 className="font-display text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-primary" />
+              Attached Documents ({patient.documents.length})
+            </h4>
+            <ul className="space-y-2">
+              {patient.documents.map((doc) => (
+                <li
+                  key={doc.path}
+                  className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{doc.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(doc.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openDocument(doc.path)}
+                    disabled={openingPath === doc.path}
+                  >
+                    {openingPath === doc.path ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <ExternalLink className="w-4 h-4 mr-1" />
+                        Open
+                      </>
+                    )}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
+
     </div>
   );
 };
