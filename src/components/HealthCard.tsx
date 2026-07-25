@@ -1,6 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react';
 import { Patient } from '@/types/patient';
-import { Heart, Phone, Droplets, User } from 'lucide-react';
+import { Phone, Droplets, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 
 interface HealthCardProps {
   patient: Patient;
@@ -17,90 +18,134 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
     });
   };
 
+  const shortId = patient.id.slice(0, 8).toUpperCase();
+
   return (
-    <div className="health-card w-full max-w-md mx-auto overflow-hidden animate-scale-in">
+    <div className="health-card relative w-full max-w-md mx-auto overflow-hidden animate-scale-in print:shadow-none">
+      {/* Decorative gradient orb */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full opacity-40 blur-3xl print:hidden"
+        style={{ background: 'var(--gradient-primary)' }}
+      />
+
       {/* Header */}
-      <div className="bg-primary text-primary-foreground px-6 py-4 -mx-6 -mt-6 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-            <Heart className="w-5 h-5" />
+      <div
+        className="relative -mx-6 -mt-6 mb-6 px-6 py-5 text-primary-foreground"
+        style={{ background: 'var(--gradient-primary)' }}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+              <Logo size={26} />
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-lg leading-tight tracking-tight">
+                Smart Health Card
+              </h3>
+              <p className="text-primary-foreground/80 text-xs uppercase tracking-[0.15em] mt-0.5">
+                Digital Health ID
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-display font-bold text-lg">Smart Health Card</h3>
-            <p className="text-primary-foreground/80 text-sm">Digital Health ID</p>
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/15 text-[10px] uppercase tracking-wider font-semibold">
+            <ShieldCheck className="w-3 h-3" />
+            <span>Verified</span>
           </div>
         </div>
       </div>
 
       {/* Patient Info & QR */}
-      <div className="flex gap-6">
-        {/* QR Code */}
-        <div className="flex-shrink-0">
-          <div className="bg-card p-3 rounded-xl border-2 border-health-border">
-            <QRCodeSVG
-              value={patient.id}
-              size={100}
-              level="H"
-              includeMargin={false}
-              bgColor="transparent"
-              fgColor="hsl(200, 25%, 15%)"
-            />
-          </div>
-          <p className="text-xs text-muted-foreground text-center mt-2 font-mono">
-            {patient.id.slice(0, 8).toUpperCase()}
-          </p>
-        </div>
-
+      <div className="relative flex gap-6">
         {/* Details */}
-        <div className="flex-1 space-y-3">
-          <div className="flex items-start gap-2">
-            <User className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="font-display font-semibold text-foreground text-lg leading-tight">
-                {patient.fullName}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                DOB: {formatDate(patient.dateOfBirth)}
-              </p>
+        <div className="flex-1 space-y-4 min-w-0">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-1">
+              Patient
+            </p>
+            <p className="font-display font-bold text-foreground text-xl leading-tight tracking-tight truncate">
+              {patient.fullName}
+            </p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              DOB · {formatDate(patient.dateOfBirth)}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {patient.bloodGroup && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-destructive/10 text-destructive text-xs font-semibold">
+                <Droplets className="w-3.5 h-3.5" />
+                {patient.bloodGroup}
+              </div>
+            )}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-semibold capitalize">
+              {patient.gender}
             </div>
           </div>
 
-          <div className="flex gap-4">
-            {patient.bloodGroup && (
-              <div className="flex items-center gap-1.5">
-                <Droplets className="w-4 h-4 text-destructive" />
-                <span className="font-semibold text-foreground">{patient.bloodGroup}</span>
-              </div>
-            )}
+          <div className="flex items-start gap-2">
+            <Phone className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold">
+                Emergency
+              </p>
+              <p className="font-medium text-foreground text-sm truncate">
+                {patient.emergencyContact}
+              </p>
+            </div>
           </div>
+        </div>
 
-          <div className="flex items-center gap-1.5">
-            <Phone className="w-4 h-4 text-primary" />
-            <span className="text-sm text-muted-foreground">Emergency:</span>
-            <span className="font-medium text-foreground">{patient.emergencyContact}</span>
+        {/* QR Code */}
+        <div className="flex-shrink-0 flex flex-col items-center">
+          <div className="relative p-2.5 rounded-2xl bg-white border border-border shadow-sm">
+            <div
+              aria-hidden
+              className="absolute inset-0 rounded-2xl opacity-60 -z-10 blur-md print:hidden"
+              style={{ background: 'var(--gradient-primary)' }}
+            />
+            <QRCodeSVG
+              value={patient.id}
+              size={104}
+              level="H"
+              includeMargin={false}
+              bgColor="#ffffff"
+              fgColor="hsl(222, 40%, 12%)"
+            />
           </div>
+          <p className="text-[10px] text-muted-foreground text-center mt-2 font-mono tracking-widest">
+            {shortId}
+          </p>
         </div>
       </div>
 
       {/* Allergies Warning */}
       {patient.allergies.length > 0 && (
-        <div className="mt-6 pt-4 border-t border-border">
-          <div className="bg-warning/10 border border-warning/20 rounded-lg px-4 py-3">
-            <p className="text-sm font-medium text-warning">
-              ⚠️ Allergies: {patient.allergies.join(', ')}
-            </p>
+        <div className="relative mt-5 pt-4 border-t border-border">
+          <div className="flex items-start gap-2 bg-warning/10 border border-warning/25 rounded-xl px-3.5 py-3">
+            <AlertTriangle className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-warning font-bold">
+                Allergies
+              </p>
+              <p className="text-sm text-foreground font-medium mt-0.5">
+                {patient.allergies.join(', ')}
+              </p>
+            </div>
           </div>
         </div>
       )}
 
       {/* Footer */}
-      <div className="mt-6 pt-4 border-t border-border flex justify-between items-center">
-        <p className="text-xs text-muted-foreground">
-          Issued: {formatDate(patient.createdAt)}
+      <div className="relative mt-5 pt-4 border-t border-border flex justify-between items-center">
+        <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold">
+          Issued · {formatDate(patient.createdAt)}
         </p>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-success animate-pulse-soft" />
-          <span className="text-xs text-success font-medium">Active</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-soft" />
+          <span className="text-[10px] uppercase tracking-[0.15em] text-success font-bold">
+            Active
+          </span>
         </div>
       </div>
     </div>
