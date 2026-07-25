@@ -580,7 +580,11 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  {isOnline ? 'Saving to cloud…' : 'Saving on device…'}
+                  {uploadStatus
+                    ? uploadStatus
+                    : isOnline
+                    ? 'Saving to cloud…'
+                    : 'Saving on device…'}
                 </>
               ) : (
                 <>
