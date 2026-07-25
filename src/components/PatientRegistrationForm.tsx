@@ -543,12 +543,12 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Registering...
+                  {isOnline ? 'Saving to cloud…' : 'Saving on device…'}
                 </>
               ) : (
                 <>
                   <Heart className="w-5 h-5 mr-2" />
-                  Register Patient
+                  {isOnline ? 'Register Patient' : 'Save Offline'}
                 </>
               )}
             </Button>
