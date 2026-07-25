@@ -1,8 +1,10 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { HealthCard } from '@/components/HealthCard';
 import { Patient } from '@/types/patient';
-import { Download, Printer, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Download, Printer, ArrowLeft, CheckCircle2, FileText, ExternalLink, Loader2 } from 'lucide-react';
+import { getSignedDocumentUrl } from '@/lib/patientDocuments';
+import { useToast } from '@/hooks/use-toast';
 
 interface HealthCardPreviewProps {
   patient: Patient;
