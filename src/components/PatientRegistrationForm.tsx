@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Patient, PatientFormData, BLOOD_GROUPS, CHRONIC_CONDITIONS } from '@/types/patient';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { enqueuePatient } from '@/lib/offlineQueue';
 import {
   User,
   Heart,
@@ -45,6 +47,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const isOnline = useOnlineStatus();
 
   const totalSteps = 3;
 
@@ -116,23 +119,55 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         .map((a) => a.trim())
         .filter(Boolean);
 
+      const payload = {
+        full_name: formData.fullName.trim(),
+        date_of_birth: formData.dateOfBirth,
+        phone_number: formData.phoneNumber.replace(/\D/g, ''),
+        gender: formData.gender,
+        blood_group: formData.bloodGroup || null,
+        height: formData.height || null,
+        weight: formData.weight || null,
+        allergies: allergiesArray,
+        chronic_conditions: selectedConditions,
+        emergency_contact: formData.emergencyContact.replace(/\D/g, ''),
+        insurance_provider: formData.insuranceProvider || null,
+        policy_number: formData.policyNumber || null,
+        tpa_contact: formData.tpaContact || null,
+      };
+
+      const buildLocalPatient = (localId: string, createdAt: string): Patient => ({
+        id: localId,
+        fullName: payload.full_name,
+        dateOfBirth: payload.date_of_birth,
+        phoneNumber: payload.phone_number,
+        gender: payload.gender as Patient['gender'],
+        bloodGroup: (payload.blood_group || '') as Patient['bloodGroup'],
+        height: payload.height || '',
+        weight: payload.weight || '',
+        allergies: payload.allergies,
+        chronicConditions: payload.chronic_conditions,
+        emergencyContact: payload.emergency_contact,
+        insuranceProvider: payload.insurance_provider || undefined,
+        policyNumber: payload.policy_number || undefined,
+        tpaContact: payload.tpa_contact || undefined,
+        createdAt,
+        updatedAt: createdAt,
+      });
+
+      if (!isOnline) {
+        const record = enqueuePatient(payload);
+        toast({
+          title: 'Saved on this device',
+          description: 'No internet — will sync automatically when you reconnect.',
+        });
+        onPatientRegistered(buildLocalPatient(record.localId, record.createdAt));
+        setIsSubmitting(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('patients')
-        .insert({
-          full_name: formData.fullName.trim(),
-          date_of_birth: formData.dateOfBirth,
-          phone_number: formData.phoneNumber.replace(/\D/g, ''),
-          gender: formData.gender,
-          blood_group: formData.bloodGroup || null,
-          height: formData.height || null,
-          weight: formData.weight || null,
-          allergies: allergiesArray,
-          chronic_conditions: selectedConditions,
-          emergency_contact: formData.emergencyContact.replace(/\D/g, ''),
-          insurance_provider: formData.insuranceProvider || null,
-          policy_number: formData.policyNumber || null,
-          tpa_contact: formData.tpaContact || null,
-        })
+        .insert(payload)
         .select()
         .single();
 
@@ -143,9 +178,15 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
             description: 'A patient with this phone number already exists.',
             variant: 'destructive',
           });
-        } else {
-          throw error;
+          setIsSubmitting(false);
+          return;
         }
+        const record = enqueuePatient(payload);
+        toast({
+          title: 'Saved locally',
+          description: 'Cloud unreachable. Record queued and will sync automatically.',
+        });
+        onPatientRegistered(buildLocalPatient(record.localId, record.createdAt));
         setIsSubmitting(false);
         return;
       }
@@ -177,15 +218,48 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
       onPatientRegistered(patient);
     } catch (error) {
       console.error('Error registering patient:', error);
+      const record = enqueuePatient({
+        full_name: formData.fullName.trim(),
+        date_of_birth: formData.dateOfBirth,
+        phone_number: formData.phoneNumber.replace(/\D/g, ''),
+        gender: formData.gender,
+        blood_group: formData.bloodGroup || null,
+        height: formData.height || null,
+        weight: formData.weight || null,
+        allergies: formData.allergies.split(',').map((a) => a.trim()).filter(Boolean),
+        chronic_conditions: selectedConditions,
+        emergency_contact: formData.emergencyContact.replace(/\D/g, ''),
+        insurance_provider: formData.insuranceProvider || null,
+        policy_number: formData.policyNumber || null,
+        tpa_contact: formData.tpaContact || null,
+      });
       toast({
-        title: 'Registration Failed',
-        description: 'There was an error saving the patient data. Please try again.',
-        variant: 'destructive',
+        title: 'Saved locally',
+        description: 'Something went wrong reaching the cloud. The record is queued for sync.',
+      });
+      onPatientRegistered({
+        id: record.localId,
+        fullName: formData.fullName.trim(),
+        dateOfBirth: formData.dateOfBirth,
+        phoneNumber: formData.phoneNumber.replace(/\D/g, ''),
+        gender: formData.gender as Patient['gender'],
+        bloodGroup: (formData.bloodGroup || '') as Patient['bloodGroup'],
+        height: formData.height || '',
+        weight: formData.weight || '',
+        allergies: formData.allergies.split(',').map((a) => a.trim()).filter(Boolean),
+        chronicConditions: selectedConditions,
+        emergencyContact: formData.emergencyContact.replace(/\D/g, ''),
+        insuranceProvider: formData.insuranceProvider || undefined,
+        policyNumber: formData.policyNumber || undefined,
+        tpaContact: formData.tpaContact || undefined,
+        createdAt: record.createdAt,
+        updatedAt: record.createdAt,
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center gap-2 sm:gap-3 mb-8 md:mb-10">
@@ -469,12 +543,12 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Registering...
+                  {isOnline ? 'Saving to cloud…' : 'Saving on device…'}
                 </>
               ) : (
                 <>
                   <Heart className="w-5 h-5 mr-2" />
-                  Register Patient
+                  {isOnline ? 'Register Patient' : 'Save Offline'}
                 </>
               )}
             </Button>
