@@ -349,8 +349,9 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
           placeholder="Enter allergies separated by commas (e.g., Penicillin, Peanuts)"
           value={formData.allergies}
           onChange={(e) => updateField('allergies', e.target.value)}
-          className="min-h-[80px] text-base border-2 border-input rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className="min-h-[80px] text-base border-2 border-input bg-card rounded-xl focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
         />
+
       </div>
 
       <FormInput
