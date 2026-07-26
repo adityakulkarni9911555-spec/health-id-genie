@@ -10,8 +10,11 @@ export async function uploadPatientDocument(
   patientId: string,
   file: File,
 ): Promise<PatientDocument> {
+  const { data: userRes } = await supabase.auth.getUser();
+  const userId = userRes.user?.id;
+  if (!userId) throw new Error('You must be signed in to upload documents.');
   const safeName = slugify(file.name);
-  const path = `${patientId}/${Date.now()}_${safeName}`;
+  const path = `${userId}/${patientId}/${Date.now()}_${safeName}`;
 
   const { error } = await supabase.storage
     .from(BUCKET)

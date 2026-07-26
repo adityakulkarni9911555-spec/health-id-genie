@@ -62,7 +62,15 @@ export default function Auth() {
           options: { emailRedirectTo: withNextRedirect(next) },
         });
         if (error) throw error;
-        toast({ title: "Check your email", description: "Confirm your address to finish signing up." });
+        // Auto-confirm is enabled, so session is set immediately.
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData.session) {
+          // Fallback: sign in with the same credentials.
+          const { error: siErr } = await supabase.auth.signInWithPassword({ email, password });
+          if (siErr) throw siErr;
+        }
+        toast({ title: "Welcome!", description: "Your account is ready." });
+        navigate(next, { replace: true });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
