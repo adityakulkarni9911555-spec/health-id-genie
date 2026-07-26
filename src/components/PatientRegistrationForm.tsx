@@ -122,6 +122,9 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     setIsSubmitting(true);
 
     try {
+      const { data: userRes } = await supabase.auth.getUser();
+      const ownerId = userRes.user?.id;
+
       const allergiesArray = formData.allergies
         .split(',')
         .map((a) => a.trim())
@@ -175,7 +178,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
 
       const { data, error } = await supabase
         .from('patients')
-        .insert(payload)
+        .insert({ ...payload, owner_id: ownerId })
         .select()
         .single();
 
