@@ -1,67 +1,74 @@
-
 ## Goal
 
-Let a patient create their own account, register once, and stay signed in on their device indefinitely. On return visits they land straight on their own health card — no re-login, no re-registration.
+Reposition Smart Health as a **personal health wallet** for individual users, remove the recently-added staff/role surface entirely, and open every app launch with a short animated logo reveal.
 
-## Auth setup
+---
 
-- Enable email/password sign-in (Lovable Cloud Auth). Keep Google available as an optional second button on the auth page (already wired).
-- Turn OFF "confirm email" so patients can sign up and use the app immediately (they're often on a clinic tablet with no email access).
-- Session: use the default long-lived refresh token — auto-refreshed on every app open, so effectively permanent until the user taps "Sign out" or clears browser data.
+## 1. Remove staff features
 
-## Data model
+Delete from the codebase:
+- `src/pages/Staff.tsx`
+- `src/hooks/useUserRole.ts`
+- Staff `<Route>` and `Staff` import in `src/App.tsx`
+- "Staff" button + `useUserRole` usage in `src/pages/Index.tsx` header
 
-New `profiles` table (one row per auth user), linking an auth user to their patient record:
+Database: **leave `user_roles`, `patient_edit_logs`, `staff_get_patient`, and `staff_update_patient_safe_fields` in place.** They are locked down (RLS + `SECURITY DEFINER` with an authorization check) and cost nothing while unused. Removing them requires a destructive migration that isn't needed for the consumer pivot.
 
-```text
-profiles
-  id            uuid  PK, references auth.users(id) on delete cascade
-  patient_id    uuid  nullable, references public.patients(id)
-  created_at    timestamptz
-  updated_at    timestamptz
-```
+## 2. Animated logo splash (every launch)
 
-- Trigger on `auth.users` insert → auto-create empty `profiles` row.
-- RLS: a user can only read/update their own profile row.
+New component `src/components/SplashScreen.tsx`:
+- Full-viewport light gradient background matching the app's hero surface.
+- The existing `<Logo>` scales in from 0.85 → 1 with a soft spring, a pulse ring expands and fades behind it, and the wordmark "Smart Health" + tagline fade up.
+- Total runtime **~2.4s**, then a 300ms fade-out.
+- Pure CSS keyframes + SVG — no video file, no extra deps, no network dependency.
+- Includes `prefers-reduced-motion` fallback: static logo shown for 600ms, then dismissed.
 
-Tighten `patients` table RLS (currently fully public):
-- Add nullable `owner_id uuid` column referencing `auth.users(id)`.
-- Backfill existing rows with `NULL` (treated as legacy/anonymous).
-- Replace the three "public" policies with:
-  - `SELECT` / `UPDATE`: `auth.uid() = owner_id`
-  - `INSERT`: `auth.uid() = owner_id` (owner_id must be set to the caller)
-  - Keep `service_role` full access for edge functions / MCP tools.
-- Storage bucket `patient-documents` policies: only the owner can read/write objects under their patient folder.
+Mount in `src/App.tsx` at the top level (outside `<Routes>`) so it plays on every launch regardless of route (auth, home, consent). A `useState` flag hides it after the animation completes. No `sessionStorage` — plays every time per the chosen behavior.
 
-## App flow
+## 3. Consumer "personal health wallet" tone
 
-1. **First visit** → redirect to `/auth`. Patient signs up with email + password (or Google). A profile row is created automatically.
-2. **Registration form** (`/`) — same three-step form as today, but:
-   - Requires an authenticated session (route guard).
-   - On submit, sets `owner_id = auth.uid()` on the patient row and writes `patient_id` back into `profiles`.
-   - If the profile already has a `patient_id`, skip the form and go straight to the health card view.
-3. **Return visits** → session auto-restores, app checks `profiles.patient_id`:
-   - Has patient → show their health card + "Edit details" option.
-   - No patient yet → show the registration form.
-4. **Sign out** button in the header for shared/clinic devices.
-5. Offline queue keeps working; queued patient inserts stamp `owner_id` from the current session before syncing.
+Copy + iconography updates only (no behavioral changes):
 
-## MCP tools
+**`src/pages/Index.tsx` hero**
+- Chip: "Your health, in your pocket"
+- H2: *"Your personal**  health wallet**"* (accent on the last two words)
+- Subhead: "Carry your medical essentials, allergies, and emergency info with you — anywhere, anytime. Just for you."
+- Three feature cards rewritten around personal ownership:
+  - **Always with you** — access on any device you sign in with
+  - **Yours alone** — private by design, only you can see it
+  - **Ready in emergencies** — critical info one tap away
 
-The existing `list_patients` / `get_patient` / `register_patient` tools already act as the signed-in user. With RLS scoped to `owner_id`, each MCP user will automatically see only their own record — no code change needed beyond making sure `register_patient` stamps `owner_id = auth.uid()`.
+**`src/pages/Auth.tsx`**
+- Headline: "Your health wallet"
+- Sub: "Sign in to open your card, or create one in under a minute."
+
+**`index.html`**
+- `<title>`: "Smart Health — Your Personal Health Wallet"
+- Meta description + og tags aligned to the wallet framing.
+
+**`src/components/HealthCardPreview.tsx`**
+- Success heading softened from clinical "Registration Complete!" to "Your health wallet is ready".
+- Section title "Full Patient Details" → "Your details".
+
+**`src/components/PatientRegistrationForm.tsx`**
+- Section headings shifted from clinical ("Patient Registration") to first-person ("Let's set up your card", "A bit about you", "Your medical info", "Emergency & documents"). Field labels stay the same to keep the data model unchanged.
+
+## 4. Out of scope (intentionally not doing)
+
+- Not changing form fields, database schema, MCP tools, or offline sync.
+- Not changing the `HealthCard` printed layout (already premium-branded).
+- Not touching document upload or OAuth consent flows.
+
+---
+
+## Technical notes
+
+- Splash uses Tailwind + a small `<style>` block for the pulse ring keyframes; leverages existing `animate-fade-in` / `animate-scale-in` where possible.
+- All copy updates are string-only changes in the components listed — no prop or type changes.
+- File deletions use `rm`; route/import removals use targeted line edits.
 
 ## Files touched
 
-- `supabase/migrations/*` — new migration for `profiles`, `patients.owner_id`, updated RLS, storage policies, signup trigger.
-- `src/App.tsx` — add auth guard around `/`, redirect unauthenticated users to `/auth`.
-- `src/pages/Index.tsx` — branch on `profiles.patient_id`: show card if exists, else show registration form; add "Sign out" in header.
-- `src/pages/Auth.tsx` — keep, adjust post-signin redirect to `/`.
-- `src/components/PatientRegistrationForm.tsx` — set `owner_id`, update `profiles.patient_id` after insert.
-- `src/lib/offlineQueue.ts` — attach `owner_id` when flushing queued inserts.
-- `src/lib/mcp/tools/register-patient.ts` — stamp `owner_id` from the caller's JWT.
-
-## Out of scope
-
-- Password reset emails (can be added later once a custom email domain is set up).
-- Staff/admin roles — everyone is a patient for now.
-- Merging existing anonymous `patients` rows into new accounts.
+- Delete: `src/pages/Staff.tsx`, `src/hooks/useUserRole.ts`
+- Edit: `src/App.tsx`, `src/pages/Index.tsx`, `src/pages/Auth.tsx`, `src/components/HealthCardPreview.tsx`, `src/components/PatientRegistrationForm.tsx`, `index.html`
+- Create: `src/components/SplashScreen.tsx`
