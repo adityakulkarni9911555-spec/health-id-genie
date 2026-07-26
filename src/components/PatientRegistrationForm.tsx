@@ -15,6 +15,7 @@ import {
   uploadPatientDocuments,
   persistPatientDocuments,
 } from '@/lib/patientDocuments';
+import { linkPatientToProfile } from '@/lib/patientProfile';
 import {
   User,
   Heart,
