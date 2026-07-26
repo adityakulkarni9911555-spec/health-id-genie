@@ -140,15 +140,24 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     setIsSubmitting(true);
 
     try {
-      const { data: userRes } = await supabase.auth.getUser();
+      const { data: userRes, error: userErr } = await supabase.auth.getUser();
       const ownerId = userRes.user?.id;
+      if (userErr || !ownerId) {
+        toast({
+          title: 'Please sign in',
+          description: 'Your session expired. Sign in again to save your record.',
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
+        return;
+      }
 
       const allergiesArray = formData.allergies
         .split(',')
         .map((a) => a.trim())
         .filter(Boolean);
 
-      const payload = {
+      const rawPayload = {
         full_name: formData.fullName.trim(),
         date_of_birth: formData.dateOfBirth,
         phone_number: formData.phoneNumber.replace(/\D/g, ''),
@@ -159,10 +168,22 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         allergies: allergiesArray,
         chronic_conditions: selectedConditions,
         emergency_contact: formData.emergencyContact.replace(/\D/g, ''),
-        insurance_provider: formData.insuranceProvider || null,
-        policy_number: formData.policyNumber || null,
-        tpa_contact: formData.tpaContact || null,
+        insurance_provider: formData.insuranceProvider?.trim() || null,
+        policy_number: formData.policyNumber?.trim() || null,
+        tpa_contact: formData.tpaContact?.trim() || null,
       };
+
+      const parsed = patientSchema.safeParse(rawPayload);
+      if (!parsed.success) {
+        toast({
+          title: 'Please check your details',
+          description: parsed.error.issues[0]?.message ?? 'Some fields are invalid.',
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      const payload = parsed.data;
 
       const buildLocalPatient = (localId: string, createdAt: string): Patient => ({
         id: localId,
@@ -228,8 +249,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         try {
           uploadedDocs = await uploadPatientDocuments(data.id, pendingFiles);
           await persistPatientDocuments(data.id, uploadedDocs);
-        } catch (uploadErr) {
-          console.error('Document upload failed:', uploadErr);
+        } catch {
           toast({
             title: 'Files not uploaded',
             description:
@@ -241,6 +261,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
           setUploadStatus(null);
         }
       }
+
 
       const patient: Patient = {
         id: data.id,
