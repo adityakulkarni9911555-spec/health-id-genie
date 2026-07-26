@@ -205,7 +205,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
       });
 
       if (!isOnline) {
-        const record = enqueuePatient(payload);
+        const record = enqueuePatient(rawPayload);
         toast({
           title: 'Saved on this device',
           description: 'No internet — will sync automatically when you reconnect.',
@@ -217,7 +217,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
 
       const { data, error } = await supabase
         .from('patients')
-        .insert({ ...payload, owner_id: ownerId })
+        .insert({ ...rawPayload, owner_id: ownerId })
         .select()
         .single();
 
@@ -231,7 +231,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
           setIsSubmitting(false);
           return;
         }
-        const record = enqueuePatient(payload);
+        const record = enqueuePatient(rawPayload);
         toast({
           title: 'Saved locally',
           description: 'Cloud unreachable. Record queued and will sync automatically.',
