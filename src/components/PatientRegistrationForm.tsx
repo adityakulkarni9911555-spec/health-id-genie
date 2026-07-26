@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/FormInput';
 import { FormSelect } from '@/components/ui/FormSelect';
@@ -25,6 +26,23 @@ import {
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react';
+
+const patientSchema = z.object({
+  full_name: z.string().trim().min(1).max(120),
+  date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  phone_number: z.string().regex(/^[6-9]\d{9}$/),
+  gender: z.enum(['male', 'female', 'other']),
+  emergency_contact: z.string().regex(/^[6-9]\d{9}$/),
+  blood_group: z.string().max(3).nullable(),
+  height: z.string().max(10).nullable(),
+  weight: z.string().max(10).nullable(),
+  allergies: z.array(z.string().max(80)).max(30),
+  chronic_conditions: z.array(z.string().max(80)).max(30),
+  insurance_provider: z.string().max(120).nullable(),
+  policy_number: z.string().max(60).nullable(),
+  tpa_contact: z.string().max(60).nullable(),
+});
+
 
 interface PatientRegistrationFormProps {
   onPatientRegistered: (patient: Patient) => void;
