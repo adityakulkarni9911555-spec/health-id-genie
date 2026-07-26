@@ -9,10 +9,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Patient } from '@/types/patient';
 import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { loadPatientForCurrentUser } from '@/lib/patientProfile';
-import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -20,7 +18,6 @@ const Index = () => {
   const [registeredPatient, setRegisteredPatient] = useState<Patient | null>(null);
   const [loadingPatient, setLoadingPatient] = useState(true);
   const isOnline = useOnlineStatus();
-  const { isStaff } = useUserRole();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -97,14 +94,6 @@ const Index = () => {
                   <span className="font-medium">Offline</span>
                 </div>
               )}
-              {isStaff && (
-                <Button asChild variant="outline" size="sm" className="gap-1.5">
-                  <Link to="/staff">
-                    <ShieldCheck className="w-4 h-4" />
-                    <span className="hidden sm:inline">Staff</span>
-                  </Link>
-                </Button>
-              )}
               {user && (
                 <Button
                   variant="ghost"
@@ -139,34 +128,35 @@ const Index = () => {
             <div className="text-center mb-12 animate-fade-in max-w-3xl mx-auto">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-xs font-medium mb-5 border border-accent-foreground/10">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Your digital health card, ready in seconds</span>
+                <span>Your health, in your pocket</span>
               </div>
               <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
-                Welcome — let's set up your{' '}
+                Your personal{' '}
                 <span className="bg-gradient-to-r from-primary to-[hsl(174,62%,45%)] bg-clip-text text-transparent">
-                  health card
+                  health wallet
                 </span>
               </h2>
               <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-                Fill this out once. We'll remember you on this device — no need to sign in or register again.
+                Carry your medical essentials, allergies, and emergency info with you —
+                anywhere, anytime. Just for you.
               </p>
 
               {/* Features */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 mt-10 max-w-3xl mx-auto">
                 <FeatureCard
-                  icon={<ShieldCheck className="w-5 h-5" />}
-                  title="Secure by design"
-                  description="Only you can see your record"
+                  icon={<Smartphone className="w-5 h-5" />}
+                  title="Always with you"
+                  description="Open on any device you sign in with"
                 />
                 <FeatureCard
-                  icon={<Smartphone className="w-5 h-5" />}
-                  title="Stay signed in"
-                  description="Open the app and go — no re-login"
+                  icon={<ShieldCheck className="w-5 h-5" />}
+                  title="Yours alone"
+                  description="Private by design — only you can see it"
                 />
                 <FeatureCard
                   icon={<Heart className="w-5 h-5" />}
-                  title="Complete records"
-                  description="All medical info in one place"
+                  title="Ready in emergencies"
+                  description="Critical info one tap away"
                 />
               </div>
             </div>

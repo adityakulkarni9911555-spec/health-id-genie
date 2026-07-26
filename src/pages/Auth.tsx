@@ -96,12 +96,12 @@ export default function Auth() {
         <div className="form-section p-7 sm:p-8 space-y-6">
           <div>
             <h1 className="font-display text-2xl font-semibold tracking-tight">
-              {mode === "signup" ? "Create your account" : "Sign in"}
+              {mode === "signup" ? "Create your health wallet" : "Your health wallet"}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {mode === "signup"
-                ? "Register to manage patient health cards."
-                : "Access the Smart Health Card dashboard."}
+                ? "Set up your personal health card in under a minute."
+                : "Sign in to open your card, or create one in under a minute."}
             </p>
           </div>
 
