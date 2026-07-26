@@ -72,10 +72,10 @@ Generated: ${new Date().toLocaleString()}
           <CheckCircle2 className="w-10 h-10 text-success" />
         </div>
         <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-          Registration Complete!
+          Your health wallet is ready
         </h2>
         <p className="text-muted-foreground">
-          The patient's Smart Health Card has been generated successfully.
+          Your Smart Health Card is saved and stays with you on every device you sign in from.
         </p>
       </div>
 
@@ -92,7 +92,7 @@ Generated: ${new Date().toLocaleString()}
           className="btn-touch w-full"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
-          Register Another
+          Update details
         </Button>
 
         <Button
@@ -116,7 +116,7 @@ Generated: ${new Date().toLocaleString()}
       {/* Patient Details */}
       <div className="mt-8 form-section no-print">
         <h3 className="font-display text-lg font-semibold text-foreground mb-4">
-          Full Patient Details
+          Your details
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
 

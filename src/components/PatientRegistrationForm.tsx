@@ -331,9 +331,9 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         </div>
         <div>
           <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground tracking-tight">
-            Personal Information
+            A bit about you
           </h2>
-          <p className="text-muted-foreground text-sm md:text-base">Basic details about the patient</p>
+          <p className="text-muted-foreground text-sm md:text-base">Let's start with the basics</p>
         </div>
       </div>
 
@@ -394,9 +394,9 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         </div>
         <div>
           <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground tracking-tight">
-            Medical Information
+            Your medical info
           </h2>
-          <p className="text-muted-foreground text-sm md:text-base">Health-related details</p>
+          <p className="text-muted-foreground text-sm md:text-base">The stuff a doctor would want to know</p>
         </div>
       </div>
 
