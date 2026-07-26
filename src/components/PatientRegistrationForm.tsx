@@ -202,6 +202,8 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         return;
       }
 
+      await linkPatientToProfile(data.id);
+
       let uploadedDocs: Patient['documents'] = [];
       if (pendingFiles.length > 0) {
         setUploadStatus(`Uploading ${pendingFiles.length} file(s)…`);
