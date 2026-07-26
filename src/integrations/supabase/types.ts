@@ -28,6 +28,7 @@ export type Database = {
           height: string | null
           id: string
           insurance_provider: string | null
+          owner_id: string | null
           phone_number: string
           policy_number: string | null
           tpa_contact: string | null
@@ -47,6 +48,7 @@ export type Database = {
           height?: string | null
           id?: string
           insurance_provider?: string | null
+          owner_id?: string | null
           phone_number: string
           policy_number?: string | null
           tpa_contact?: string | null
@@ -66,6 +68,7 @@ export type Database = {
           height?: string | null
           id?: string
           insurance_provider?: string | null
+          owner_id?: string | null
           phone_number?: string
           policy_number?: string | null
           tpa_contact?: string | null
@@ -109,6 +112,35 @@ export type Database = {
           verified_at?: string | null
         }
         Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          patient_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          patient_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          patient_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
