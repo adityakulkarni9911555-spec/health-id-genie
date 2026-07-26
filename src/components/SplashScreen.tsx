@@ -27,11 +27,15 @@ export const SplashScreen = ({ onDone }: SplashScreenProps) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/40 transition-opacity duration-300 ${
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-background transition-opacity duration-300 ${
         leaving ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       aria-hidden={leaving}
     >
+      <div
+        className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/40 pointer-events-none"
+        aria-hidden="true"
+      />
       <style>{`
         @keyframes splash-pulse {
           0% { transform: scale(0.6); opacity: 0.6; }
