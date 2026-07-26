@@ -486,9 +486,9 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         </div>
         <div>
           <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground tracking-tight">
-            Insurance Details
+            Insurance & documents
           </h2>
-          <p className="text-muted-foreground text-sm md:text-base">Optional insurance information</p>
+          <p className="text-muted-foreground text-sm md:text-base">Optional — helpful in a pinch</p>
         </div>
       </div>
 
