@@ -82,13 +82,28 @@ export const syncPendingPatients = async (): Promise<{
   const remaining: PendingPatientRecord[] = [];
 
   try {
+    const { data: userRes } = await supabase.auth.getUser();
+    const userId = userRes.user?.id;
+    if (!userId) {
+      // Can't sync without a signed-in user — keep queue as-is for next attempt.
+      return { synced: 0, failed: 0 };
+    }
     for (const record of queue) {
       try {
-        const { error } = await supabase.from('patients').insert(record.payload);
+        const { data, error } = await supabase
+          .from('patients')
+          .insert({ ...record.payload, owner_id: userId })
+          .select('id')
+          .single();
         if (error && error.code !== '23505') {
           remaining.push(record);
           failed += 1;
         } else {
+          if (data?.id) {
+            await supabase
+              .from('profiles')
+              .upsert({ id: userId, patient_id: data.id }, { onConflict: 'id' });
+          }
           synced += 1;
         }
       } catch {

@@ -15,6 +15,7 @@ import {
   uploadPatientDocuments,
   persistPatientDocuments,
 } from '@/lib/patientDocuments';
+import { linkPatientToProfile } from '@/lib/patientProfile';
 import {
   User,
   Heart,
@@ -121,6 +122,9 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     setIsSubmitting(true);
 
     try {
+      const { data: userRes } = await supabase.auth.getUser();
+      const ownerId = userRes.user?.id;
+
       const allergiesArray = formData.allergies
         .split(',')
         .map((a) => a.trim())
@@ -174,7 +178,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
 
       const { data, error } = await supabase
         .from('patients')
-        .insert(payload)
+        .insert({ ...payload, owner_id: ownerId })
         .select()
         .single();
 
@@ -197,6 +201,8 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         setIsSubmitting(false);
         return;
       }
+
+      await linkPatientToProfile(data.id);
 
       let uploadedDocs: Patient['documents'] = [];
       if (pendingFiles.length > 0) {

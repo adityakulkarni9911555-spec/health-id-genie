@@ -126,6 +126,12 @@ var register_patient_default = defineTool3({
     if (!ctx.isAuthenticated()) {
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
+    const client = supabaseForUser3(ctx);
+    const { data: userRes, error: userErr } = await client.auth.getUser();
+    if (userErr || !userRes.user) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const ownerId = userRes.user.id;
     const payload = {
       full_name: input.full_name.trim(),
       date_of_birth: input.date_of_birth,
@@ -139,9 +145,13 @@ var register_patient_default = defineTool3({
       chronic_conditions: input.chronic_conditions ?? [],
       insurance_provider: input.insurance_provider ?? null,
       policy_number: input.policy_number ?? null,
-      tpa_contact: input.tpa_contact ?? null
+      tpa_contact: input.tpa_contact ?? null,
+      owner_id: ownerId
     };
-    const { data, error } = await supabaseForUser3(ctx).from("patients").insert(payload).select().single();
+    const { data, error } = await client.from("patients").insert(payload).select().single();
+    if (!error && data?.id) {
+      await client.from("profiles").upsert({ id: ownerId, patient_id: data.id }, { onConflict: "id" });
+    }
     if (error) {
       return { content: [{ type: "text", text: error.message }], isError: true };
     }
