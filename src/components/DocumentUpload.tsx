@@ -26,8 +26,15 @@ interface DocumentUploadProps {
   disabled?: boolean;
 }
 
-const ACCEPT =
-  'image/png,image/jpeg,image/webp,image/heic,application/pdf';
+const ALLOWED_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/heic',
+  'application/pdf',
+]);
+const ACCEPT = Array.from(ALLOWED_TYPES).join(',');
+const MAX_FILES = 10;
 
 export const DocumentUpload = ({
   documents,
@@ -46,6 +53,15 @@ export const DocumentUpload = ({
     if (!files || files.length === 0) return;
     const list = Array.from(files);
 
+    if (documents.length + pendingFiles.length + list.length > MAX_FILES) {
+      toast({
+        title: 'Too many files',
+        description: `You can attach up to ${MAX_FILES} files.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     for (const file of list) {
       if (file.size > maxSizeMB * 1024 * 1024) {
         toast({
@@ -55,7 +71,16 @@ export const DocumentUpload = ({
         });
         return;
       }
+      if (file.type && !ALLOWED_TYPES.has(file.type)) {
+        toast({
+          title: 'Unsupported file type',
+          description: `${file.name} must be a PDF or image (PNG, JPG, WEBP, HEIC).`,
+          variant: 'destructive',
+        });
+        return;
+      }
     }
+
 
     if (uploadImmediately) {
       setUploading(true);
