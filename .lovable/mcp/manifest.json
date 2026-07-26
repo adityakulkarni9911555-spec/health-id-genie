@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://kfvpqejwnhqqwrswjkqj.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "smart-health-card-mcp",
+      "version": "0.1.0",
+      "title": "Smart Health Card"
+    },
+    "tools": [
+      {
+        "name": "list_patients",
+        "title": "List patients",
+        "description": "List patients in the Smart Health Card system. Supports optional search by name or phone number and a result limit.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Optional case-insensitive fragment matching full_name or phone_number."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max number of records to return (default 25, capped at 100)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_patient",
+        "title": "Get patient details",
+        "description": "Fetch the full record for one patient by health card ID (UUID) or by phone number.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Patient UUID (health card ID)."
+            },
+            "phone_number": {
+              "type": "string",
+              "description": "10-digit Indian mobile number of the patient."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "register_patient",
+        "title": "Register a new patient",
+        "description": "Create a new patient record with basic demographic, medical and emergency contact details.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "full_name": {
+              "type": "string",
+              "description": "Patient's full name."
+            },
+            "date_of_birth": {
+              "type": "string",
+              "description": "Date of birth in YYYY-MM-DD format."
+            },
+            "phone_number": {
+              "type": "string",
+              "description": "10-digit Indian mobile number."
+            },
+            "gender": {
+              "type": "string",
+              "enum": [
+                "male",
+                "female",
+                "other"
+              ]
+            },
+            "emergency_contact": {
+              "type": "string",
+              "description": "10-digit emergency contact number."
+            },
+            "blood_group": {
+              "type": "string",
+              "enum": [
+                "A+",
+                "A-",
+                "B+",
+                "B-",
+                "AB+",
+                "AB-",
+                "O+",
+                "O-"
+              ]
+            },
+            "height": {
+              "type": "string",
+              "description": "Height in cm as a string."
+            },
+            "weight": {
+              "type": "string",
+              "description": "Weight in kg as a string."
+            },
+            "allergies": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "chronic_conditions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "insurance_provider": {
+              "type": "string"
+            },
+            "policy_number": {
+              "type": "string"
+            },
+            "tpa_contact": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "full_name",
+            "date_of_birth",
+            "phone_number",
+            "gender",
+            "emergency_contact"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
