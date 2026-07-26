@@ -9,8 +9,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Patient } from '@/types/patient';
 import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { loadPatientForCurrentUser } from '@/lib/patientProfile';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -18,6 +20,7 @@ const Index = () => {
   const [registeredPatient, setRegisteredPatient] = useState<Patient | null>(null);
   const [loadingPatient, setLoadingPatient] = useState(true);
   const isOnline = useOnlineStatus();
+  const { isStaff } = useUserRole();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -93,6 +96,14 @@ const Index = () => {
                   <WifiOff className="w-3 h-3" />
                   <span className="font-medium">Offline</span>
                 </div>
+              )}
+              {isStaff && (
+                <Button asChild variant="outline" size="sm" className="gap-1.5">
+                  <Link to="/staff">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span className="hidden sm:inline">Staff</span>
+                  </Link>
+                </Button>
               )}
               {user && (
                 <Button
