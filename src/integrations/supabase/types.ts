@@ -14,50 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      patient_edit_logs: {
-        Row: {
-          action: string
-          actor_email: string | null
-          actor_id: string
-          created_at: string
-          field: string | null
-          id: string
-          new_value: Json | null
-          old_value: Json | null
-          patient_id: string
-        }
-        Insert: {
-          action: string
-          actor_email?: string | null
-          actor_id: string
-          created_at?: string
-          field?: string | null
-          id?: string
-          new_value?: Json | null
-          old_value?: Json | null
-          patient_id: string
-        }
-        Update: {
-          action?: string
-          actor_email?: string | null
-          actor_id?: string
-          created_at?: string
-          field?: string | null
-          id?: string
-          new_value?: Json | null
-          old_value?: Json | null
-          patient_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "patient_edit_logs_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "patients"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       patients: {
         Row: {
           allergies: string[] | null
@@ -72,7 +28,7 @@ export type Database = {
           height: string | null
           id: string
           insurance_provider: string | null
-          owner_id: string | null
+          owner_id: string
           phone_number: string
           policy_number: string | null
           tpa_contact: string | null
@@ -92,7 +48,7 @@ export type Database = {
           height?: string | null
           id?: string
           insurance_provider?: string | null
-          owner_id?: string | null
+          owner_id: string
           phone_number: string
           policy_number?: string | null
           tpa_contact?: string | null
@@ -112,7 +68,7 @@ export type Database = {
           height?: string | null
           id?: string
           insurance_provider?: string | null
-          owner_id?: string | null
+          owner_id?: string
           phone_number?: string
           policy_number?: string | null
           tpa_contact?: string | null
@@ -186,105 +142,15 @@ export type Database = {
           },
         ]
       }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      is_staff: { Args: { _user_id: string }; Returns: boolean }
-      staff_get_patient: {
-        Args: { _patient_id: string }
-        Returns: {
-          allergies: string[] | null
-          blood_group: string | null
-          chronic_conditions: string[] | null
-          created_at: string
-          date_of_birth: string
-          documents: Json
-          emergency_contact: string
-          full_name: string
-          gender: string
-          height: string | null
-          id: string
-          insurance_provider: string | null
-          owner_id: string | null
-          phone_number: string
-          policy_number: string | null
-          tpa_contact: string | null
-          updated_at: string
-          weight: string | null
-        }
-        SetofOptions: {
-          from: "*"
-          to: "patients"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      staff_update_patient_safe_fields: {
-        Args: {
-          _allergies: string[]
-          _emergency_contact: string
-          _patient_id: string
-        }
-        Returns: {
-          allergies: string[] | null
-          blood_group: string | null
-          chronic_conditions: string[] | null
-          created_at: string
-          date_of_birth: string
-          documents: Json
-          emergency_contact: string
-          full_name: string
-          gender: string
-          height: string | null
-          id: string
-          insurance_provider: string | null
-          owner_id: string | null
-          phone_number: string
-          policy_number: string | null
-          tpa_contact: string | null
-          updated_at: string
-          weight: string | null
-        }
-        SetofOptions: {
-          from: "*"
-          to: "patients"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      [_ in never]: never
     }
     Enums: {
-      app_role: "admin" | "staff"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -411,8 +277,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "staff"],
-    },
+    Enums: {},
   },
 } as const
