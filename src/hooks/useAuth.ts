@@ -9,34 +9,51 @@ export function useAuth() {
 
   useEffect(() => {
     let cancelled = false;
+    let authEventVersion = 0;
+
+    const applyVerifiedSession = async (s: Session | null, version: number) => {
+      if (!s) {
+        if (cancelled || version !== authEventVersion) return;
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      const { data: userData, error } = await supabase.auth.getUser();
+      if (cancelled || version !== authEventVersion) return;
+
+      if (error || !userData.user) {
+        setSession(null);
+        setUser(null);
+      } else {
+        setSession(s);
+        setUser(userData.user);
+      }
+      setLoading(false);
+    };
 
     // Register listener first so we never miss an auth event.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+      authEventVersion += 1;
+      const version = authEventVersion;
       setSession(s);
       setUser(s?.user ?? null);
+      setLoading(false);
+
+      if (s) {
+        window.setTimeout(() => {
+          applyVerifiedSession(s, version);
+        }, 0);
+      }
     });
 
     // Then hydrate from the local session and re-verify the user with the
     // auth server so we don't trust a tampered/expired local JWT for gating.
     (async () => {
+      const version = authEventVersion;
       const { data: sessionData } = await supabase.auth.getSession();
-      if (cancelled) return;
-      setSession(sessionData.session);
-
-      if (sessionData.session) {
-        const { data: userData, error } = await supabase.auth.getUser();
-        if (cancelled) return;
-        if (error || !userData.user) {
-          await supabase.auth.signOut();
-          setSession(null);
-          setUser(null);
-        } else {
-          setUser(userData.user);
-        }
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
+      applyVerifiedSession(sessionData.session, version);
     })();
 
     return () => {
