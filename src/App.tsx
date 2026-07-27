@@ -9,12 +9,16 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import OAuthConsent from "./pages/OAuthConsent";
+import Emergency from "./pages/Emergency";
 import { SplashScreen } from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [splashDone, setSplashDone] = useState(false);
+  // Skip the splash for emergency scans — every second counts.
+  const isEmergency =
+    typeof window !== 'undefined' && window.location.pathname.startsWith('/e/');
+  const [splashDone, setSplashDone] = useState(isEmergency);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -29,6 +33,7 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+            <Route path="/e/:token" element={<Emergency />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

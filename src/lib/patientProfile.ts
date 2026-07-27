@@ -18,6 +18,8 @@ export function mapPatientRow(data: Record<string, any>): Patient {
     policyNumber: data.policy_number || undefined,
     tpaContact: data.tpa_contact || undefined,
     documents: (data.documents as Patient['documents']) || [],
+    shareToken: data.share_token || undefined,
+    shareRevoked: !!data.share_revoked,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
   };

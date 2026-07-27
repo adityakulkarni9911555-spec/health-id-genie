@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      emergency_access_logs: {
+        Row: {
+          accessed_at: string
+          id: string
+          ip_hash: string | null
+          patient_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          accessed_at?: string
+          id?: string
+          ip_hash?: string | null
+          patient_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          accessed_at?: string
+          id?: string
+          ip_hash?: string | null
+          patient_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_access_logs_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           allergies: string[] | null
@@ -31,6 +63,8 @@ export type Database = {
           owner_id: string
           phone_number: string
           policy_number: string | null
+          share_revoked: boolean
+          share_token: string
           tpa_contact: string | null
           updated_at: string
           weight: string | null
@@ -51,6 +85,8 @@ export type Database = {
           owner_id: string
           phone_number: string
           policy_number?: string | null
+          share_revoked?: boolean
+          share_token?: string
           tpa_contact?: string | null
           updated_at?: string
           weight?: string | null
@@ -71,6 +107,8 @@ export type Database = {
           owner_id?: string
           phone_number?: string
           policy_number?: string | null
+          share_revoked?: boolean
+          share_token?: string
           tpa_contact?: string | null
           updated_at?: string
           weight?: string | null

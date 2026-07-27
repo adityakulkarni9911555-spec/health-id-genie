@@ -2,8 +2,21 @@ import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { HealthCard } from '@/components/HealthCard';
 import { Patient } from '@/types/patient';
-import { Download, Printer, ArrowLeft, CheckCircle2, FileText, ExternalLink, Loader2 } from 'lucide-react';
+import {
+  Download,
+  Printer,
+  ArrowLeft,
+  CheckCircle2,
+  FileText,
+  ExternalLink,
+  Loader2,
+  ShieldOff,
+  RefreshCw,
+  ShieldCheck,
+  Copy,
+} from 'lucide-react';
 import { getSignedDocumentUrl } from '@/lib/patientDocuments';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface HealthCardPreviewProps {
@@ -11,10 +24,69 @@ interface HealthCardPreviewProps {
   onBack: () => void;
 }
 
-export const HealthCardPreview = ({ patient, onBack }: HealthCardPreviewProps) => {
+export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCardPreviewProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [patient, setPatient] = useState<Patient>(initialPatient);
   const [openingPath, setOpeningPath] = useState<string | null>(null);
+  const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
   const { toast } = useToast();
+
+  const shareUrl = patient.shareToken
+    ? `${window.location.origin}/e/${patient.shareToken}`
+    : null;
+
+  const copyShareUrl = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({ title: 'Emergency link copied' });
+    } catch {
+      toast({ title: 'Could not copy link', variant: 'destructive' });
+    }
+  };
+
+  const setRevoked = async (revoked: boolean) => {
+    setBusy(revoked ? 'revoke' : 'restore');
+    const { error } = await supabase
+      .from('patients')
+      .update({ share_revoked: revoked })
+      .eq('id', patient.id);
+    setBusy(null);
+    if (error) {
+      toast({ title: 'Could not update link', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setPatient({ ...patient, shareRevoked: revoked });
+    toast({
+      title: revoked ? 'Emergency link revoked' : 'Emergency link restored',
+      description: revoked
+        ? 'Old QR codes will no longer show your info.'
+        : 'Old QR codes work again.',
+    });
+  };
+
+  const rotateToken = async () => {
+    if (!confirm('Generate a new emergency link? Any previously printed QR codes will stop working.')) return;
+    setBusy('rotate');
+    const newToken = crypto.randomUUID();
+    const { data, error } = await supabase
+      .from('patients')
+      .update({ share_token: newToken, share_revoked: false })
+      .eq('id', patient.id)
+      .select('share_token, share_revoked')
+      .maybeSingle();
+    setBusy(null);
+    if (error || !data) {
+      toast({ title: 'Could not rotate link', description: error?.message, variant: 'destructive' });
+      return;
+    }
+    setPatient({ ...patient, shareToken: data.share_token, shareRevoked: !!data.share_revoked });
+    toast({
+      title: 'New emergency link generated',
+      description: 'Print a fresh QR to share it.',
+    });
+  };
+
 
   const openDocument = async (path: string) => {
     setOpeningPath(path);
@@ -112,6 +184,73 @@ Generated: ${new Date().toLocaleString()}
           Print Card
         </Button>
       </div>
+
+      {/* Emergency link controls */}
+      {shareUrl && (
+        <div className="mt-6 form-section no-print">
+          <div className="flex items-start gap-3 mb-4">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${patient.shareRevoked ? 'bg-destructive/10' : 'bg-success/10'}`}>
+              {patient.shareRevoked ? (
+                <ShieldOff className="w-5 h-5 text-destructive" />
+              ) : (
+                <ShieldCheck className="w-5 h-5 text-success" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-display text-base font-semibold text-foreground">
+                Emergency QR link
+              </h3>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {patient.shareRevoked
+                  ? 'Revoked. Old QR codes no longer show your info.'
+                  : 'Live link — whoever scans your QR always sees your latest documents.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 mb-3">
+            <p className="text-xs font-mono truncate flex-1 text-muted-foreground">
+              {shareUrl}
+            </p>
+            <Button size="sm" variant="ghost" onClick={copyShareUrl} className="shrink-0">
+              <Copy className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {patient.shareRevoked ? (
+              <Button
+                variant="outline"
+                onClick={() => setRevoked(false)}
+                disabled={busy !== null}
+                className="btn-touch w-full"
+              >
+                {busy === 'restore' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+                Restore link
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => setRevoked(true)}
+                disabled={busy !== null}
+                className="btn-touch w-full"
+              >
+                {busy === 'revoke' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShieldOff className="w-4 h-4 mr-2" />}
+                Revoke access
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={rotateToken}
+              disabled={busy !== null}
+              className="btn-touch w-full"
+            >
+              {busy === 'rotate' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+              Rotate & reprint
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Patient Details */}
       <div className="mt-8 form-section no-print">
