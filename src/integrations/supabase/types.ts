@@ -46,6 +46,27 @@ export type Database = {
           },
         ]
       }
+      emergency_rate_limits: {
+        Row: {
+          bucket_key: string
+          bucket_kind: string
+          id: number
+          occurred_at: string
+        }
+        Insert: {
+          bucket_key: string
+          bucket_kind: string
+          id?: number
+          occurred_at?: string
+        }
+        Update: {
+          bucket_key?: string
+          bucket_kind?: string
+          id?: number
+          occurred_at?: string
+        }
+        Relationships: []
+      }
       patients: {
         Row: {
           allergies: string[] | null
@@ -149,7 +170,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_emergency_rate_limit: {
+        Args: { _ip_hash: string; _token: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
