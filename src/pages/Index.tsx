@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Patient } from '@/types/patient';
 import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { supabase } from '@/integrations/supabase/client';
 import { loadPatientForCurrentUser } from '@/lib/patientProfile';
 import { useToast } from '@/hooks/use-toast';
@@ -104,6 +105,7 @@ const Index = () => {
                   <span className="font-medium">Offline</span>
                 </div>
               )}
+              <ThemeToggle compact />
               {user && (
                 <Button
                   variant="ghost"

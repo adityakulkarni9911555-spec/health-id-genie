@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="light" style="color-scheme: light;">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -18,6 +18,29 @@
   </head>
 
   <body>
+    <script>
+      // Apply saved theme (or device preference) before React mounts so the
+      // splash screen and first paint match — no flash of the wrong theme.
+      (function () {
+        try {
+          var p = window.location.pathname || '';
+          if (p.indexOf('/e/') === 0) {
+            document.documentElement.classList.add('light');
+            document.documentElement.style.colorScheme = 'light';
+            return;
+          }
+          var stored = null;
+          try { stored = localStorage.getItem('medora-theme'); } catch (e) {}
+          var mode = (stored === 'light' || stored === 'dark' || stored === 'system') ? stored : 'system';
+          var resolved = mode;
+          if (mode === 'system') {
+            resolved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.classList.add(resolved);
+          document.documentElement.style.colorScheme = resolved;
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Loader2 } from "lucide-react";
 
 const NEXT_STORAGE_KEY = "medora:postAuthNext";
@@ -99,8 +100,9 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex items-center justify-center px-5 py-10 bg-gradient-to-br from-background via-background to-accent/30">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-between items-center mb-8">
           <Logo />
+          <ThemeToggle compact />
         </div>
         <div className="form-section p-7 sm:p-8 space-y-6">
           <div>
