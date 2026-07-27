@@ -2,8 +2,21 @@ import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { HealthCard } from '@/components/HealthCard';
 import { Patient } from '@/types/patient';
-import { Download, Printer, ArrowLeft, CheckCircle2, FileText, ExternalLink, Loader2 } from 'lucide-react';
+import {
+  Download,
+  Printer,
+  ArrowLeft,
+  CheckCircle2,
+  FileText,
+  ExternalLink,
+  Loader2,
+  ShieldOff,
+  RefreshCw,
+  ShieldCheck,
+  Copy,
+} from 'lucide-react';
 import { getSignedDocumentUrl } from '@/lib/patientDocuments';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface HealthCardPreviewProps {
@@ -11,10 +24,69 @@ interface HealthCardPreviewProps {
   onBack: () => void;
 }
 
-export const HealthCardPreview = ({ patient, onBack }: HealthCardPreviewProps) => {
+export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCardPreviewProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [patient, setPatient] = useState<Patient>(initialPatient);
   const [openingPath, setOpeningPath] = useState<string | null>(null);
+  const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
   const { toast } = useToast();
+
+  const shareUrl = patient.shareToken
+    ? `${window.location.origin}/e/${patient.shareToken}`
+    : null;
+
+  const copyShareUrl = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({ title: 'Emergency link copied' });
+    } catch {
+      toast({ title: 'Could not copy link', variant: 'destructive' });
+    }
+  };
+
+  const setRevoked = async (revoked: boolean) => {
+    setBusy(revoked ? 'revoke' : 'restore');
+    const { error } = await supabase
+      .from('patients')
+      .update({ share_revoked: revoked })
+      .eq('id', patient.id);
+    setBusy(null);
+    if (error) {
+      toast({ title: 'Could not update link', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setPatient({ ...patient, shareRevoked: revoked });
+    toast({
+      title: revoked ? 'Emergency link revoked' : 'Emergency link restored',
+      description: revoked
+        ? 'Old QR codes will no longer show your info.'
+        : 'Old QR codes work again.',
+    });
+  };
+
+  const rotateToken = async () => {
+    if (!confirm('Generate a new emergency link? Any previously printed QR codes will stop working.')) return;
+    setBusy('rotate');
+    const newToken = crypto.randomUUID();
+    const { data, error } = await supabase
+      .from('patients')
+      .update({ share_token: newToken, share_revoked: false })
+      .eq('id', patient.id)
+      .select('share_token, share_revoked')
+      .maybeSingle();
+    setBusy(null);
+    if (error || !data) {
+      toast({ title: 'Could not rotate link', description: error?.message, variant: 'destructive' });
+      return;
+    }
+    setPatient({ ...patient, shareToken: data.share_token, shareRevoked: !!data.share_revoked });
+    toast({
+      title: 'New emergency link generated',
+      description: 'Print a fresh QR to share it.',
+    });
+  };
+
 
   const openDocument = async (path: string) => {
     setOpeningPath(path);
