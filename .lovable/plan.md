@@ -1,32 +1,34 @@
-# Remove OTP + Strengthen Per-User Privacy
+## Problem
 
-## Goals
-1. Drop phone OTP verification entirely — each user signs up with their own email + password (already in place).
-2. Guarantee that uploaded medical documents (PDFs, images) are strictly private to the owner. No one else — including builder/admin — can view them.
+After picking a Google account and granting permission, the app reloads and the user ends up back at sign‑in instead of the home page. Two things combine to cause this:
 
-## Changes
+1. `src/pages/Auth.tsx` passes `redirect_uri: ${window.location.origin}${next}` to `lovable.auth.signInWithOAuth("google", …)`. When `next = "/"` this becomes `${origin}/`, i.e. the protected home route. The Cloud auth docs are explicit: `redirect_uri` must be a full same‑origin *public* URL like `window.location.origin` or `${origin}/auth/callback` — never a protected route. Pointing it at `/` sends the user back through the OAuth broker into a guarded page before the Supabase client has finished hydrating the session from the URL hash.
+2. `src/pages/Index.tsx` renders `<Navigate to="/auth" replace />` as soon as `authLoading` is `false` and `user` is `null`. On the return trip from Google, there is a brief window where the hash tokens exist but `onAuthStateChange` hasn't fired yet. The navigate strips the hash, Supabase never sets the session, and the user is thrown back to `/auth` — which then loops through Google again. Combined with the splash overlay this reads as "the app restarts".
 
-### 1. Remove OTP flow
-- `src/components/PatientRegistrationForm.tsx`: remove the "Verify phone" step; go back to a 3-step flow (Basics → Medical → Emergency/Insurance/Documents). Keep phone number field as plain input (still validated format), but no SMS verification.
-- Delete edge functions: `supabase/functions/send-phone-otp/` and `supabase/functions/verify-phone-otp/`.
-- Drop table `phone_otp_codes` via migration.
-- Delete secret `DEV_OTP_MODE`.
-- Leave Twilio connector linked (harmless) — no code references remain.
+## Fix
 
-### 2. Password-based auth (already present)
-- `src/pages/Auth.tsx` already supports email + password sign up / sign in. No change needed beyond copy tweaks (remove any OTP mentions).
-- Confirm HIBP leaked-password check stays enabled.
+Keep this scoped to the auth surface — no backend changes.
 
-### 3. Strict document privacy
-- `patient-documents` bucket stays **private** (no public URLs).
-- Re-verify Storage RLS policies on `storage.objects` so only `auth.uid() = (storage.foldername(name))[1]::uuid` can SELECT/INSERT/UPDATE/DELETE. Files are stored under `{user_id}/{patient_id}/...` — this scopes access to owner only.
-- Access is always via short-lived signed URLs generated client-side by the signed-in owner (`getSignedDocumentUrl`, 10 min TTL). No server-side admin path exists.
-- Document metadata in `patients.documents` (JSONB) is already protected by owner-only RLS on `patients`.
-- Confirm no edge function or RPC reads documents on behalf of another user. (None currently exist.)
+1. **`src/pages/Auth.tsx`**
+   - Always pass `redirect_uri: window.location.origin` to `lovable.auth.signInWithOAuth` (no path, no `next`), matching the Cloud OAuth guidance.
+   - Store the intended `next` path in `sessionStorage` before initiating Google sign‑in.
+   - Add an `onAuthStateChange` listener alongside the existing `getSession()` check so that when the session hydrates after the OAuth redirect, we navigate to the stored `next` (and clear it) instead of relying solely on the initial mount.
 
-### Privacy guarantee note (for user)
-- Even the app builder cannot view the files: the storage bucket is private, RLS restricts reads to the file owner's session, and there is no backend function that bypasses this. The only way to view a file is to be signed in as that user.
+2. **`src/pages/Index.tsx`**
+   - Don't redirect to `/auth` while the URL still contains an OAuth hash (`access_token=` / `code=`) — give the Supabase client a tick to consume it.
+   - Subscribe to `onAuthStateChange` (via existing `useAuth`) so a late `SIGNED_IN` event re‑renders instead of bouncing to `/auth`.
+   - Only `<Navigate to="/auth">` once `authLoading` is false, `user` is null, AND there is no auth hash/code in the URL.
 
-## Out of scope
-- Encryption at rest beyond Supabase defaults (already AES-256 server-side).
-- Client-side E2E encryption (can be a follow-up if desired).
+3. **No changes** to `src/integrations/lovable/*`, edge functions, Supabase config, or the splash screen.
+
+## Verification
+
+- Build passes.
+- Manual: sign out, click "Continue with Google", pick account, grant consent → lands on `/` with the health card / registration view, no bounce back to `/auth`.
+- Email/password sign‑in still works unchanged.
+
+## Technical notes
+
+- `sessionStorage` (not `localStorage`) so a stale `next` from a previous tab doesn't hijack later sign‑ins.
+- Sanitize the stored `next` the same way `sanitizeNext` does today — only same‑origin relative paths starting with a single `/`.
+- The hash check in `Index.tsx` looks for `access_token=` or `?code=` substrings; that's enough to defer the redirect for the one render it takes Supabase to process the callback.
