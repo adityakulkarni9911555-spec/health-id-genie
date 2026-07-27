@@ -66,7 +66,7 @@ export default function Auth() {
       // ignore storage errors — falls back to "/"
     }
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}/auth/callback`,
     });
     if (result.error) {
       toast({ title: "Google sign-in failed", description: result.error.message, variant: "destructive" });
@@ -74,6 +74,16 @@ export default function Auth() {
       return;
     }
     if (result.redirected) return;
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) {
+      toast({
+        title: "Google sign-in needs one more step",
+        description: "Please try again. Your browser did not finish saving the session.",
+        variant: "destructive",
+      });
+      setBusy(false);
+      return;
+    }
     navigate(next, { replace: true });
   }
 
