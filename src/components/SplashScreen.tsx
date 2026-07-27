@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Logo } from '@/components/Logo';
+import { useDeviceConditions } from '@/hooks/useDeviceConditions';
 
 interface SplashScreenProps {
   onDone: () => void;
@@ -7,14 +8,12 @@ interface SplashScreenProps {
 
 export const SplashScreen = ({ onDone }: SplashScreenProps) => {
   const [leaving, setLeaving] = useState(false);
+  const { powerSaver, reducedMotion } = useDeviceConditions();
 
   useEffect(() => {
-    const reduced =
-      typeof window !== 'undefined' &&
-      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-
-    const holdMs = reduced ? 600 : 2200;
-    const fadeMs = 300;
+    const lite = powerSaver || reducedMotion;
+    const holdMs = lite ? 400 : 2200;
+    const fadeMs = lite ? 150 : 300;
 
     const leaveTimer = window.setTimeout(() => setLeaving(true), holdMs);
     const doneTimer = window.setTimeout(onDone, holdMs + fadeMs);
@@ -23,7 +22,7 @@ export const SplashScreen = ({ onDone }: SplashScreenProps) => {
       window.clearTimeout(leaveTimer);
       window.clearTimeout(doneTimer);
     };
-  }, [onDone]);
+  }, [onDone, powerSaver, reducedMotion]);
 
   return (
     <div
