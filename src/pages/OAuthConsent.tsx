@@ -105,8 +105,7 @@ export default function OAuthConsent() {
                   Connect {details.client?.name ?? "an app"}
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  This lets {details.client?.name ?? "the client"} use Smart Health Card
-                  tools as you.
+                  This lets {details.client?.name ?? "the client"} use Medora tools as you.
                 </p>
               </div>
 
@@ -134,7 +133,7 @@ export default function OAuthConsent() {
               </dl>
 
               <p className="text-xs text-muted-foreground">
-                This does not bypass Smart Health Card permissions or backend policies.
+                This does not bypass Medora permissions or backend policies.
               </p>
 
               <div className="flex gap-3">

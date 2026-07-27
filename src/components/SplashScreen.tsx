@@ -93,7 +93,7 @@ export const SplashScreen = ({ onDone }: SplashScreenProps) => {
           </div>
         </div>
         <h1 className="splash-title font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-          Smart Health
+          Medora
         </h1>
         <p className="splash-tagline mt-1.5 text-sm text-muted-foreground">
           Your health, in your pocket

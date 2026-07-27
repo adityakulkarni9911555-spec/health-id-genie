@@ -13,7 +13,7 @@ export default defineTool({
   name: "list_patients",
   title: "List patients",
   description:
-    "List patients in the Smart Health Card system. Supports optional search by name or phone number and a result limit.",
+    "List patients in the Medora system. Supports optional search by name or phone number and a result limit.",
   inputSchema: {
     search: z
       .string()
