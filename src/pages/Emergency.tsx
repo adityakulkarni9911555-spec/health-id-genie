@@ -141,6 +141,15 @@ const Emergency = () => {
   useEffect(() => {
     let cancelled = false;
 
+    // Watchdog: never leave the user staring at a spinner. If neither the
+    // Turnstile challenge nor the lookup resolves within 8s, show the
+    // "not available" fallback so bad/expired tokens fail fast.
+    const watchdog = window.setTimeout(() => {
+      if (!cancelled) {
+        setState((prev) => (prev === 'loading' ? 'notfound' : prev));
+      }
+    }, 8000);
+
     const start = async () => {
       // No Turnstile configured → call directly.
       if (!TURNSTILE_SITE_KEY) {
@@ -193,6 +202,7 @@ const Emergency = () => {
     start();
     return () => {
       cancelled = true;
+      window.clearTimeout(watchdog);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
