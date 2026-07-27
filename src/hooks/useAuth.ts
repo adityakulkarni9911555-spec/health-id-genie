@@ -43,7 +43,7 @@ export function useAuth() {
 
       if (s) {
         window.setTimeout(() => {
-          applyVerifiedSession(s, version);
+          void applyVerifiedSession(s, version);
         }, 0);
       }
     });
@@ -51,9 +51,10 @@ export function useAuth() {
     // Then hydrate from the local session and re-verify the user with the
     // auth server so we don't trust a tampered/expired local JWT for gating.
     (async () => {
-      const version = authEventVersion;
       const { data: sessionData } = await supabase.auth.getSession();
-      applyVerifiedSession(sessionData.session, version);
+      authEventVersion += 1;
+      const version = authEventVersion;
+      void applyVerifiedSession(sessionData.session, version);
     })();
 
     return () => {
