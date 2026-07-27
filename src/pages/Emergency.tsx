@@ -36,44 +36,123 @@ interface EmergencyPayload {
   documents: EmergencyDoc[];
 }
 
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (
+        el: HTMLElement,
+        opts: {
+          sitekey: string;
+          size?: 'invisible' | 'normal' | 'compact';
+          callback: (token: string) => void;
+          'error-callback'?: () => void;
+          'expired-callback'?: () => void;
+        },
+      ) => string;
+      reset: (id?: string) => void;
+    };
+  }
+}
+
 const Emergency = () => {
   const { token } = useParams<{ token: string }>();
   const [data, setData] = useState<EmergencyPayload | null>(null);
-  const [state, setState] = useState<'loading' | 'ready' | 'notfound' | 'error'>(
+  const [state, setState] = useState<'loading' | 'ready' | 'notfound' | 'error' | 'ratelimited'>(
     'loading'
   );
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     document.title = 'Emergency Medical Info · Medora';
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      if (!token) {
-        setState('notfound');
+  const runLookup = async (turnstileToken?: string) => {
+    if (!token) {
+      setState('notfound');
+      return;
+    }
+    try {
+      const { data: res, error } = await supabase.functions.invoke('emergency-lookup', {
+        body: { token, turnstile_token: turnstileToken },
+      });
+      if (error || !res || (res as any).error) {
+        const errBody = (res as any)?.error;
+        if (errBody === 'rate_limited') {
+          setState('ratelimited');
+        } else {
+          setState('notfound');
+        }
         return;
       }
-      try {
-        const { data: res, error } = await supabase.functions.invoke(
-          'emergency-lookup',
-          { body: { token } }
-        );
-        if (cancelled) return;
-        if (error || !res || (res as any).error) {
-          setState('notfound');
-          return;
-        }
-        setData(res as EmergencyPayload);
-        setState('ready');
-      } catch {
-        if (!cancelled) setState('error');
+      setData(res as EmergencyPayload);
+      setState('ready');
+    } catch {
+      setState('error');
+    }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const start = async () => {
+      // No Turnstile configured → call directly.
+      if (!TURNSTILE_SITE_KEY) {
+        if (!cancelled) await runLookup();
+        return;
       }
-    })();
+
+      // Load Turnstile script once, then render invisibly.
+      const ensureScript = () =>
+        new Promise<void>((resolve, reject) => {
+          if (window.turnstile) return resolve();
+          const existing = document.querySelector<HTMLScriptElement>(
+            'script[data-turnstile]',
+          );
+          if (existing) {
+            existing.addEventListener('load', () => resolve());
+            existing.addEventListener('error', () => reject());
+            return;
+          }
+          const s = document.createElement('script');
+          s.src =
+            'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+          s.async = true;
+          s.defer = true;
+          s.dataset.turnstile = 'true';
+          s.onload = () => resolve();
+          s.onerror = () => reject();
+          document.head.appendChild(s);
+        });
+
+      try {
+        await ensureScript();
+        if (cancelled || !turnstileRef.current || !window.turnstile) return;
+        widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
+          sitekey: TURNSTILE_SITE_KEY,
+          size: 'invisible',
+          callback: (tok) => {
+            if (!cancelled) runLookup(tok);
+          },
+          'error-callback': () => {
+            if (!cancelled) runLookup();
+          },
+        });
+      } catch {
+        // Script blocked — fall back to plain lookup (rate limits still apply).
+        if (!cancelled) runLookup();
+      }
+    };
+
+    start();
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
 
   if (state === 'loading') {
     return (
