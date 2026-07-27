@@ -105,7 +105,11 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
               style={{ background: 'var(--gradient-primary)' }}
             />
             <QRCodeSVG
-              value={patient.id}
+              value={
+                patient.shareToken
+                  ? `${typeof window !== 'undefined' ? window.location.origin : ''}/e/${patient.shareToken}`
+                  : patient.id
+              }
               size={104}
               level="H"
               includeMargin={false}
