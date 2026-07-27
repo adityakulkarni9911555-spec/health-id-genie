@@ -90,8 +90,8 @@ export default async (req: Request) => {
     return badRequest('Only POST requests are allowed')
   }
 
-  const claims = await getClaims(req)
-  if (!claims) return unauthorized()
+  const userId = await getUserId(req)
+  if (!userId) return unauthorized()
 
   let body: unknown
   try {
