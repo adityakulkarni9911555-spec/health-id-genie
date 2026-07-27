@@ -1,104 +1,31 @@
+## Problem
 
-## The problem
+The printed/displayed QR code on the Medora Card fails to scan on most phones, even though the emergency link itself works when opened manually.
 
-Right now the QR code encodes just the patient's internal ID (`patient.id`). Scanning it doesn't open anything, and even if it did, there's no public page that shows their documents. So a printed card from last month has no way of surfacing the 10 new files uploaded today.
+**Root cause (confirmed by reading `src/components/HealthCard.tsx`):**
+- The QR encodes a long URL: `${window.location.origin}/e/${shareToken}` — on the preview/published Lovable domain the origin is ~50 chars, plus `/e/` + a 36-char UUID = ~90+ characters.
+- It's rendered at `size={104}` with `level="H"` (highest error correction). That combo produces a very dense grid (~40×40 modules) squeezed into ~104 px on screen and printed even smaller on some layouts → phone cameras can't resolve the modules.
+- The foreground color is `hsl(222, 40%, 12%)` (near-black but not pure), which slightly reduces scanner contrast on low-quality prints.
+- There is no visible fallback URL under the QR, so a failed scan leaves the doctor with no way in.
 
-## The fix in one line
+## Fix
 
-Make the QR a **stable public link** that, when scanned, calls the server and returns the **latest** vitals + **all current documents** from the database — not a snapshot baked into the QR.
+Keep behavior identical, only presentation/QR-encoding tweaks in `src/components/HealthCard.tsx`:
 
-Because the QR encodes only a link (not the documents themselves), the printed card never goes stale. Upload a new report at 2 pm → doctor scans the same old QR at 3 pm → sees it.
+1. **Increase QR size** from `104` → `160` on screen, with a `print:` size bump so the printed version is at least ~180 px equivalent. Reflow the card so details column and QR still fit side by side on the card width.
+2. **Lower error-correction** from `level="H"` → `level="M"`. Halves module density for the same URL, dramatically easier to scan. Emergency URLs don't need H-level resilience — they aren't printed on damaged surfaces.
+3. **Pure black foreground** (`#000000`) on pure white background for maximum scanner contrast, both on screen and in print.
+4. **Add a small human-readable fallback** under the QR: `medora → /e/XXXXXXXX` (first 8 chars of token) plus the full short code, so a doctor whose scanner fails can type it or the patient can read it out.
+5. **Sanity check the emergency URL** — if `window.location.origin` includes a very long preview subdomain, that's the origin the QR encodes. No code change needed here (the runtime origin is correct), but the plan notes that once published to a short custom domain the QR becomes even easier to scan.
 
-## What a doctor will see when scanning
+## Out of scope
 
-Per your answers: full record + all current documents, and old printed QRs keep working until the patient revokes them.
+- No changes to `emergency-lookup`, rate limiting, Turnstile, or the `Emergency` page — those already work.
+- No database or share-token changes.
 
-Emergency page `/e/:token` (no login required):
+### Technical details
 
-- Header: "Emergency Medical Info" + patient name
-- Blood group, DOB, gender, height/weight
-- Allergies (highlighted red)
-- Chronic conditions
-- Emergency contact number (tap-to-call)
-- **All uploaded documents** — each opens via a fresh short-lived signed URL, generated at scan time so it always reflects what's in storage right now
-- Small "Report misuse / Revoke" link the patient can use later
-
-## How the "always current" guarantee works
-
-```text
-Printed QR  ──►  https://medora.app/e/<share_token>
-                        │
-                        ▼
-                 emergency-lookup edge function
-                        │  (service role, read-only)
-                        ▼
-                 patients row (live)  ──►  documents[]  ──►  fresh signed URLs
-```
-
-The QR is just a pointer. The document list is fetched live every scan.
-
-## Patient controls
-
-On the health card screen, add two actions:
-
-- **Revoke emergency access** — sets `share_revoked = true`. Scans return "This link has been revoked by the patient."
-- **Rotate link** — generates a new `share_token`, prints a new QR. Old QR keeps working *unless* the patient also toggles revoke (your choice: default is old-QR-still-works).
-
-## Technical section
-
-### 1. Schema (migration)
-
-Add to `public.patients`:
-
-- `share_token uuid NOT NULL DEFAULT gen_random_uuid() UNIQUE` — the value embedded in the QR
-- `share_revoked boolean NOT NULL DEFAULT false`
-
-New audit table `public.emergency_access_logs`:
-
-- `id`, `patient_id`, `accessed_at`, `ip_hash text`, `user_agent text`
-- RLS: only the owner can `SELECT` their own logs (so patient can see "your card was scanned 3 times this week")
-- Standard GRANTs (authenticated + service_role)
-
-Trigger on insert: keep the existing `enforce_patient_owner` behavior; `share_token` fills from the column default.
-
-Backfill: `share_token` gets a default value, so the existing single patient row will pick one up automatically on migration (the `DEFAULT` fires for new rows; add `UPDATE patients SET share_token = gen_random_uuid() WHERE share_token IS NULL` inside the migration to be safe before setting NOT NULL).
-
-### 2. Edge function `emergency-lookup`
-
-- Public (`verify_jwt = false`)
-- Input: `{ token: string }` (validated with Zod, UUID format)
-- Uses `SUPABASE_SERVICE_ROLE_KEY` to read one patient row by `share_token` where `share_revoked = false`
-- For every entry in `documents[]`, creates a fresh 5-minute signed URL from the `patient-documents` bucket
-- Writes one row into `emergency_access_logs` (hashed IP, no raw PII)
-- Returns: `{ patient: {name, dob, gender, blood_group, height, weight, allergies, chronic_conditions, emergency_contact}, documents: [{name, url, uploaded_at}] }`
-- Returns 404 for unknown/revoked tokens (no info leak)
-- CORS enabled
-
-### 3. Public route `/e/:token`
-
-- New page `src/pages/Emergency.tsx`, added to `App.tsx` routes above the catch-all
-- Calls the edge function, renders the emergency view described above
-- Uses the same visual language as the health card, with a clear red "EMERGENCY MEDICAL INFO" band so the doctor knows what they're looking at
-- No auth guard; deliberately public because the whole point is scan-and-view
-
-### 4. QR value change
-
-In `src/components/HealthCard.tsx`:
-
-```ts
-value={`${window.location.origin}/e/${patient.share_token}`}
-```
-
-Any card the user prints from this point on carries the new URL. If they still have the previous card in their wallet, it encoded a bare UUID and was never functional as a scan target — nothing to migrate.
-
-### 5. Patient controls in `HealthCardPreview`
-
-Two new buttons: "Revoke emergency link" and "Rotate link". Both call small mutations on the `patients` table (owner-only RLS already covers this).
-
-### 6. Types
-
-After the migration runs, the generated types pick up `share_token` / `share_revoked` automatically — the code changes in steps 3–5 come after that.
-
-## Privacy note
-
-This is a real change to the earlier "no one but the owner sees documents" rule — you've explicitly chosen to allow anyone holding the QR to see everything, because that's what saves lives at an accident scene. Mitigations included: revocable link, rotate link, access logs visible to the patient, short-lived signed URLs (~5 min), no listing/enumeration (unknown tokens return 404).
+File touched: `src/components/HealthCard.tsx` only.
+- `QRCodeSVG` props: `size={160}`, `level="M"`, `fgColor="#000000"`, `bgColor="#ffffff"`, keep `includeMargin={false}` but wrap in existing white padded container (already provides quiet zone via `p-2.5`).
+- Layout: change the right column to `w-[180px]` so the QR + label fit; details column stays `flex-1 min-w-0`.
+- Add `<p className="text-[10px] font-mono ...">/e/{shareToken?.slice(0,8)}</p>` under the existing shortId label.
