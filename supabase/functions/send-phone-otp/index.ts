@@ -32,7 +32,7 @@ function serverError(message: string, status = 500) {
   })
 }
 
-async function getClaims(req: Request) {
+async function getUserId(req: Request): Promise<string | null> {
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) return null
 
@@ -42,10 +42,9 @@ async function getClaims(req: Request) {
     { global: { headers: { Authorization: authHeader } } }
   )
 
-  const token = authHeader.replace('Bearer ', '')
-  const { data, error } = await supabase.auth.getClaims(token)
-  if (error || !data?.claims) return null
-  return data.claims
+  const { data, error } = await supabase.auth.getUser()
+  if (error || !data?.user) return null
+  return data.user.id
 }
 
 function generateCode(): string {
