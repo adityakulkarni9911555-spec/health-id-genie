@@ -157,8 +157,26 @@ const Emergency = () => {
   if (state === 'loading') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-muted-foreground">
+        <div ref={turnstileRef} className="hidden" />
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm">Loading emergency medical info…</p>
+        <p className="text-sm">Verifying and loading emergency info…</p>
+      </div>
+    );
+  }
+
+  if (state === 'ratelimited') {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center bg-card border border-border rounded-2xl p-8 shadow-sm">
+          <div className="w-14 h-14 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
+            <ShieldAlert className="w-7 h-7 text-warning" />
+          </div>
+          <h1 className="font-display text-xl font-bold mb-2">Too many requests</h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            This link has been accessed a lot recently. Please wait a minute and try again.
+          </p>
+          <Button onClick={() => window.location.reload()}>Try again</Button>
+        </div>
       </div>
     );
   }
