@@ -4,13 +4,21 @@ import { z } from 'npm:zod@3';
 
 const InputSchema = z.object({
   token: z.string().uuid(),
+  turnstile_token: z.string().min(10).max(4096).optional(),
 });
 
-const notFound = () =>
-  new Response(JSON.stringify({ error: 'not_found' }), {
-    status: 404,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+const jsonResponse = (body: unknown, status: number, extraHeaders: Record<string, string> = {}) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      ...corsHeaders,
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
+      ...extraHeaders,
+    },
   });
+
+const notFound = () => jsonResponse({ error: 'not_found' }, 404);
 
 const hashIp = async (ip: string) => {
   const enc = new TextEncoder().encode(ip + '::medora-emergency');
@@ -18,6 +26,37 @@ const hashIp = async (ip: string) => {
   return Array.from(new Uint8Array(digest))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
+};
+
+// Cheap heuristic bot filter — blocks obvious scrapers/CLI clients.
+// Real browsers always send a User-Agent with "Mozilla".
+const looksLikeBot = (ua: string | null) => {
+  if (!ua) return true;
+  const s = ua.toLowerCase();
+  if (!s.includes('mozilla')) return true;
+  return /(bot|crawler|spider|scrape|curl|wget|python-requests|httpclient|okhttp|go-http|libwww|java\/)/.test(
+    s,
+  );
+};
+
+const verifyTurnstile = async (token: string | undefined, ip: string) => {
+  const secret = Deno.env.get('TURNSTILE_SECRET_KEY');
+  if (!secret) return { ok: true, skipped: true }; // Turnstile not configured yet
+  if (!token) return { ok: false, reason: 'missing_challenge' };
+  try {
+    const form = new URLSearchParams();
+    form.set('secret', secret);
+    form.set('response', token);
+    if (ip) form.set('remoteip', ip);
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: form,
+    });
+    const data = (await res.json()) as { success?: boolean };
+    return { ok: !!data.success, reason: data.success ? undefined : 'challenge_failed' };
+  } catch {
+    return { ok: false, reason: 'challenge_error' };
+  }
 };
 
 interface StoredDoc {
@@ -37,29 +76,62 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const parsed = InputSchema.safeParse(body);
     if (!parsed.success) {
-      return new Response(JSON.stringify({ error: 'invalid_token' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return jsonResponse({ error: 'invalid_token' }, 400);
+    }
+
+    const rawIp =
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      req.headers.get('cf-connecting-ip') ??
+      '';
+    const ua = req.headers.get('user-agent');
+
+    // 1) Bot heuristic — block obvious non-browser clients up front.
+    if (looksLikeBot(ua)) {
+      return jsonResponse({ error: 'blocked' }, 403);
     }
 
     const admin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-      { auth: { persistSession: false } }
+      { auth: { persistSession: false } },
     );
 
+    // 2) Rate limit (per token + per IP, sliding windows).
+    const ip_hash = rawIp ? await hashIp(rawIp) : 'unknown';
+    const { data: rl, error: rlErr } = await admin.rpc('check_emergency_rate_limit', {
+      _ip_hash: ip_hash,
+      _token: parsed.data.token,
+    });
+    if (rlErr) {
+      console.error('rate limit rpc failed', rlErr);
+      return jsonResponse({ error: 'server_error' }, 500);
+    }
+    const rlResult = rl as { ok: boolean; reason?: string; retry_after?: number };
+    if (!rlResult.ok) {
+      return jsonResponse(
+        { error: 'rate_limited', reason: rlResult.reason },
+        429,
+        { 'Retry-After': String(rlResult.retry_after ?? 60) },
+      );
+    }
+
+    // 3) Turnstile check (only enforced if TURNSTILE_SECRET_KEY is set).
+    const challenge = await verifyTurnstile(parsed.data.turnstile_token, rawIp);
+    if (!challenge.ok) {
+      return jsonResponse({ error: 'challenge_required', reason: challenge.reason }, 401);
+    }
+
+    // 4) Actual lookup.
     const { data: patient, error } = await admin
       .from('patients')
       .select(
-        'id, full_name, date_of_birth, gender, blood_group, height, weight, allergies, chronic_conditions, emergency_contact, documents, share_revoked'
+        'id, full_name, date_of_birth, gender, blood_group, height, weight, allergies, chronic_conditions, emergency_contact, documents, share_revoked',
       )
       .eq('share_token', parsed.data.token)
       .maybeSingle();
 
     if (error || !patient || patient.share_revoked) return notFound();
 
-    // Fresh signed URLs for every current document (5 min)
     const docs: StoredDoc[] = Array.isArray(patient.documents)
       ? (patient.documents as StoredDoc[])
       : [];
@@ -78,25 +150,21 @@ Deno.serve(async (req) => {
           size: d.size ?? null,
           uploaded_at: d.uploaded_at ?? null,
         };
-      })
+      }),
     );
-
-    // Audit log — hashed IP only
-    const rawIp =
-      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      req.headers.get('cf-connecting-ip') ??
-      '';
-    const ip_hash = rawIp ? await hashIp(rawIp) : null;
-    const user_agent = req.headers.get('user-agent')?.slice(0, 500) ?? null;
 
     admin
       .from('emergency_access_logs')
-      .insert({ patient_id: patient.id, ip_hash, user_agent })
+      .insert({
+        patient_id: patient.id,
+        ip_hash: rawIp ? ip_hash : null,
+        user_agent: ua?.slice(0, 500) ?? null,
+      })
       .then(() => {})
       .catch(() => {});
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         patient: {
           full_name: patient.full_name,
           date_of_birth: patient.date_of_birth,
@@ -109,20 +177,11 @@ Deno.serve(async (req) => {
           emergency_contact: patient.emergency_contact,
         },
         documents: signed.filter(Boolean),
-      }),
-      {
-        status: 200,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store',
-        },
-      }
+      },
+      200,
     );
   } catch (e) {
-    return new Response(JSON.stringify({ error: 'server_error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error('emergency-lookup error', e);
+    return jsonResponse({ error: 'server_error' }, 500);
   }
 });
