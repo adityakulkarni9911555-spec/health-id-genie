@@ -121,6 +121,9 @@ const Index = () => {
         </div>
       </header>
 
+      <div className="container mx-auto px-4 pt-3 space-y-2">
+        <DeviceConditionBanner />
+      </div>
       <SyncStatusBanner />
 
       {/* Main Content */}
