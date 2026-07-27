@@ -77,42 +77,6 @@ export type Database = {
         }
         Relationships: []
       }
-      phone_otp_codes: {
-        Row: {
-          attempts: number
-          code_hash: string
-          created_at: string
-          expires_at: string
-          id: string
-          ip_address: string | null
-          phone_number: string
-          updated_at: string
-          verified_at: string | null
-        }
-        Insert: {
-          attempts?: number
-          code_hash: string
-          created_at?: string
-          expires_at: string
-          id?: string
-          ip_address?: string | null
-          phone_number: string
-          updated_at?: string
-          verified_at?: string | null
-        }
-        Update: {
-          attempts?: number
-          code_hash?: string
-          created_at?: string
-          expires_at?: string
-          id?: string
-          ip_address?: string | null
-          phone_number?: string
-          updated_at?: string
-          verified_at?: string | null
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           created_at: string

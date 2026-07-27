@@ -1,35 +1,32 @@
-## Root cause
+# Remove OTP + Strengthen Per-User Privacy
 
-Both `send-phone-otp` and `verify-phone-otp` boot successfully but never register an HTTP handler, so every request hangs until the runtime idle-shuts the worker. Logs confirm it: repeated `booted` / `shutdown` entries with zero request lines.
+## Goals
+1. Drop phone OTP verification entirely — each user signs up with their own email + password (already in place).
+2. Guarantee that uploaded medical documents (PDFs, images) are strictly private to the owner. No one else — including builder/admin — can view them.
 
-Two bugs in each file cause this:
+## Changes
 
-1. **No HTTP listener registered.** The functions use `export default async (req) => {...}`. Supabase Edge Runtime (Deno) only serves requests when the handler is registered via `Deno.serve(handler)`. A bare default export is never invoked, so requests wait forever.
-2. **Broken cors import.** Both files import `corsHeaders` from `npm:@supabase/supabase-js@^2.89.0/cors`. That subpath does not exist in the npm package (it exists only on the Deno `esm.sh` build referenced in older docs). Module resolution failure can also stall cold-start. `corsHeaders` should be defined inline in the file.
+### 1. Remove OTP flow
+- `src/components/PatientRegistrationForm.tsx`: remove the "Verify phone" step; go back to a 3-step flow (Basics → Medical → Emergency/Insurance/Documents). Keep phone number field as plain input (still validated format), but no SMS verification.
+- Delete edge functions: `supabase/functions/send-phone-otp/` and `supabase/functions/verify-phone-otp/`.
+- Drop table `phone_otp_codes` via migration.
+- Delete secret `DEV_OTP_MODE`.
+- Leave Twilio connector linked (harmless) — no code references remain.
 
-## Fix
+### 2. Password-based auth (already present)
+- `src/pages/Auth.tsx` already supports email + password sign up / sign in. No change needed beyond copy tweaks (remove any OTP mentions).
+- Confirm HIBP leaked-password check stays enabled.
 
-Edit both `supabase/functions/send-phone-otp/index.ts` and `supabase/functions/verify-phone-otp/index.ts`:
+### 3. Strict document privacy
+- `patient-documents` bucket stays **private** (no public URLs).
+- Re-verify Storage RLS policies on `storage.objects` so only `auth.uid() = (storage.foldername(name))[1]::uuid` can SELECT/INSERT/UPDATE/DELETE. Files are stored under `{user_id}/{patient_id}/...` — this scopes access to owner only.
+- Access is always via short-lived signed URLs generated client-side by the signed-in owner (`getSignedDocumentUrl`, 10 min TTL). No server-side admin path exists.
+- Document metadata in `patients.documents` (JSONB) is already protected by owner-only RLS on `patients`.
+- Confirm no edge function or RPC reads documents on behalf of another user. (None currently exist.)
 
-- Remove the `npm:@supabase/supabase-js@^2.89.0/cors` import.
-- Define `corsHeaders` inline at the top of each file:
-  ```ts
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  }
-  ```
-- Replace `export default async (req: Request) => { ... }` with `Deno.serve(async (req) => { ... })` so the runtime binds a listener.
-- Keep all existing OTP logic, Twilio gateway calls, and DB writes unchanged.
-
-## Verify
-
-1. Redeploy both functions.
-2. Call `send-phone-otp` with the logged-in preview session and a valid phone. Expect either `{ success: true }` or a specific error status (401/400/503) within a second — no more timeouts.
-3. Check `edge_function_logs` for real request lines (method, status) instead of only `booted`/`shutdown`.
-4. Run the registration flow in the browser: send OTP → receive SMS (Twilio) → verify code → advance to step 3.
+### Privacy guarantee note (for user)
+- Even the app builder cannot view the files: the storage bucket is private, RLS restricts reads to the file owner's session, and there is no backend function that bypasses this. The only way to view a file is to be signed in as that user.
 
 ## Out of scope
-
-No UI changes; the frontend already speaks the correct request/response shape. Twilio connector setup is already done.
+- Encryption at rest beyond Supabase defaults (already AES-256 server-side).
+- Client-side E2E encryption (can be a follow-up if desired).
