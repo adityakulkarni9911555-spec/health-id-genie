@@ -67,7 +67,49 @@ const Emergency = () => {
 
   useEffect(() => {
     document.title = 'Emergency Medical Info · Medora';
+
+    // Prevent this page from being cached, indexed, or restored from bfcache.
+    const metas: HTMLMetaElement[] = [];
+    const addMeta = (attr: 'name' | 'http-equiv', key: string, content: string) => {
+      const m = document.createElement('meta');
+      m.setAttribute(attr, key);
+      m.content = content;
+      document.head.appendChild(m);
+      metas.push(m);
+    };
+    addMeta('name', 'robots', 'noindex, nofollow, noarchive, nosnippet');
+    addMeta('http-equiv', 'Cache-Control', 'no-store, no-cache, must-revalidate');
+    addMeta('http-equiv', 'Pragma', 'no-cache');
+
+    // Wipe everything the moment the tab is hidden, closed, or navigated away.
+    const wipe = () => {
+      setData(null);
+      setState('loading');
+      // Belt-and-suspenders: also clear any strays this route could have created.
+      try {
+        Object.keys(sessionStorage)
+          .filter((k) => k.startsWith('emergency:'))
+          .forEach((k) => sessionStorage.removeItem(k));
+      } catch {}
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') wipe();
+    };
+    // `beforeunload` also disables bfcache in Chrome/Safari, so a "Back" from
+    // another tab re-runs the challenge + lookup rather than showing cached data.
+    window.addEventListener('pagehide', wipe);
+    window.addEventListener('beforeunload', wipe);
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      window.removeEventListener('pagehide', wipe);
+      window.removeEventListener('beforeunload', wipe);
+      document.removeEventListener('visibilitychange', onVisibility);
+      metas.forEach((m) => m.remove());
+      wipe();
+    };
   }, []);
+
 
   const runLookup = async (turnstileToken?: string) => {
     if (!token) {
