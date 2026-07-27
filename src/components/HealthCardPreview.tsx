@@ -185,6 +185,73 @@ Generated: ${new Date().toLocaleString()}
         </Button>
       </div>
 
+      {/* Emergency link controls */}
+      {shareUrl && (
+        <div className="mt-6 form-section no-print">
+          <div className="flex items-start gap-3 mb-4">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${patient.shareRevoked ? 'bg-destructive/10' : 'bg-success/10'}`}>
+              {patient.shareRevoked ? (
+                <ShieldOff className="w-5 h-5 text-destructive" />
+              ) : (
+                <ShieldCheck className="w-5 h-5 text-success" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-display text-base font-semibold text-foreground">
+                Emergency QR link
+              </h3>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {patient.shareRevoked
+                  ? 'Revoked. Old QR codes no longer show your info.'
+                  : 'Live link — whoever scans your QR always sees your latest documents.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 mb-3">
+            <p className="text-xs font-mono truncate flex-1 text-muted-foreground">
+              {shareUrl}
+            </p>
+            <Button size="sm" variant="ghost" onClick={copyShareUrl} className="shrink-0">
+              <Copy className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {patient.shareRevoked ? (
+              <Button
+                variant="outline"
+                onClick={() => setRevoked(false)}
+                disabled={busy !== null}
+                className="btn-touch w-full"
+              >
+                {busy === 'restore' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+                Restore link
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => setRevoked(true)}
+                disabled={busy !== null}
+                className="btn-touch w-full"
+              >
+                {busy === 'revoke' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShieldOff className="w-4 h-4 mr-2" />}
+                Revoke access
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={rotateToken}
+              disabled={busy !== null}
+              className="btn-touch w-full"
+            >
+              {busy === 'rotate' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+              Rotate & reprint
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Patient Details */}
       <div className="mt-8 form-section no-print">
         <h3 className="font-display text-lg font-semibold text-foreground mb-4">
