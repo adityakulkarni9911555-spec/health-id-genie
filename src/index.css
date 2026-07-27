@@ -234,4 +234,24 @@
   .no-print {
     @apply print:hidden;
   }
+
+  /* Power-saver mode: kill animations, transitions, blurs, and heavy shadows
+     to reduce GPU/CPU work when the device battery is low, in data-saver, or
+     the user opted into reduced motion. */
+  html.power-saver *,
+  html.power-saver *::before,
+  html.power-saver *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  html.power-saver .splash-pulse-ring {
+    display: none !important;
+  }
+  html.power-saver video[autoplay] {
+    display: none !important;
+  }
 }

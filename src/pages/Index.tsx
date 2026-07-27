@@ -4,6 +4,7 @@ import { PatientRegistrationForm } from '@/components/PatientRegistrationForm';
 import { HealthCardPreview } from '@/components/HealthCardPreview';
 import { Logo } from '@/components/Logo';
 import { SyncStatusBanner } from '@/components/SyncStatusBanner';
+import { DeviceConditionBanner } from '@/components/DeviceConditionBanner';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAuth } from '@/hooks/useAuth';
 import { Patient } from '@/types/patient';
@@ -120,6 +121,9 @@ const Index = () => {
         </div>
       </header>
 
+      <div className="container mx-auto px-4 pt-3 space-y-2">
+        <DeviceConditionBanner />
+      </div>
       <SyncStatusBanner />
 
       {/* Main Content */}

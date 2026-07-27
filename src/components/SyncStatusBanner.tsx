@@ -43,9 +43,13 @@ export const SyncStatusBanner = () => {
     }
   };
 
-  // Auto-sync when we come back online or on mount if there are pending records
+  // Auto-sync when we come back online or on mount if there are pending records.
+  // In power-saver mode we defer auto-sync to preserve battery — user can tap Retry.
   useEffect(() => {
-    if (isOnline && pending > 0 && !isSyncing) {
+    const powerSaver =
+      typeof document !== 'undefined' &&
+      document.documentElement.classList.contains('power-saver');
+    if (isOnline && pending > 0 && !isSyncing && !powerSaver) {
       runSync();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
