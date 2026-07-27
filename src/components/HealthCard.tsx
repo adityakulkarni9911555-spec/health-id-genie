@@ -97,8 +97,8 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
         </div>
 
         {/* QR Code */}
-        <div className="flex-shrink-0 flex flex-col items-center">
-          <div className="relative p-2.5 rounded-2xl bg-white border border-border shadow-sm">
+        <div className="flex-shrink-0 flex flex-col items-center w-[180px]">
+          <div className="relative p-3 rounded-2xl bg-white border border-border shadow-sm">
             <div
               aria-hidden
               className="absolute inset-0 rounded-2xl opacity-60 -z-10 blur-md print:hidden"
@@ -110,17 +110,23 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
                   ? `${typeof window !== 'undefined' ? window.location.origin : ''}/e/${patient.shareToken}`
                   : patient.id
               }
-              size={104}
-              level="H"
+              size={160}
+              level="M"
               includeMargin={false}
               bgColor="#ffffff"
-              fgColor="hsl(222, 40%, 12%)"
+              fgColor="#000000"
             />
           </div>
           <p className="text-[10px] text-muted-foreground text-center mt-2 font-mono tracking-widest">
             {shortId}
           </p>
+          {patient.shareToken && (
+            <p className="text-[9px] text-muted-foreground/80 text-center mt-0.5 font-mono">
+              /e/{patient.shareToken.slice(0, 8)}
+            </p>
+          )}
         </div>
+
       </div>
 
       {/* Allergies Warning */}
