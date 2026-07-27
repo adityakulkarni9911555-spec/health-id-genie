@@ -106,7 +106,9 @@ const Emergency = () => {
       window.removeEventListener('beforeunload', wipe);
       document.removeEventListener('visibilitychange', onVisibility);
       metas.forEach((m) => m.remove());
-      wipe();
+      // Note: do NOT call wipe() here — React StrictMode double-invokes effects
+      // in dev, and wiping on cleanup would reset an in-flight lookup to
+      // 'loading' forever. Real tab close is covered by pagehide/beforeunload.
     };
   }, []);
 
