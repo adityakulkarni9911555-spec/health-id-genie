@@ -1,6 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@^2.89.0'
-import { corsHeaders } from 'npm:@supabase/supabase-js@^2.89.0/cors'
 import { z } from 'npm:zod@^3.25.76'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
 
 const BodySchema = z.object({
   phone: z.string().regex(/^[6-9]\d{9}$/),
@@ -125,7 +130,7 @@ async function sendSms(to: string, body: string, from: string) {
   return response.json()
 }
 
-export default async (req: Request) => {
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -212,4 +217,4 @@ export default async (req: Request) => {
     status: 200,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
-}
+})
