@@ -86,7 +86,7 @@ async function verifyCode(storedHash: string, submittedCode: string): Promise<bo
   return result === 0
 }
 
-export default async (req: Request) => {
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -176,4 +176,4 @@ export default async (req: Request) => {
     status: 200,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
-}
+})
