@@ -9,11 +9,23 @@ import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
 import { Loader2 } from "lucide-react";
 
+const NEXT_STORAGE_KEY = "medora:postAuthNext";
+
 function sanitizeNext(raw: string | null): string {
   if (!raw) return "/";
   // Only allow same-origin relative paths.
   if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
   return raw;
+}
+
+function consumeStoredNext(): string {
+  try {
+    const stored = sessionStorage.getItem(NEXT_STORAGE_KEY);
+    if (stored) sessionStorage.removeItem(NEXT_STORAGE_KEY);
+    return sanitizeNext(stored);
+  } catch {
+    return "/";
+  }
 }
 
 export default function Auth() {
@@ -29,8 +41,18 @@ export default function Auth() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate(next, { replace: true });
+      if (data.session) {
+        const target = consumeStoredNext() || next;
+        navigate(target, { replace: true });
+      }
     });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION")) {
+        const target = consumeStoredNext() || next;
+        navigate(target, { replace: true });
+      }
+    });
+    return () => sub.subscription.unsubscribe();
   }, [navigate, next]);
 
   const withNextRedirect = (path: string) =>
@@ -38,9 +60,13 @@ export default function Auth() {
 
   async function handleGoogle() {
     setBusy(true);
-    const target = withNextRedirect(next);
+    try {
+      sessionStorage.setItem(NEXT_STORAGE_KEY, next);
+    } catch {
+      // ignore storage errors — falls back to "/"
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: target,
+      redirect_uri: window.location.origin,
     });
     if (result.error) {
       toast({ title: "Google sign-in failed", description: result.error.message, variant: "destructive" });
