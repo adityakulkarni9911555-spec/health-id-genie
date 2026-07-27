@@ -1,6 +1,6 @@
-import { createClient } from 'npm:@supabase/supabase-js@2'
-import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
-import { z } from 'npm:zod@3'
+import { createClient } from 'npm:@supabase/supabase-js@^2.89.0'
+import { corsHeaders } from 'npm:@supabase/supabase-js@^2.89.0/cors'
+import { z } from 'npm:zod@^3.25.76'
 
 const BodySchema = z.object({
   phone: z.string().regex(/^[6-9]\d{9}$/),
