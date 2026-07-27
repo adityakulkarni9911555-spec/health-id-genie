@@ -201,6 +201,16 @@ Deno.serve(async (req: Request) => {
     return serverError('Unable to send code right now')
   }
 
+  const devMode = (Deno.env.get('DEV_OTP_MODE') ?? '').toLowerCase() === 'true'
+
+  if (devMode) {
+    console.log(`[DEV_OTP_MODE] OTP for +91${phone} → ${code} (valid ${OTP_TTL_MINUTES}m)`)
+    return new Response(
+      JSON.stringify({ success: true, devMode: true, message: 'Dev mode: OTP printed to function logs, no SMS sent.' }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
   const fromNumber = await getTwilioSenderNumber()
   if (!fromNumber) {
     return serverError('No Twilio sender number is configured in your account', 503)
