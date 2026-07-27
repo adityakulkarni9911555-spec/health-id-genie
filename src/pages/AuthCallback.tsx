@@ -10,6 +10,7 @@ const NEXT_STORAGE_KEY = "medora:postAuthNext";
 function sanitizeNext(raw: string | null): string {
   if (!raw) return "/";
   if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  if (raw === "/index") return "/";
   return raw;
 }
 

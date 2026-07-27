@@ -15,6 +15,7 @@ function sanitizeNext(raw: string | null): string {
   if (!raw) return "/";
   // Only allow same-origin relative paths.
   if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  if (raw === "/index") return "/";
   return raw;
 }
 
