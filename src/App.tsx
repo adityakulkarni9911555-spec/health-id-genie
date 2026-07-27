@@ -15,7 +15,10 @@ import { SplashScreen } from "./components/SplashScreen";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [splashDone, setSplashDone] = useState(false);
+  // Skip the splash for emergency scans — every second counts.
+  const isEmergency =
+    typeof window !== 'undefined' && window.location.pathname.startsWith('/e/');
+  const [splashDone, setSplashDone] = useState(isEmergency);
 
   return (
     <QueryClientProvider client={queryClient}>
