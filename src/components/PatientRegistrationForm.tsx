@@ -27,21 +27,26 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 
-const patientSchema = z.object({
-  full_name: z.string().trim().min(1).max(120),
-  date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  phone_number: z.string().regex(/^[6-9]\d{9}$/),
-  gender: z.enum(['male', 'female', 'other']),
-  emergency_contact: z.string().regex(/^[6-9]\d{9}$/),
-  blood_group: z.string().max(3).nullable(),
-  height: z.string().max(10).nullable(),
-  weight: z.string().max(10).nullable(),
-  allergies: z.array(z.string().max(80)).max(30),
-  chronic_conditions: z.array(z.string().max(80)).max(30),
-  insurance_provider: z.string().max(120).nullable(),
-  policy_number: z.string().max(60).nullable(),
-  tpa_contact: z.string().max(60).nullable(),
-});
+const patientSchema = z
+  .object({
+    full_name: z.string().trim().min(1).max(120),
+    date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    phone_number: z.string().regex(/^[6-9]\d{9}$/),
+    gender: z.enum(['male', 'female', 'other']),
+    emergency_contact: z.string().regex(/^[6-9]\d{9}$/),
+    blood_group: z.string().max(3).nullable(),
+    height: z.string().max(10).nullable(),
+    weight: z.string().max(10).nullable(),
+    allergies: z.array(z.string().max(80)).max(30),
+    chronic_conditions: z.array(z.string().max(80)).max(30),
+    insurance_provider: z.string().max(120).nullable(),
+    policy_number: z.string().max(60).nullable(),
+    tpa_contact: z.string().max(60).nullable(),
+  })
+  .refine((data) => data.emergency_contact !== data.phone_number, {
+    message: 'Emergency contact must be different from your phone number',
+    path: ['emergency_contact'],
+  });
 
 interface PatientRegistrationFormProps {
   onPatientRegistered: (patient: Patient) => void;
@@ -112,10 +117,14 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     }
 
     if (step === 2) {
+      const emergencyDigits = formData.emergencyContact.replace(/\D/g, '');
+      const phoneDigits = formData.phoneNumber.replace(/\D/g, '');
       if (!formData.emergencyContact.trim()) {
         newErrors.emergencyContact = 'Emergency contact is required';
-      } else if (!/^[6-9]\d{9}$/.test(formData.emergencyContact.replace(/\D/g, ''))) {
+      } else if (!/^[6-9]\d{9}$/.test(emergencyDigits)) {
         newErrors.emergencyContact = 'Enter a valid 10-digit Indian mobile number';
+      } else if (emergencyDigits === phoneDigits) {
+        newErrors.emergencyContact = 'Emergency contact must be different from your phone number';
       }
     }
 
