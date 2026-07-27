@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import OAuthConsent from "./pages/OAuthConsent";
+import Emergency from "./pages/Emergency";
 import { SplashScreen } from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
