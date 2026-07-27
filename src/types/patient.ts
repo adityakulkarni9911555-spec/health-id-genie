@@ -22,6 +22,8 @@ export interface Patient {
   policyNumber?: string;
   tpaContact?: string;
   documents?: PatientDocumentRef[];
+  shareToken?: string;
+  shareRevoked?: boolean;
   createdAt: string;
   updatedAt: string;
 }
