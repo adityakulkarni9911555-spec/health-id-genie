@@ -72,10 +72,10 @@ Generated: ${new Date().toLocaleString()}
           <CheckCircle2 className="w-10 h-10 text-success" />
         </div>
         <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-          Your health wallet is ready
+          Your Medora wallet is ready
         </h2>
         <p className="text-muted-foreground">
-          Your Smart Health Card is saved and stays with you on every device you sign in from.
+          Your Medora Card is saved and stays with you on every device you sign in from.
         </p>
       </div>
 

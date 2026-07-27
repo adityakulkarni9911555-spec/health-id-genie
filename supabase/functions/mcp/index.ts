@@ -18,7 +18,7 @@ function supabaseForUser(ctx) {
 var list_patients_default = defineTool({
   name: "list_patients",
   title: "List patients",
-  description: "List patients in the Smart Health Card system. Supports optional search by name or phone number and a result limit.",
+  description: "List patients in the Medora system. Supports optional search by name or phone number and a result limit.",
   inputSchema: {
     search: z.string().optional().describe("Optional case-insensitive fragment matching full_name or phone_number."),
     limit: z.number().int().optional().describe("Max number of records to return (default 25, capped at 100).")
@@ -170,10 +170,10 @@ var register_patient_default = defineTool3({
 // src/lib/mcp/index.ts
 var projectRef = "kfvpqejwnhqqwrswjkqj";
 var mcp_default = defineMcp({
-  name: "smart-health-card-mcp",
-  title: "Smart Health Card",
+  name: "medora-mcp",
+  title: "Medora",
   version: "0.1.0",
-  instructions: "Tools for managing the Smart Health Card patient database. Use list_patients to browse or search, get_patient for a single record, and register_patient to create a new record.",
+  instructions: "Tools for managing the Medora personal health wallet. Use list_patients to browse or search, get_patient for a single record, and register_patient to create a new record.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"

@@ -67,9 +67,9 @@ const Index = () => {
               <Logo size={40} className="drop-shadow-sm" />
               <div>
                 <h1 className="font-display text-lg font-bold text-foreground tracking-tight leading-none">
-                  Smart Health
+                  Medora
                 </h1>
-                <p className="text-xs text-muted-foreground mt-0.5">Digital Patient ID</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Digital Health ID</p>
               </div>
             </div>
 
@@ -171,7 +171,7 @@ const Index = () => {
       <footer className="border-t border-border/60 py-6 mt-12 no-print">
         <div className="container mx-auto px-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
           <Logo size={20} />
-          <p>Smart Health Card · Secure Patient Registration</p>
+          <p>Medora · Secure Health Wallet</p>
         </div>
       </footer>
     </div>

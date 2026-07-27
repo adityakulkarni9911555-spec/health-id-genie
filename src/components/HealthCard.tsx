@@ -41,7 +41,7 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
             </div>
             <div>
               <h3 className="font-display font-bold text-lg leading-tight tracking-tight">
-                Smart Health Card
+                Medora Card
               </h3>
               <p className="text-primary-foreground/80 text-xs uppercase tracking-[0.15em] mt-0.5">
                 Digital Health ID
