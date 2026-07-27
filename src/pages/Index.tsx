@@ -40,7 +40,16 @@ const Index = () => {
     };
   }, [authLoading, user]);
 
-  if (!authLoading && !user) {
+  // While an OAuth callback (hash tokens or ?code=) is still being processed by
+  // the Supabase client, defer the redirect so we don't strip the hash and lose
+  // the session.
+  const hasPendingAuthCallback =
+    typeof window !== "undefined" &&
+    (window.location.hash.includes("access_token=") ||
+      window.location.hash.includes("code=") ||
+      window.location.search.includes("code="));
+
+  if (!authLoading && !user && !hasPendingAuthCallback) {
     return <Navigate to="/auth" replace />;
   }
 
