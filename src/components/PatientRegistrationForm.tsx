@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/FormInput';
@@ -6,7 +6,6 @@ import { FormSelect } from '@/components/ui/FormSelect';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Patient, PatientFormData, BLOOD_GROUPS, CHRONIC_CONDITIONS } from '@/types/patient';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,8 +25,6 @@ import {
   Loader2,
   ChevronRight,
   ChevronLeft,
-  Smartphone,
-  RotateCcw,
 } from 'lucide-react';
 
 const patientSchema = z.object({
@@ -45,7 +42,6 @@ const patientSchema = z.object({
   policy_number: z.string().max(60).nullable(),
   tpa_contact: z.string().max(60).nullable(),
 });
-
 
 interface PatientRegistrationFormProps {
   onPatientRegistered: (patient: Patient) => void;
@@ -75,22 +71,10 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
-  const [otpCode, setOtpCode] = useState('');
-  const [otpSending, setOtpSending] = useState(false);
-  const [otpVerifying, setOtpVerifying] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otpError, setOtpError] = useState<string | null>(null);
-  const [resendTimer, setResendTimer] = useState(0);
   const { toast } = useToast();
   const isOnline = useOnlineStatus();
 
-  const totalSteps = 4;
-
-  useEffect(() => {
-    if (resendTimer <= 0) return;
-    const id = setInterval(() => setResendTimer((t) => t - 1), 1000);
-    return () => clearInterval(id);
-  }, [resendTimer]);
+  const totalSteps = 3;
 
   const updateField = (field: keyof PatientFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -127,7 +111,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
       }
     }
 
-    if (step === 3) {
+    if (step === 2) {
       if (!formData.emergencyContact.trim()) {
         newErrors.emergencyContact = 'Emergency contact is required';
       } else if (!/^[6-9]\d{9}$/.test(formData.emergencyContact.replace(/\D/g, ''))) {
@@ -139,75 +123,8 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     return Object.keys(newErrors).length === 0;
   };
 
-  const cleanPhone = () => formData.phoneNumber.replace(/\D/g, '');
-
-  const sendOtp = async () => {
-    const phone = cleanPhone();
-    setOtpError(null);
-    setOtpSending(true);
-    try {
-      const { error } = await supabase.functions.invoke('send-phone-otp', {
-        body: { phone },
-      });
-      if (error) throw error;
-      toast({
-        title: 'Code sent',
-        description: `A 6-digit verification code was sent to +91 ${phone}.`,
-      });
-      setResendTimer(60);
-    } catch (err: any) {
-      const message = err?.message || 'Unable to send verification code.';
-      setOtpError(message);
-      toast({
-        title: 'Could not send code',
-        description: message,
-        variant: 'destructive',
-      });
-    } finally {
-      setOtpSending(false);
-    }
-  };
-
-  const verifyOtp = async () => {
-    const phone = cleanPhone();
-    if (!/^\d{6}$/.test(otpCode)) {
-      setOtpError('Enter the 6-digit code');
-      return;
-    }
-    setOtpError(null);
-    setOtpVerifying(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-phone-otp', {
-        body: { phone, code: otpCode },
-      });
-      if (error) throw error;
-      if (data?.verified) {
-        setOtpVerified(true);
-        toast({
-          title: 'Phone verified',
-          description: 'Your mobile number has been verified successfully.',
-        });
-        setCurrentStep(3);
-      } else {
-        setOtpError(data?.error || 'Invalid code');
-      }
-    } catch (err: any) {
-      const message = err?.message || 'Unable to verify code.';
-      setOtpError(message);
-    } finally {
-      setOtpVerifying(false);
-    }
-  };
-
   const handleNext = () => {
     if (!validateStep(currentStep)) return;
-
-    if (currentStep === 1) {
-      sendOtp();
-      setCurrentStep(2);
-      return;
-    }
-
     setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
   };
 
@@ -217,16 +134,6 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
 
   const handleSubmit = async () => {
     if (!validateStep(currentStep)) return;
-
-    if (!otpVerified) {
-      toast({
-        title: 'Phone not verified',
-        description: 'Please verify your phone number before submitting.',
-        variant: 'destructive',
-      });
-      setCurrentStep(2);
-      return;
-    }
 
     setIsSubmitting(true);
 
@@ -353,7 +260,6 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         }
       }
 
-
       const patient: Patient = {
         id: data.id,
         fullName: data.full_name,
@@ -424,10 +330,9 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     }
   };
 
-
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center gap-2 sm:gap-3 mb-8 md:mb-10">
-      {[1, 2, 3, 4].map((step) => (
+      {[1, 2, 3].map((step) => (
         <div key={step} className="flex items-center">
           <div
             className={`w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
@@ -451,7 +356,6 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
       ))}
     </div>
   );
-
 
   const renderStep1 = () => (
     <div className="space-y-6 md:space-y-7 animate-slide-up">
@@ -515,79 +419,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     </div>
   );
 
-
   const renderStep2 = () => (
-    <div className="space-y-6 md:space-y-7 animate-slide-up">
-      <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
-        <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-          <Smartphone className="w-6 h-6 md:w-7 md:h-7 text-primary" />
-        </div>
-        <div>
-          <h2 className="font-display text-xl md:text-2xl font-semibold text-foreground tracking-tight">
-            Verify your phone
-          </h2>
-          <p className="text-muted-foreground text-sm md:text-base">
-            We sent a 6-digit code to +91 {cleanPhone()}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center gap-6">
-        <InputOTP
-          maxLength={6}
-          value={otpCode}
-          onChange={(value) => {
-            setOtpCode(value);
-            if (otpError) setOtpError(null);
-          }}
-          disabled={otpVerifying || otpVerified}
-        >
-          <InputOTPGroup>
-            {[0, 1, 2, 3, 4, 5].map((i) => (
-              <InputOTPSlot key={i} index={i} className="h-14 w-12 md:h-16 md:w-14 text-lg md:text-xl" />
-            ))}
-          </InputOTPGroup>
-        </InputOTP>
-
-        {otpError && (
-          <p className="text-destructive text-sm font-medium">{otpError}</p>
-        )}
-
-        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
-          <Button
-            onClick={verifyOtp}
-            disabled={otpVerifying || otpCode.length !== 6}
-            className="btn-touch w-full sm:w-auto"
-          >
-            {otpVerifying ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Verifying…
-              </>
-            ) : (
-              <>
-                <Shield className="w-5 h-5 mr-2" />
-                Verify Code
-              </>
-            )}
-          </Button>
-
-          <Button
-            variant="outline"
-            onClick={sendOtp}
-            disabled={otpSending || resendTimer > 0}
-            className="btn-touch w-full sm:w-auto"
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend Code'}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-
-
-  const renderStep3 = () => (
     <div className="space-y-6 md:space-y-7 animate-slide-up">
       <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
         <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
@@ -678,8 +510,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     </div>
   );
 
-
-  const renderStep4 = () => (
+  const renderStep3 = () => (
     <div className="space-y-6 md:space-y-7 animate-slide-up">
       <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
         <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
@@ -723,7 +554,13 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         onPendingChange={setPendingFiles}
       />
 
-
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-foreground/80 flex gap-3">
+        <Shield className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+        <p>
+          Your documents are private. They are stored encrypted and are only accessible
+          from your own signed-in account — not even the app team can view them.
+        </p>
+      </div>
 
       {/* Summary */}
       <div className="mt-8 p-5 md:p-6 bg-muted/60 border border-border rounded-2xl space-y-4">
@@ -752,7 +589,6 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     </div>
   );
 
-
   return (
     <div className="w-full max-w-3xl mx-auto">
       {renderStepIndicator()}
@@ -761,7 +597,6 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         {currentStep === 1 && renderStep1()}
         {currentStep === 2 && renderStep2()}
         {currentStep === 3 && renderStep3()}
-        {currentStep === 4 && renderStep4()}
 
         <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 sm:gap-4 mt-8 md:mt-10 pt-6 md:pt-7 border-t border-border">
           <Button
@@ -774,7 +609,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
             Back
           </Button>
 
-          {currentStep === 2 ? null : currentStep < totalSteps ? (
+          {currentStep < totalSteps ? (
             <Button onClick={handleNext} className="btn-touch w-full sm:w-auto">
               Next
               <ChevronRight className="w-5 h-5 ml-2" />
@@ -807,4 +642,3 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
     </div>
   );
 };
-
