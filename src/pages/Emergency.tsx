@@ -106,7 +106,9 @@ const Emergency = () => {
       window.removeEventListener('beforeunload', wipe);
       document.removeEventListener('visibilitychange', onVisibility);
       metas.forEach((m) => m.remove());
-      wipe();
+      // Note: do NOT call wipe() here — React StrictMode double-invokes effects
+      // in dev, and wiping on cleanup would reset an in-flight lookup to
+      // 'loading' forever. Real tab close is covered by pagehide/beforeunload.
     };
   }, []);
 
@@ -138,6 +140,15 @@ const Emergency = () => {
 
   useEffect(() => {
     let cancelled = false;
+
+    // Watchdog: never leave the user staring at a spinner. If neither the
+    // Turnstile challenge nor the lookup resolves within 8s, show the
+    // "not available" fallback so bad/expired tokens fail fast.
+    const watchdog = window.setTimeout(() => {
+      if (!cancelled) {
+        setState((prev) => (prev === 'loading' ? 'notfound' : prev));
+      }
+    }, 8000);
 
     const start = async () => {
       // No Turnstile configured → call directly.
@@ -191,6 +202,7 @@ const Emergency = () => {
     start();
     return () => {
       cancelled = true;
+      window.clearTimeout(watchdog);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
