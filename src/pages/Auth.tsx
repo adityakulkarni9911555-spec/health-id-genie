@@ -15,6 +15,7 @@ function sanitizeNext(raw: string | null): string {
   if (!raw) return "/";
   // Only allow same-origin relative paths.
   if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  if (raw === "/index") return "/";
   return raw;
 }
 
@@ -66,7 +67,7 @@ export default function Auth() {
       // ignore storage errors — falls back to "/"
     }
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/auth/callback`,
+      redirect_uri: window.location.origin,
     });
     if (result.error) {
       toast({ title: "Google sign-in failed", description: result.error.message, variant: "destructive" });
