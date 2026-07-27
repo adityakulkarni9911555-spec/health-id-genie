@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,34 +58,7 @@ export default function Auth() {
   const withNextRedirect = (path: string) =>
     `${window.location.origin}${path}`;
 
-  async function handleGoogle() {
-    setBusy(true);
-    try {
-      sessionStorage.setItem(NEXT_STORAGE_KEY, next);
-    } catch {
-      // ignore storage errors — falls back to "/"
-    }
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      toast({ title: "Google sign-in failed", description: result.error.message, variant: "destructive" });
-      setBusy(false);
-      return;
-    }
-    if (result.redirected) return;
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) {
-      toast({
-        title: "Google sign-in needs one more step",
-        description: "Please try again. Your browser did not finish saving the session.",
-        variant: "destructive",
-      });
-      setBusy(false);
-      return;
-    }
-    navigate(next, { replace: true });
-  }
+
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -142,24 +114,6 @@ export default function Auth() {
             </p>
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="btn-touch w-full"
-            onClick={handleGoogle}
-            disabled={busy}
-          >
-            Continue with Google
-          </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">or</span>
-            </div>
-          </div>
 
           <form onSubmit={handleEmail} className="space-y-4">
             <div className="space-y-2">
