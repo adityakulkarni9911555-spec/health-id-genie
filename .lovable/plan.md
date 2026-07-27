@@ -1,80 +1,35 @@
-# Plan: Twilio OTP Phone Verification for Medora
+## Root cause
 
-## Goal
-Connect a Twilio account so the app can send SMS one-time passcodes (OTPs) to verify patient phone numbers during registration.
+Both `send-phone-otp` and `verify-phone-otp` boot successfully but never register an HTTP handler, so every request hangs until the runtime idle-shuts the worker. Logs confirm it: repeated `booted` / `shutdown` entries with zero request lines.
 
-## Current state (verified)
-- `public.phone_otp_codes` table exists with `phone_number`, `code_hash`, `expires_at`, `attempts`, `verified_at`.
-- Table is locked down: RLS enabled, no anon/authenticated grants, service-role only.
-- No edge function currently sends or verifies OTPs.
-- No OTP UI step in `PatientRegistrationForm`.
-- Twilio connector is available in the workspace; no connections exist yet.
+Two bugs in each file cause this:
 
-## Plan
+1. **No HTTP listener registered.** The functions use `export default async (req) => {...}`. Supabase Edge Runtime (Deno) only serves requests when the handler is registered via `Deno.serve(handler)`. A bare default export is never invoked, so requests wait forever.
+2. **Broken cors import.** Both files import `corsHeaders` from `npm:@supabase/supabase-js@^2.89.0/cors`. That subpath does not exist in the npm package (it exists only on the Deno `esm.sh` build referenced in older docs). Module resolution failure can also stall cold-start. `corsHeaders` should be defined inline in the file.
 
-### 1. Connect Twilio
-- Call `standard_connectors--connect` with `connector_id: twilio`.
-- The connect card will let you create or pick a Twilio connection and link it to the project.
-- After linking, project env vars (e.g. `TWILIO_API_KEY`) will be available for the edge function.
-- Recommended: enable Twilio SMS Pumping Protection and geo-restrict destination countries to India (since the app validates Indian 10-digit mobile numbers).
+## Fix
 
-### 2. Edge function: `send-phone-otp`
-Create `supabase/functions/send-phone-otp/index.ts`:
-- Validate request body with Zod (`phone` must match `^[6-9]\d{9}$`).
-- Verify the caller is authenticated via `supabase.auth.getClaims()`.
-- Generate a 6-digit numeric code.
-- Hash the code with bcrypt/scrypt and insert a row into `phone_otp_codes` with a 10-minute expiry and IP address.
-- Rate-limit: one code per phone number per 60 seconds; max 5 attempts per code.
-- Send the plain code via Twilio SMS through the Lovable connector gateway:
-  - `POST https://connector-gateway.lovable.dev/twilio/Messages.json`
-  - Headers: `Authorization: Bearer ${LOVABLE_API_KEY}`, `X-Connection-Api-Key: ${TWILIO_API_KEY}`, `Content-Type: application/x-www-form-urlencoded`
-  - Body: `To=+91<phone>`, `From=<Twilio sender number>`, `Body=Your Medora verification code is: <code>`
-- Return `{ success: true }` to the client (never return the code).
+Edit both `supabase/functions/send-phone-otp/index.ts` and `supabase/functions/verify-phone-otp/index.ts`:
 
-### 3. Edge function: `verify-phone-otp`
-Create `supabase/functions/verify-phone-otp/index.ts`:
-- Validate request body with Zod (`phone`, `code`).
-- Verify caller is authenticated.
-- Look up the most recent unexpired code for the phone number from `phone_otp_codes`.
-- Constant-time compare the submitted code against `code_hash`.
-- Increment `attempts`; fail after 5 attempts.
-- On success, set `verified_at` and return `{ verified: true }`.
-- On failure, return `{ verified: false, error: "Invalid or expired code" }`.
+- Remove the `npm:@supabase/supabase-js@^2.89.0/cors` import.
+- Define `corsHeaders` inline at the top of each file:
+  ```ts
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  }
+  ```
+- Replace `export default async (req: Request) => { ... }` with `Deno.serve(async (req) => { ... })` so the runtime binds a listener.
+- Keep all existing OTP logic, Twilio gateway calls, and DB writes unchanged.
 
-### 4. Frontend OTP step
-Update `src/components/PatientRegistrationForm.tsx`:
-- After step 1 (personal details including phone), add a new OTP verification step before step 2.
-- When the user proceeds from step 1, call `send-phone-otp` and show:
-  - a 6-digit `InputOTP` component,
-  - a resend timer (60 s),
-  - a "Verify" button.
-- On successful verification, advance to the original step 2 (emergency/contact info).
-- Block progression if verification fails or expires.
+## Verify
 
-### 5. Form submission guard
-- Before inserting into `patients`, ensure `phone_number` has a `verified_at` record in `phone_otp_codes` within the last 10 minutes.
-- This can be checked client-side by keeping a verified flag in component state, or server-side in a future hardening pass. For this plan we will keep verified state in the form and pass it to the insert path.
-
-### 6. Testing & verification
-- Type-check the project.
-- Deploy the two new edge functions.
-- Test the happy path with a real phone number after Twilio is connected.
-- Verify that:
-  - unauthenticated requests are rejected,
-  - expired codes fail,
-  - brute-force attempts are capped,
-  - the code is never logged or returned to the client.
-
-## Files to create / modify
-- Create `supabase/functions/send-phone-otp/index.ts`
-- Create `supabase/functions/verify-phone-otp/index.ts`
-- Modify `src/components/PatientRegistrationForm.tsx`
-- Possibly modify `src/types/patient.ts` if a `phoneVerified` field is added to form state
+1. Redeploy both functions.
+2. Call `send-phone-otp` with the logged-in preview session and a valid phone. Expect either `{ success: true }` or a specific error status (401/400/503) within a second — no more timeouts.
+3. Check `edge_function_logs` for real request lines (method, status) instead of only `booted`/`shutdown`.
+4. Run the registration flow in the browser: send OTP → receive SMS (Twilio) → verify code → advance to step 3.
 
 ## Out of scope
-- WhatsApp OTP (Twilio WhatsApp requires a separate sender and business approval).
-- Email OTP (not requested).
-- Changing the existing `patients` schema beyond the verification flag.
 
-## Approval needed
-Please confirm and I will start with the Twilio connection, then build the edge functions and UI step.
+No UI changes; the frontend already speaks the correct request/response shape. Twilio connector setup is already done.
