@@ -283,4 +283,19 @@
   html.power-saver video[autoplay] {
     display: none !important;
   }
+
+  /* Print: always render as light so the Health Card prints crisp black-on-white
+     regardless of the user's current theme. */
+  @media print {
+    html, html.dark {
+      color-scheme: light !important;
+      --background: 0 0% 100%;
+      --foreground: 222 40% 12%;
+      --card: 0 0% 100%;
+      --card-foreground: 222 40% 12%;
+      --border: 215 25% 88%;
+      --muted: 215 25% 94%;
+      --muted-foreground: 220 10% 42%;
+    }
+  }
 }
