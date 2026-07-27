@@ -58,34 +58,7 @@ export default function Auth() {
   const withNextRedirect = (path: string) =>
     `${window.location.origin}${path}`;
 
-  async function handleGoogle() {
-    setBusy(true);
-    try {
-      sessionStorage.setItem(NEXT_STORAGE_KEY, next);
-    } catch {
-      // ignore storage errors — falls back to "/"
-    }
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      toast({ title: "Google sign-in failed", description: result.error.message, variant: "destructive" });
-      setBusy(false);
-      return;
-    }
-    if (result.redirected) return;
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) {
-      toast({
-        title: "Google sign-in needs one more step",
-        description: "Please try again. Your browser did not finish saving the session.",
-        variant: "destructive",
-      });
-      setBusy(false);
-      return;
-    }
-    navigate(next, { replace: true });
-  }
+
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
