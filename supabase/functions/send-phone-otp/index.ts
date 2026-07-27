@@ -130,7 +130,7 @@ async function sendSms(to: string, body: string, from: string) {
   return response.json()
 }
 
-export default async (req: Request) => {
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
