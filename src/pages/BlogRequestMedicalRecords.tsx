@@ -62,7 +62,7 @@ export default function BlogRequestMedicalRecords() {
         <title>How to Request Medical Records From Providers | Medora</title>
         <meta
           name="description"
-          content="Learn how to request medical records from hospitals and clinics: forms, timelines, legal rights, fees, and how to organize everything in your personal health record."
+          content="Request medical records from hospitals and clinics: forms, timelines, fees, legal rights, and how to organize them in your personal health record."
         />
         <link rel="canonical" href={CANONICAL} />
         <meta property="og:type" content="article" />
