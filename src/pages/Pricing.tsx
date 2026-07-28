@@ -121,7 +121,7 @@ export default function Pricing() {
           <div className="flex items-center gap-3">
             <Logo size={36} />
             <div>
-              <h1 className="font-display text-lg font-bold text-foreground tracking-tight">Medora Pricing</h1>
+              <p className="font-display text-lg font-bold text-foreground tracking-tight">Medora Pricing</p>
               <p className="text-xs text-muted-foreground">Choose your plan</p>
             </div>
           </div>
@@ -136,9 +136,9 @@ export default function Pricing() {
 
       <main className="container mx-auto px-4 py-12 md:py-20">
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             Simple pricing for your health
-          </h2>
+          </h1>
           <p className="text-muted-foreground text-lg">
             Start free. Upgrade when you need more space for your family’s records.
           </p>

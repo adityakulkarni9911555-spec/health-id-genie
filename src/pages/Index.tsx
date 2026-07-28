@@ -81,9 +81,9 @@ const Index = () => {
             <div className="flex items-center gap-3">
               <Logo size={40} className="drop-shadow-sm" />
               <div>
-                <h1 className="font-display text-lg font-bold text-foreground tracking-tight leading-none">
+                <p className="font-display text-lg font-bold text-foreground tracking-tight leading-none">
                   Medora — Your Digital Health Wallet
-                </h1>
+                </p>
                 <p className="text-xs text-muted-foreground mt-0.5">Private by design</p>
               </div>
             </div>
@@ -157,12 +157,12 @@ const Index = () => {
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Your health, in your pocket</span>
               </div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
+              <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
                 Your personal{' '}
                 <span className="bg-gradient-to-r from-primary to-[hsl(174,62%,45%)] bg-clip-text text-transparent">
                   health wallet
                 </span>
-              </h2>
+              </h1>
               <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
                 Carry your medical essentials, allergies, and emergency info with you —
                 anywhere, anytime. Just for you.
