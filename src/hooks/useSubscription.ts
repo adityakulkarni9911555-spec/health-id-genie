@@ -50,14 +50,24 @@ export function useSubscription() {
           .eq('id', userRes.user.id)
           .maybeSingle();
 
+        const { data: plans, error: plansError } = await supabase
+          .from('subscription_plans')
+          .select('slug, max_documents, max_profiles')
+          .eq('slug', profile?.plan_slug || 'free')
+          .maybeSingle();
+
         if (!cancelled) {
           if (profileError) {
             setState((s) => ({ ...s, loading: false, error: profileError.message }));
+          } else if (plansError) {
+            setState((s) => ({ ...s, loading: false, error: plansError.message }));
           } else {
             setState({
               planSlug: profile?.plan_slug || 'free',
               expiresAt: profile?.subscription_expires_at || null,
               familyGroupId: profile?.family_group_id || null,
+              documentLimit: plans?.max_documents ?? 5,
+              profileLimit: plans?.max_profiles ?? 1,
               loading: false,
               error: null,
             });
