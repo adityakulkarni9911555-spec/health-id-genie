@@ -12,5 +12,9 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /e/
+Disallow: /auth/
+Disallow: /.lovable/
+
 
 Sitemap: https://health-id-genie.lovable.app/sitemap.xml
