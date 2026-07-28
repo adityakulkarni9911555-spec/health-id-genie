@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Loader2 } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 const NEXT_STORAGE_KEY = "medora:postAuthNext";
 

@@ -9,6 +9,7 @@ import { useSubscription, loadPlans, type SubscriptionPlan } from '@/hooks/useSu
 import { openRazorpayCheckout, createRazorpayOrder } from '@/lib/razorpay';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Check, Loader2, Sparkles, Users, Zap } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const planIcons: Record<string, React.ReactNode> = {
   free: <Sparkles className="w-5 h-5" />,
