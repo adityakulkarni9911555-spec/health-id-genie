@@ -2,6 +2,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Patient } from '@/types/patient';
 import { Phone, Droplets, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Logo } from '@/components/Logo';
+import { publicEmergencyUrl, publicOrigin } from '@/lib/publicUrl';
 
 interface HealthCardProps {
   patient: Patient;
