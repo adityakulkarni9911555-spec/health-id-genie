@@ -38,7 +38,9 @@ export async function uploadPatientDocument(
     .eq('owner_id', userId)
     .maybeSingle();
 
-  const currentDocs = Array.isArray(patient?.documents) ? (patient?.documents as PatientDocument[]) : [];
+  const currentDocs = Array.isArray(patient?.documents)
+    ? ((patient?.documents as unknown) as PatientDocument[])
+    : [];
   const limit = await getPlanDocumentLimit(userId);
   if (limit !== null && currentDocs.length >= limit) {
     throw new Error(`Document limit reached. Upgrade your plan to upload more.`);
