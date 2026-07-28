@@ -20,8 +20,14 @@ import {
   Copy,
   Crown,
   Users,
+  Sparkles,
+  AlertCircle,
+  Pill,
+  Stethoscope,
+  Calendar,
+  ClipboardList,
 } from 'lucide-react';
-import { getSignedDocumentUrl } from '@/lib/patientDocuments';
+import { getSignedDocumentUrl, analyzePatientDocument } from '@/lib/patientDocuments';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
