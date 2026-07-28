@@ -108,9 +108,10 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
             <QRCodeSVG
               value={
                 patient.shareToken
-                  ? `${typeof window !== 'undefined' ? window.location.origin : ''}/e/${patient.shareToken}`
+                  ? publicEmergencyUrl(patient.shareToken)
                   : patient.id
               }
+
               size={160}
               level="M"
               includeMargin={false}
