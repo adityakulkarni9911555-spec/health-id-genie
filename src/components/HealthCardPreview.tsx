@@ -20,8 +20,14 @@ import {
   Copy,
   Crown,
   Users,
+  Sparkles,
+  AlertCircle,
+  Pill,
+  Stethoscope,
+  Calendar,
+  ClipboardList,
 } from 'lucide-react';
-import { getSignedDocumentUrl } from '@/lib/patientDocuments';
+import { getSignedDocumentUrl, analyzePatientDocument } from '@/lib/patientDocuments';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -34,6 +40,7 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   const cardRef = useRef<HTMLDivElement>(null);
   const [patient, setPatient] = useState<Patient>(initialPatient);
   const [openingPath, setOpeningPath] = useState<string | null>(null);
+  const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -111,6 +118,41 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
       });
     } finally {
       setOpeningPath(null);
+    }
+  };
+
+  const handleAnalyze = async (path: string) => {
+    setAnalyzingPaths((prev) => new Set(prev).add(path));
+    try {
+      const updatedDoc = await analyzePatientDocument(patient.id, path);
+      setPatient((prev) => ({
+        ...prev,
+        documents: prev.documents.map((d) => (d.path === path ? updatedDoc : d)),
+      }));
+      toast({
+        title: 'Analysis complete',
+        description: 'AI has extracted key details from this document.',
+      });
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: 'Analysis failed',
+        description: err instanceof Error ? err.message : 'Could not analyze this document.',
+        variant: 'destructive',
+      });
+      // Mark as failed locally so the user can retry.
+      setPatient((prev) => ({
+        ...prev,
+        documents: prev.documents.map((d) =>
+          d.path === path ? { ...d, status: 'failed' as const } : d
+        ),
+      }));
+    } finally {
+      setAnalyzingPaths((prev) => {
+        const next = new Set(prev);
+        next.delete(path);
+        return next;
+      });
     }
   };
 
@@ -326,39 +368,81 @@ Generated: ${new Date().toLocaleString()}
               <FileText className="w-4 h-4 text-primary" />
               Attached Documents ({patient.documents.length})
             </h4>
-            <ul className="space-y-2">
-              {patient.documents.map((doc) => (
-                <li
-                  key={doc.path}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{doc.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(doc.size / 1024).toFixed(1)} KB
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => openDocument(doc.path)}
-                    disabled={openingPath === doc.path}
+            <ul className="space-y-3">
+              {patient.documents.map((doc) => {
+                const isAnalyzing = analyzingPaths.has(doc.path);
+                const status = doc.status ?? 'pending';
+                return (
+                  <li
+                    key={doc.path}
+                    className="p-3 rounded-xl border border-border bg-card"
                   >
-                    {openingPath === doc.path ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <ExternalLink className="w-4 h-4 mr-1" />
-                        Open
-                      </>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{doc.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(doc.size / 1024).toFixed(1)} KB
+                          {status === 'processed' && (
+                            <span className="inline-flex items-center gap-1 ml-2 text-success">
+                              <CheckCircle2 className="w-3 h-3" /> Analyzed
+                            </span>
+                          )}
+                          {status === 'failed' && (
+                            <span className="inline-flex items-center gap-1 ml-2 text-destructive">
+                              <AlertCircle className="w-3 h-3" /> Analysis failed
+                            </span>
+                          )}
+                          {(status === 'processing' || isAnalyzing) && (
+                            <span className="inline-flex items-center gap-1 ml-2 text-primary">
+                              <Loader2 className="w-3 h-3 animate-spin" /> Analyzing…
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleAnalyze(doc.path)}
+                        disabled={isAnalyzing || status === 'processing' || status === 'processed'}
+                        aria-label={status === 'processed' ? `${doc.name} already analyzed` : `Analyze ${doc.name} with AI`}
+                        title={status === 'processed' ? 'Already analyzed' : 'Analyze with AI'}
+                      >
+                        {isAnalyzing || status === 'processing' ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Sparkles className={`w-4 h-4 ${status === 'processed' ? 'text-success' : 'text-primary'}`} />
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openDocument(doc.path)}
+                        disabled={openingPath === doc.path}
+                      >
+                        {openingPath === doc.path ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <>
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            Open
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {doc.extractedData && (
+                      <div className="mt-3 pt-3 border-t border-dashed border-border">
+                        <ExtractionSummary data={doc.extractedData} />
+                      </div>
                     )}
-                  </Button>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
@@ -382,3 +466,57 @@ const DetailItem = ({
     <p className="font-medium text-foreground">{value}</p>
   </div>
 );
+
+function ExtractionSummary({ data }: { data: Record<string, unknown> }) {
+  const diagnoses = Array.isArray(data.diagnoses) ? data.diagnoses.filter(Boolean) as string[] : [];
+  const medications = Array.isArray(data.medications)
+    ? (data.medications as Record<string, string>[]).filter((m) => m.name)
+    : [];
+  const allergies = Array.isArray(data.allergies) ? data.allergies.filter(Boolean) as string[] : [];
+  const summary = typeof data.summary === 'string' ? data.summary : null;
+
+  return (
+    <div className="space-y-2 text-sm">
+      {summary && (
+        <p className="text-foreground/90 leading-relaxed">
+          <span className="font-semibold text-foreground">Summary:</span> {summary}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-3">
+        {diagnoses.length > 0 && (
+          <div className="inline-flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium">
+            <Stethoscope className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>Diagnoses: {diagnoses.join(', ')}</span>
+          </div>
+        )}
+        {medications.length > 0 && (
+          <div className="inline-flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-success/10 text-success text-xs font-medium">
+            <Pill className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>
+              Medications:{' '}
+              {medications.map((m) => `${m.name}${m.dosage ? ` (${m.dosage})` : ''}`).join(', ')}
+            </span>
+          </div>
+        )}
+        {allergies.length > 0 && (
+          <div className="inline-flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-warning/10 text-warning text-xs font-medium">
+            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>Allergies: {allergies.join(', ')}</span>
+          </div>
+        )}
+        {typeof data.provider_name === 'string' && data.provider_name && (
+          <div className="inline-flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-medium">
+            <ClipboardList className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>Provider: {data.provider_name}</span>
+          </div>
+        )}
+        {typeof data.document_date === 'string' && data.document_date && (
+          <div className="inline-flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-medium">
+            <Calendar className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>Date: {data.document_date}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

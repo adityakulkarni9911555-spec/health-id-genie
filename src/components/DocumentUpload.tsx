@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { FileText, Upload, X, Loader2, Paperclip } from 'lucide-react';
+import { FileText, Upload, X, Loader2, Paperclip, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export interface PatientDocument {
@@ -10,6 +10,9 @@ export interface PatientDocument {
   type: string;
   size: number;
   uploadedAt: string;
+  status?: 'pending' | 'processing' | 'processed' | 'failed';
+  extractedData?: Record<string, unknown>;
+  extractedAt?: string;
 }
 
 interface DocumentUploadProps {
@@ -25,6 +28,8 @@ interface DocumentUploadProps {
   maxSizeMB?: number;
   maxFiles?: number;
   disabled?: boolean;
+  /** Optional AI extraction handler. Called with the document to analyze. */
+  onAnalyze?: (doc: PatientDocument) => Promise<PatientDocument | void>;
 }
 
 const ALLOWED_TYPES = new Set([
@@ -46,9 +51,11 @@ export const DocumentUpload = ({
   maxSizeMB = 10,
   maxFiles = MAX_FILES,
   disabled,
+  onAnalyze,
 }: DocumentUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   const handleFiles = async (files: FileList | null) => {
@@ -121,6 +128,34 @@ export const DocumentUpload = ({
 
   const removeUploaded = (idx: number) => {
     onChange(documents.filter((_, i) => i !== idx));
+  };
+
+  const handleAnalyze = async (doc: PatientDocument) => {
+    if (!onAnalyze || analyzingPaths.has(doc.path)) return;
+    setAnalyzingPaths((prev) => new Set(prev).add(doc.path));
+    try {
+      const updated = await onAnalyze(doc);
+      if (updated) {
+        onChange(documents.map((d) => (d.path === doc.path ? updated : d)));
+      }
+      toast({
+        title: 'Analysis complete',
+        description: `${doc.name} has been analyzed.`,
+      });
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: 'Analysis failed',
+        description: err instanceof Error ? err.message : 'Could not analyze this document.',
+        variant: 'destructive',
+      });
+    } finally {
+      setAnalyzingPaths((prev) => {
+        const next = new Set(prev);
+        next.delete(doc.path);
+        return next;
+      });
+    }
   };
 
   const formatSize = (bytes: number) => {
@@ -197,31 +232,62 @@ export const DocumentUpload = ({
 
       {(pendingFiles.length > 0 || documents.length > 0) && (
         <ul className="space-y-2">
-          {documents.map((doc, idx) => (
-            <li
-              key={`u-${idx}`}
-              className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card"
-            >
-              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
-                <FileText className="w-5 h-5 text-success" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{doc.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatSize(doc.size)} · Uploaded
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeUploaded(idx)}
-                aria-label={`Remove ${doc.name}`}
+          {documents.map((doc, idx) => {
+            const isAnalyzing = analyzingPaths.has(doc.path);
+            const status = doc.status ?? 'pending';
+            return (
+              <li
+                key={`u-${idx}`}
+                className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card"
               >
-                <X className="w-4 h-4" />
-              </Button>
-            </li>
-          ))}
+                <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-5 h-5 text-success" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{doc.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatSize(doc.size)} · Uploaded
+                    {status === 'processed' && (
+                      <span className="inline-flex items-center gap-1 ml-2 text-success">
+                        <CheckCircle2 className="w-3 h-3" /> Analyzed
+                      </span>
+                    )}
+                    {status === 'failed' && (
+                      <span className="inline-flex items-center gap-1 ml-2 text-destructive">
+                        <AlertCircle className="w-3 h-3" /> Analysis failed
+                      </span>
+                    )}
+                    {status === 'processing' || isAnalyzing ? (
+                      <span className="inline-flex items-center gap-1 ml-2 text-primary">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Analyzing…
+                      </span>
+                    ) : null}
+                  </p>
+                </div>
+                {onAnalyze && status !== 'processing' && !isAnalyzing && status !== 'processed' && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleAnalyze(doc)}
+                    aria-label={`Analyze ${doc.name} with AI`}
+                    title="Analyze with AI"
+                  >
+                    <Sparkles className="w-4 h-4 text-primary" />
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeUploaded(idx)}
+                  aria-label={`Remove ${doc.name}`}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </li>
+            );
+          })}
           {pendingFiles.map((file, idx) => (
             <li
               key={`p-${idx}`}

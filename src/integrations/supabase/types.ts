@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      document_chunks: {
+        Row: {
+          content: string
+          created_at: string
+          document_path: string
+          embedding: string
+          id: string
+          metadata: Json
+          patient_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          document_path: string
+          embedding: string
+          id?: string
+          metadata?: Json
+          patient_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          document_path?: string
+          embedding?: string
+          id?: string
+          metadata?: Json
+          patient_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_chunks_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       emergency_access_logs: {
         Row: {
           accessed_at: string
@@ -359,6 +397,20 @@ export type Database = {
         Returns: Json
       }
       effective_plan: { Args: { _user_id: string }; Returns: string }
+      match_documents: {
+        Args: {
+          _patient_id: string
+          match_count?: number
+          query_embedding: string
+        }
+        Returns: {
+          content: string
+          document_path: string
+          id: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
       remaining_document_slots: {
         Args: { _patient_id: string }
         Returns: number
