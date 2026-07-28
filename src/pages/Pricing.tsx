@@ -126,9 +126,10 @@ export default function Pricing() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-              Back to app
+            <Button variant="ghost" size="sm" onClick={() => navigate('/')} aria-label="Back to Medora wallet">
+              Back to Medora wallet
             </Button>
+
             <ThemeToggle compact />
           </div>
         </div>
