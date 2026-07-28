@@ -195,6 +195,21 @@ Deno.serve(async (req) => {
     contentBlock = { type: "file", file: { filename: fileName, file_data: dataUrl } };
   }
 
+  const extractionPrompt = `You are a medical document extraction assistant. Read the attached medical document carefully and extract the following fields into a single JSON object. If a field is not present in the document, use null for strings and an empty array for arrays. Do not invent information.
+
+Fields:
+- provider_name: name of the hospital/clinic/lab, or null
+- document_date: date on the document in YYYY-MM-DD format, or null
+- diagnoses: array of diagnoses found
+- medications: array of objects with name, dosage, and frequency
+- allergies: array of allergies mentioned
+- vitals_summary: short text summary of vitals, or null
+- lab_results_summary: short text summary of lab results, or null
+- follow_up_instructions: short text summary of follow-up instructions, or null
+- summary: one-sentence summary of the document, or null
+
+Return only the JSON object, with no markdown fences.`;
+
   const chatBody = {
     model: "google/gemini-3.6-flash",
     messages: [
@@ -204,7 +219,7 @@ Deno.serve(async (req) => {
           contentBlock,
           {
             type: "text",
-            text: "Extract structured medical information from this document. If a field is not present, return null. Keep summaries concise and factual. Do not invent information. Return only the JSON object requested.",
+            text: extractionPrompt,
           },
         ],
       },
