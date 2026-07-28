@@ -40,6 +40,7 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   const cardRef = useRef<HTMLDivElement>(null);
   const [patient, setPatient] = useState<Patient>(initialPatient);
   const [openingPath, setOpeningPath] = useState<string | null>(null);
+  const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
