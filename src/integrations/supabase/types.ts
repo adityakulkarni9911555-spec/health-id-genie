@@ -139,20 +139,29 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          family_group_id: string | null
           id: string
           patient_id: string | null
+          plan_slug: string
+          subscription_expires_at: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          family_group_id?: string | null
           id: string
           patient_id?: string | null
+          plan_slug?: string
+          subscription_expires_at?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          family_group_id?: string | null
           id?: string
           patient_id?: string | null
+          plan_slug?: string
+          subscription_expires_at?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -163,6 +172,99 @@ export type Database = {
             referencedRelation: "patients"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_plan_slug_fkey"
+            columns: ["plan_slug"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          max_documents: number | null
+          max_profiles: number
+          name: string
+          price_inr: number
+          razorpay_plan_id: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_documents?: number | null
+          max_profiles?: number
+          name: string
+          price_inr: number
+          razorpay_plan_id?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_documents?: number | null
+          max_profiles?: number
+          name?: string
+          price_inr?: number
+          razorpay_plan_id?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          owner_id: string
+          plan_slug: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          owner_id: string
+          plan_slug: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          owner_id?: string
+          plan_slug?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_plan_slug_fkey"
+            columns: ["plan_slug"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["slug"]
+          },
         ]
       }
     }
@@ -170,9 +272,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_add_document: { Args: { _patient_id: string }; Returns: boolean }
       check_emergency_rate_limit: {
         Args: { _ip_hash: string; _token: string }
         Returns: Json
+      }
+      effective_plan: { Args: { _user_id: string }; Returns: string }
+      remaining_document_slots: {
+        Args: { _patient_id: string }
+        Returns: number
       }
     }
     Enums: {
