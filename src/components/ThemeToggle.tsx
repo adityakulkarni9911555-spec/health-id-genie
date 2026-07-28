@@ -25,7 +25,7 @@ export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
         className,
       )}
     >
-      {OPTIONS.map(({ value, label, icon: Icon }) => {
+      {OPTIONS.map(({ value, action, icon: Icon }) => {
         const active = mode === value;
         return (
           <button
@@ -33,8 +33,8 @@ export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
             type="button"
             role="radio"
             aria-checked={active}
-            aria-label={`${label} theme`}
-            title={`${label} theme`}
+            aria-label={action}
+            title={action}
             onClick={() => setMode(value)}
             className={cn(
               'flex items-center justify-center rounded-full transition-all duration-200',
