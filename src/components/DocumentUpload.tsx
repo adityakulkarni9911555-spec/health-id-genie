@@ -23,6 +23,7 @@ interface DocumentUploadProps {
   pendingFiles?: File[];
   onPendingChange?: (files: File[]) => void;
   maxSizeMB?: number;
+  maxFiles?: number;
   disabled?: boolean;
 }
 
