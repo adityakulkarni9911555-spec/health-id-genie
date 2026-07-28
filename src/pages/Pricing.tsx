@@ -96,6 +96,14 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background hero-surface">
+      <Helmet>
+        <title>Pricing — Medora Health Wallet Plans</title>
+        <meta name="description" content="Compare Medora subscription plans. Free personal wallet, Premium ₹99/mo for unlimited documents, and Family ₹199/mo for up to 6 members." />
+        <link rel="canonical" href="https://health-id-genie.lovable.app/pricing" />
+        <meta property="og:title" content="Pricing — Medora Health Wallet Plans" />
+        <meta property="og:description" content="Free, Premium, and Family plans for your Medora personal health wallet." />
+        <meta property="og:url" content="https://health-id-genie.lovable.app/pricing" />
+      </Helmet>
       <header className="sticky top-0 z-50 glass-nav border-b border-border/60">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
