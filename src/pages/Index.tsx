@@ -23,6 +23,8 @@ const Index = () => {
   const [loadingPatient, setLoadingPatient] = useState(true);
   const isOnline = useOnlineStatus();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { planSlug, isPaid, isFamily, loading: subLoading } = useSubscription();
 
   useEffect(() => {
     if (authLoading) return;
