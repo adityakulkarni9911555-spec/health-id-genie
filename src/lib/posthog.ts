@@ -57,7 +57,7 @@ export function capturePostHogEvent(event: string, properties: Record<string, un
   posthog.capture(event, properties);
 }
 
-export function getPostHogFlagVariant(flagKey: string): string | boolean | undefined {
+export function getPostHogFlagVariant(flagKey: string): unknown {
   ensurePostHogIdle();
   if (!ready) return undefined;
   return posthog.getFeatureFlag(flagKey);
