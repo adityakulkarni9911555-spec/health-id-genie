@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Loader2 } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 const NEXT_STORAGE_KEY = "medora:postAuthNext";
 
@@ -99,6 +100,14 @@ export default function Auth() {
 
   return (
     <main className="min-h-screen flex items-center justify-center px-5 py-10 bg-gradient-to-br from-background via-background to-accent/30">
+      <Helmet>
+        <title>Sign In — Medora Personal Health Wallet</title>
+        <meta name="description" content="Sign in or create your Medora account to access your private personal health wallet — medical records, allergies, and emergency info in one place." />
+        <link rel="canonical" href="https://health-id-genie.lovable.app/auth" />
+        <meta property="og:title" content="Sign In — Medora Personal Health Wallet" />
+        <meta property="og:description" content="Access your Medora health wallet. Private by design." />
+        <meta property="og:url" content="https://health-id-genie.lovable.app/auth" />
+      </Helmet>
       <div className="w-full max-w-md">
         <div className="flex justify-between items-center mb-8">
           <Logo />
