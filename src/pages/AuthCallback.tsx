@@ -98,7 +98,7 @@ export default function AuthCallback() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-5 py-10 bg-gradient-to-br from-background via-background to-accent/30">
+    <main className="min-h-screen flex items-center justify-center px-5 py-10 bg-gradient-to-br from-background via-background to-accent/30">
       <div className="w-full max-w-md form-section p-7 sm:p-8 text-center space-y-6">
         <div className="flex justify-center">
           <Logo />
