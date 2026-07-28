@@ -4,6 +4,9 @@ export interface PatientDocumentRef {
   type: string;
   size: number;
   uploadedAt: string;
+  status?: 'pending' | 'processing' | 'processed' | 'failed';
+  extractedData?: Record<string, unknown>;
+  extractedAt?: string;
 }
 
 export interface Patient {
