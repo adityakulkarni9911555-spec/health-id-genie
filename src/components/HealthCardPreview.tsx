@@ -159,10 +159,30 @@ Generated: ${new Date().toLocaleString()}
         </p>
       </div>
 
+      {!subLoading && !isPaid && (
+        <div className="mb-6 no-print">
+          <UpgradeBanner variant="compact" reason="documents" remaining={Math.max(0, documentLimit - patient.documents.length)} />
+        </div>
+      )}
+
       {/* Card Preview */}
       <div ref={cardRef} className="mb-8 print:shadow-none">
         <HealthCard patient={patient} />
       </div>
+
+      {!subLoading && (
+        <div className="flex items-center justify-center gap-2 mb-6 no-print">
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${isPaid ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+            <Crown className="w-3.5 h-3.5" />
+            {isFamily ? 'Family plan' : isPaid ? 'Premium plan' : 'Free plan'}
+          </span>
+          {!isPaid && (
+            <Button variant="link" size="sm" className="text-xs h-auto p-0" onClick={() => navigate('/pricing')}>
+              Upgrade
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 no-print">
