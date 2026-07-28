@@ -1,7 +1,11 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { HealthCard } from '@/components/HealthCard';
+import { FamilyManager } from '@/components/FamilyManager';
+import { UpgradeBanner } from '@/components/UpgradeBanner';
 import { Patient } from '@/types/patient';
+import { useSubscription } from '@/hooks/useSubscription';
 import {
   Download,
   Printer,
@@ -14,6 +18,8 @@ import {
   RefreshCw,
   ShieldCheck,
   Copy,
+  Crown,
+  Users,
 } from 'lucide-react';
 import { getSignedDocumentUrl } from '@/lib/patientDocuments';
 import { supabase } from '@/integrations/supabase/client';
