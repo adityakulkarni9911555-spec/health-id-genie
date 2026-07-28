@@ -12,6 +12,7 @@ import OAuthConsent from "./pages/OAuthConsent";
 import Emergency from "./pages/Emergency";
 import Pricing from "./pages/Pricing";
 import BlogBenefitsPHR from "./pages/BlogBenefitsPHR";
+import BlogDigitalIdVsBracelets from "./pages/BlogDigitalIdVsBracelets";
 import { SplashScreen } from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
