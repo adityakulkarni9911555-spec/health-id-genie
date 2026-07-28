@@ -110,7 +110,7 @@ export function trackAuthEvent(
   try {
     const result = posthog.capture(event, properties);
     if (import.meta.env.DEV) {
-      console.log('[PostHog] capture', event, properties, 'result:', result);
+      console.log('[PostHog] capture', event, properties, 'result:', result, 'distinct_id:', posthog.get_distinct_id?.());
     }
   } catch (err) {
     // Analytics are best-effort.
