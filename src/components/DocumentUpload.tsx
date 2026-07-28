@@ -140,12 +140,20 @@ export const DocumentUpload = ({
       </Label>
 
       <div
-        className="rounded-2xl border-2 border-dashed border-input bg-card hover:border-primary/50 transition-colors p-5 md:p-6 text-center cursor-pointer"
-        onClick={() => !disabled && !uploading && inputRef.current?.click()}
+        className={`rounded-2xl border-2 border-dashed transition-colors p-5 md:p-6 text-center ${
+          documents.length + pendingFiles.length >= maxFiles || disabled || uploading
+            ? 'border-muted bg-muted/30 cursor-not-allowed'
+            : 'border-input bg-card hover:border-primary/50 cursor-pointer'
+        }`}
+        onClick={() =>
+          !disabled && !uploading && documents.length + pendingFiles.length < maxFiles && inputRef.current?.click()
+        }
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
-          if (!disabled && !uploading) handleFiles(e.dataTransfer.files);
+          if (!disabled && !uploading && documents.length + pendingFiles.length < maxFiles) {
+            handleFiles(e.dataTransfer.files);
+          }
         }}
       >
         <input
@@ -154,7 +162,7 @@ export const DocumentUpload = ({
           accept={ACCEPT}
           multiple
           className="hidden"
-          disabled={disabled || uploading}
+          disabled={disabled || uploading || documents.length + pendingFiles.length >= maxFiles}
           onChange={(e) => handleFiles(e.target.files)}
         />
         <div className="flex flex-col items-center gap-2">
