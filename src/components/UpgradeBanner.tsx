@@ -9,11 +9,10 @@ interface UpgradeBannerProps {
   remaining?: number;
 }
 
-export function UpgradeBanner({ variant = 'compact', reason = 'generic', remaining }: UpgradeBannerProps) {
-  const navigate = useNavigate();
-  const [dismissed, setDismissed] = useState(false);
+export function UpgradeBanner(_props: UpgradeBannerProps) {
+  // Upgrade prompts are hidden until paid plans launch.
+  return null;
 
-  if (dismissed) return null;
 
   const messages = {
     documents: remaining !== undefined && remaining <= 1
