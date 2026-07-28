@@ -91,6 +91,36 @@ export async function persistPatientDocuments(
   if (error) throw error;
 }
 
+/** Trigger AI extraction for an uploaded document. */
+export async function analyzePatientDocument(
+  patientId: string,
+  documentPath: string,
+): Promise<PatientDocument> {
+  const { data, error } = await supabase.functions.invoke('extract-document', {
+    body: { patient_id: patientId, document_path: documentPath },
+  });
+
+  if (error) {
+    const details = error instanceof Error ? error.message : String(error);
+    throw new Error(`Analysis failed: ${details}`);
+  }
+
+  if (!data?.success) {
+    throw new Error(data?.error || 'Analysis failed');
+  }
+
+  return {
+    path: documentPath,
+    name: data.document_path?.split('/').pop() || documentPath,
+    type: 'application/octet-stream',
+    size: 0,
+    uploadedAt: new Date().toISOString(),
+    status: 'processed',
+    extractedData: data.extracted,
+    extractedAt: new Date().toISOString(),
+  };
+}
+
 /** Generate a fresh short-lived URL for a stored document. */
 export async function getSignedDocumentUrl(
   path: string,
