@@ -109,6 +109,19 @@ const Index = () => {
                   <span className="font-medium">Offline</span>
                 </div>
               )}
+              {!subLoading && user && (
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    isPaid
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary'
+                  }`}
+                >
+                  <Crown className="w-3.5 h-3.5" />
+                  {isFamily ? 'Family' : isPaid ? 'Premium' : 'Free'}
+                </button>
+              )}
               <ThemeToggle compact />
               {user && (
                 <Button
