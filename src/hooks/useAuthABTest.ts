@@ -56,6 +56,9 @@ export function useAuthABTest() {
     // PostHog's feature flags may already be cached or may arrive shortly.
     // We use the callback API so we react as soon as flags are loaded.
     const unsubscribe = posthog.onFeatureFlags((flags, flagVariants) => {
+      if (import.meta.env.DEV) {
+        console.log('[PostHog] onFeatureFlags', flags, flagVariants);
+      }
       if (assigned) return; // already decided
 
       const value = flagVariants?.[FLAG_KEY] ?? posthog.getFeatureFlag(FLAG_KEY);
@@ -79,6 +82,9 @@ export function useAuthABTest() {
 
     // Safety net: if PostHog never fires the callback, still pick a variant.
     timer = setTimeout(() => {
+      if (import.meta.env.DEV) {
+        console.log('[PostHog] safety net fired');
+      }
       if (assigned) return;
       unsubscribe?.();
       assigned = coinFlip();
