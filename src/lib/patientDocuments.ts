@@ -91,7 +91,7 @@ export async function persistPatientDocuments(
   if (error) throw error;
 }
 
-/** Trigger AI extraction for an uploaded document. */
+/** Trigger AI extraction for an uploaded document and return the updated record. */
 export async function analyzePatientDocument(
   patientId: string,
   documentPath: string,
@@ -109,16 +109,26 @@ export async function analyzePatientDocument(
     throw new Error(data?.error || 'Analysis failed');
   }
 
-  return {
-    path: documentPath,
-    name: data.document_path?.split('/').pop() || documentPath,
-    type: 'application/octet-stream',
-    size: 0,
-    uploadedAt: new Date().toISOString(),
-    status: 'processed',
-    extractedData: data.extracted,
-    extractedAt: new Date().toISOString(),
-  };
+  // Fetch the freshly updated document metadata from the patient record.
+  const { data: patient, error: fetchError } = await supabase
+    .from('patients')
+    .select('documents')
+    .eq('id', patientId)
+    .maybeSingle();
+
+  if (fetchError) {
+    throw new Error(`Analysis succeeded but could not refresh record: ${fetchError.message}`);
+  }
+
+  const docs = Array.isArray(patient?.documents)
+    ? ((patient?.documents as unknown) as PatientDocument[])
+    : [];
+  const updated = docs.find((d) => d.path === documentPath);
+  if (!updated) {
+    throw new Error('Analysis succeeded but document was not found in the record.');
+  }
+
+  return updated;
 }
 
 /** Generate a fresh short-lived URL for a stored document. */
