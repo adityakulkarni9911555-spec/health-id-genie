@@ -466,3 +466,57 @@ const DetailItem = ({
     <p className="font-medium text-foreground">{value}</p>
   </div>
 );
+
+function ExtractionSummary({ data }: { data: Record<string, unknown> }) {
+  const diagnoses = Array.isArray(data.diagnoses) ? data.diagnoses.filter(Boolean) as string[] : [];
+  const medications = Array.isArray(data.medications)
+    ? (data.medications as Record<string, string>[]).filter((m) => m.name)
+    : [];
+  const allergies = Array.isArray(data.allergies) ? data.allergies.filter(Boolean) as string[] : [];
+  const summary = typeof data.summary === 'string' ? data.summary : null;
+
+  return (
+    <div className="space-y-2 text-sm">
+      {summary && (
+        <p className="text-foreground/90 leading-relaxed">
+          <span className="font-semibold text-foreground">Summary:</span> {summary}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-3">
+        {diagnoses.length > 0 && (
+          <div className="inline-flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium">
+            <Stethoscope className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>Diagnoses: {diagnoses.join(', ')}</span>
+          </div>
+        )}
+        {medications.length > 0 && (
+          <div className="inline-flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-success/10 text-success text-xs font-medium">
+            <Pill className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>
+              Medications:{' '}
+              {medications.map((m) => `${m.name}${m.dosage ? ` (${m.dosage})` : ''}`).join(', ')}
+            </span>
+          </div>
+        )}
+        {allergies.length > 0 && (
+          <div className="inline-flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-warning/10 text-warning text-xs font-medium">
+            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>Allergies: {allergies.join(', ')}</span>
+          </div>
+        )}
+        {typeof data.provider_name === 'string' && data.provider_name && (
+          <div className="inline-flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-medium">
+            <ClipboardList className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>Provider: {data.provider_name}</span>
+          </div>
+        )}
+        {typeof data.document_date === 'string' && data.document_date && (
+          <div className="inline-flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-medium">
+            <Calendar className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>Date: {data.document_date}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
