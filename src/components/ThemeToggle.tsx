@@ -7,10 +7,10 @@ interface ThemeToggleProps {
   compact?: boolean;
 }
 
-const OPTIONS: { value: ThemeMode; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { value: 'light', label: 'Light', icon: Sun },
-  { value: 'system', label: 'Auto', icon: Smartphone },
-  { value: 'dark', label: 'Dark', icon: Moon },
+const OPTIONS: { value: ThemeMode; label: string; action: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { value: 'light', label: 'Light', action: 'Switch to light theme', icon: Sun },
+  { value: 'system', label: 'Auto', action: 'Match device theme', icon: Smartphone },
+  { value: 'dark', label: 'Dark', action: 'Switch to dark theme', icon: Moon },
 ];
 
 export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
