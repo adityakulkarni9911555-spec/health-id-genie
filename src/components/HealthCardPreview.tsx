@@ -28,6 +28,7 @@ import {
   ClipboardList,
 } from 'lucide-react';
 import { getSignedDocumentUrl, analyzePatientDocument } from '@/lib/patientDocuments';
+import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
