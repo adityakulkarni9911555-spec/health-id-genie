@@ -34,13 +34,22 @@ export default function Pricing() {
       .finally(() => setLoading(false));
   }, [toast]);
 
+  const paidPlansEnabled = false;
+
   const handleUpgrade = async (plan: SubscriptionPlan) => {
-    if (!user) {
-      navigate('/auth?next=/pricing');
-      return;
-    }
     if (plan.slug === 'free') {
       navigate('/');
+      return;
+    }
+    if (!paidPlansEnabled) {
+      toast({
+        title: 'Paid plans coming soon',
+        description: 'We’re finalising payments. Enjoy the free plan in the meantime.',
+      });
+      return;
+    }
+    if (!user) {
+      navigate('/auth?next=/pricing');
       return;
     }
     setBusyPlan(plan.slug);
