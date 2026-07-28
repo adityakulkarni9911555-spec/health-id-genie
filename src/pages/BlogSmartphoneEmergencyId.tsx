@@ -1,7 +1,21 @@
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
-import { Logo } from "@/components/Logo";
-import { Button } from "@/components/ui/button";
+import {
+  Smartphone,
+  HeartPulse,
+  Settings,
+  ShieldPlus,
+  Lock,
+  FileUp,
+  QrCode,
+  Timer,
+} from "lucide-react";
+import {
+  BlogShell,
+  StepCard,
+  FeatureCard,
+  RelatedCard,
+  SectionTitle,
+} from "@/components/BlogShell";
 
 const CANONICAL =
   "https://health-id-genie.lovable.app/blog/smartphone-emergency-medical-id-guide";
@@ -41,98 +55,123 @@ export default function BlogSmartphoneEmergencyId() {
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border/40 bg-background/70 backdrop-blur">
-          <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-            <Link to="/" className="flex items-center gap-2">
-              <Logo className="h-8 w-8" />
-              <span className="font-semibold">Medora</span>
-            </Link>
-            <Link
-              to="/pricing"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              Pricing
-            </Link>
-          </div>
-        </header>
-
-        <main className="mx-auto max-w-3xl px-6 py-12">
-          <article className="prose prose-slate dark:prose-invert max-w-none">
-            <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">
-              How to set up emergency Medical ID on iPhone and Android
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              A 5-minute setup that could help first responders make faster,
-              safer decisions in an emergency.
-            </p>
-
-            <h2 className="mt-8">Why smartphone Medical ID matters</h2>
-            <p>
-              Both iPhone and Android let first responders view critical health
-              info from the lock screen — without unlocking your phone. Setting
-              this up takes minutes and works even when you can't speak for
-              yourself.
-            </p>
-
-            <h2 className="mt-8">iPhone: enable Medical ID in the Health app</h2>
-            <ol>
-              <li>Open the <strong>Health</strong> app.</li>
-              <li>Tap your profile picture in the top right.</li>
-              <li>Select <strong>Medical ID</strong>, then <strong>Edit</strong>.</li>
-              <li>
-                Add allergies, medications, conditions, blood type, and
-                emergency contacts.
-              </li>
-              <li>
-                Turn on <strong>Show When Locked</strong> and{" "}
-                <strong>Share During Emergency Call</strong>.
-              </li>
-              <li>Tap <strong>Done</strong>.</li>
-            </ol>
-
-            <h2 className="mt-8">Android: enable Emergency Information</h2>
-            <ol>
-              <li>Open <strong>Settings</strong> → <strong>Safety &amp; emergency</strong> (or Personal Safety on Pixel).</li>
-              <li>Tap <strong>Medical information</strong> and fill in details.</li>
-              <li>Under <strong>Emergency contacts</strong>, add trusted people.</li>
-              <li>
-                From the lock screen, responders can swipe up and tap{" "}
-                <strong>Emergency</strong> → <strong>Medical information</strong>.
-              </li>
-            </ol>
-
-            <h2 className="mt-8">How Medora complements native Medical ID</h2>
-            <p>
-              Native Medical ID is great for a quick summary, but it can't hold
-              lab reports, prescriptions, imaging, or a full medical history.
-              Medora gives you a QR-accessible personal health record that
-              doctors can scan to see current documents, allergies, and
-              emergency contacts — always up to date, no matter when you
-              printed your card.
-            </p>
-
-            <ul>
-              <li>Upload PDFs, images, and prescriptions in one place</li>
-              <li>Share a QR that always resolves to your latest records</li>
-              <li>Zero data persistence on the clinician view once closed</li>
-            </ul>
-
-            <div className="mt-10 rounded-2xl border border-border bg-card p-6">
-              <h2 className="text-xl font-semibold mb-2">
-                Set up your Medora health wallet in 60 seconds
-              </h2>
-              <p className="text-muted-foreground mb-4">
-                Pair your phone's Medical ID with a QR-accessible personal
-                health record.
-              </p>
-              <Button asChild size="lg">
-                <Link to="/auth">Get started free</Link>
-              </Button>
+      <BlogShell
+        breadcrumb="Phone Medical ID"
+        eyebrow="How-to"
+        heroIcon={<Smartphone className="h-3.5 w-3.5" />}
+        title="Turn your phone into a medical ID."
+        subtitle="5 minutes on iPhone or Android — critical info that first responders see from the lock screen."
+        readMinutes={2}
+        related={
+          <>
+            <RelatedCard
+              to="/blog/digital-medical-id-vs-bracelets"
+              eyebrow="Compare"
+              title="Digital ID vs. bracelet"
+            />
+            <RelatedCard
+              to="/blog/benefits-of-personal-health-records"
+              eyebrow="Guide"
+              title="Benefits of a personal health record"
+            />
+          </>
+        }
+      >
+        {/* Two-side setup */}
+        <section className="grid gap-5 sm:grid-cols-2">
+          <div className="rounded-3xl border border-border/60 bg-card/60 p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <HeartPulse className="h-5 w-5" />
+              </div>
+              <h2 className="text-lg font-semibold">iPhone — Health app</h2>
             </div>
-          </article>
-        </main>
-      </div>
+            <ol className="space-y-2.5 text-sm">
+              <li className="flex gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">1</span>
+                Open <strong>Health</strong> → tap your profile.
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">2</span>
+                Tap <strong>Medical ID</strong> → <strong>Edit</strong>.
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">3</span>
+                Add allergies, meds, conditions, blood type.
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">4</span>
+                Turn on <strong>Show When Locked</strong> + <strong>Share During Emergency Call</strong>.
+              </li>
+            </ol>
+          </div>
+
+          <div className="rounded-3xl border border-border/60 bg-card/60 p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                <Settings className="h-5 w-5" />
+              </div>
+              <h2 className="text-lg font-semibold">Android — Safety & emergency</h2>
+            </div>
+            <ol className="space-y-2.5 text-sm">
+              <li className="flex gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-bold text-emerald-600">1</span>
+                <strong>Settings</strong> → <strong>Safety & emergency</strong>.
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-bold text-emerald-600">2</span>
+                Tap <strong>Medical information</strong>, fill it in.
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-bold text-emerald-600">3</span>
+                Add <strong>Emergency contacts</strong>.
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-bold text-emerald-600">4</span>
+                Lock screen → swipe up → <strong>Emergency</strong>.
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        {/* Where phone ID falls short */}
+        <section>
+          <SectionTitle>Where Medora picks up</SectionTitle>
+          <p className="mt-2 text-muted-foreground">
+            Native Medical ID is a summary. Doctors also need documents.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <FeatureCard icon={<FileUp className="h-5 w-5" />} title="Real documents" accent="primary">
+              Upload prescriptions, imaging, discharge notes — not just a text summary.
+            </FeatureCard>
+            <FeatureCard icon={<QrCode className="h-5 w-5" />} title="Scan-anywhere QR" accent="success">
+              Any camera app scans it. No app install, no login for the clinician.
+            </FeatureCard>
+            <FeatureCard icon={<Timer className="h-5 w-5" />} title="Always current" accent="warning">
+              QR resolves to your latest record — even the card you printed a year ago.
+            </FeatureCard>
+            <FeatureCard icon={<Lock className="h-5 w-5" />} title="Zero footprint" accent="danger">
+              When the clinician closes the tab, nothing persists on their device.
+            </FeatureCard>
+          </div>
+        </section>
+
+        {/* Pair-it-up callout */}
+        <section className="rounded-3xl border border-border/60 bg-card/60 p-6 sm:p-8">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <ShieldPlus className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="font-display text-xl font-bold sm:text-2xl">Use both.</h2>
+              <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+                Phone Medical ID for the 3-second summary. Medora QR for the full record.
+                Together, first responders get everything they need — in the order they need it.
+              </p>
+            </div>
+          </div>
+        </section>
+      </BlogShell>
     </>
   );
 }
