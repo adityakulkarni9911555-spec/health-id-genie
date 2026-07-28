@@ -10,21 +10,21 @@ const RequestSchema = z.object({
 });
 
 const ExtractionSchema = z.object({
-  provider_name: z.string().nullable(),
-  document_date: z.string().nullable(),
-  diagnoses: z.array(z.string()).nullable(),
+  provider_name: z.string().nullable().optional().default(null),
+  document_date: z.string().nullable().optional().default(null),
+  diagnoses: z.array(z.string()).nullable().optional().default([]),
   medications: z.array(
     z.object({
-      name: z.string().nullable(),
-      dosage: z.string().nullable(),
-      frequency: z.string().nullable(),
+      name: z.string().nullable().optional().default(null),
+      dosage: z.string().nullable().optional().default(null),
+      frequency: z.string().nullable().optional().default(null),
     })
-  ).nullable(),
-  allergies: z.array(z.string()).nullable(),
-  vitals_summary: z.string().nullable(),
-  lab_results_summary: z.string().nullable(),
-  follow_up_instructions: z.string().nullable(),
-  summary: z.string().nullable(),
+  ).nullable().optional().default([]),
+  allergies: z.array(z.string()).nullable().optional().default([]),
+  vitals_summary: z.string().nullable().optional().default(null),
+  lab_results_summary: z.string().nullable().optional().default(null),
+  follow_up_instructions: z.string().nullable().optional().default(null),
+  summary: z.string().nullable().optional().default(null),
 });
 
 function base64FromBytes(bytes: Uint8Array): string {
