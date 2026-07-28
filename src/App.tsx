@@ -38,6 +38,8 @@ const App = () => {
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/blog/benefits-of-personal-health-records" element={<BlogBenefitsPHR />} />
+            <Route path="/blog/digital-medical-id-vs-bracelets" element={<BlogDigitalIdVsBracelets />} />
+
             <Route path="/e/:token" element={<Emergency />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
