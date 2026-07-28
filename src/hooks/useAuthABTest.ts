@@ -72,6 +72,7 @@ export function useAuthABTest() {
       storeVariant(assigned);
       setVariant(assigned);
       setReady(true);
+      if (timer) clearTimeout(timer);
 
       posthog.capture('ab_variant_assigned', {
         experiment: FLAG_KEY,
@@ -91,7 +92,7 @@ export function useAuthABTest() {
       storeVariant(assigned);
       setVariant(assigned);
       setReady(true);
-    }, 1200);
+    }, 2000);
 
     return () => {
       if (timer) clearTimeout(timer);
