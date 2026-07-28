@@ -28,6 +28,7 @@ import {
   ClipboardList,
 } from 'lucide-react';
 import { getSignedDocumentUrl, analyzePatientDocument } from '@/lib/patientDocuments';
+import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -46,9 +47,8 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   const navigate = useNavigate();
   const { planSlug, isPaid, isFamily, familyGroupId, documentLimit, loading: subLoading } = useSubscription();
 
-  const shareUrl = patient.shareToken
-    ? `${window.location.origin}/e/${patient.shareToken}`
-    : null;
+  const shareUrl = patient.shareToken ? publicEmergencyUrl(patient.shareToken) : null;
+
 
   const copyShareUrl = async () => {
     if (!shareUrl) return;
