@@ -81,6 +81,8 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const { toast } = useToast();
   const isOnline = useOnlineStatus();
+  const navigate = useNavigate();
+  const { planSlug, isPaid, isFamily, documentLimit, loading: subLoading } = useSubscription();
 
   const totalSteps = 3;
 
