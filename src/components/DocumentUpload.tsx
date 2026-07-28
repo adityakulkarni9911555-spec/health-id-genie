@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { FileText, Upload, X, Loader2, Paperclip } from 'lucide-react';
+import { FileText, Upload, X, Loader2, Paperclip, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export interface PatientDocument {
