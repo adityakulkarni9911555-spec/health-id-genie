@@ -184,13 +184,13 @@ export const DocumentUpload = ({
             variant="outline"
             size="sm"
             className="mt-2"
-            disabled={disabled || uploading}
+            disabled={disabled || uploading || documents.length + pendingFiles.length >= maxFiles}
             onClick={(e) => {
               e.stopPropagation();
               inputRef.current?.click();
             }}
           >
-            Choose files
+            {documents.length + pendingFiles.length >= maxFiles ? 'Limit reached' : 'Choose files'}
           </Button>
         </div>
       </div>
