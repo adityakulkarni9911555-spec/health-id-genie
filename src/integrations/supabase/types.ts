@@ -67,6 +67,79 @@ export type Database = {
         }
         Relationships: []
       }
+      family_groups: {
+        Row: {
+          created_at: string
+          id: string
+          max_members: number
+          owner_id: string
+          plan_slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_members?: number
+          owner_id: string
+          plan_slug?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_members?: number
+          owner_id?: string
+          plan_slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_groups_plan_slug_fkey"
+            columns: ["plan_slug"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      family_members: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          invited_email: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          invited_email?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          invited_email?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "family_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           allergies: string[] | null
@@ -165,6 +238,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_family_group_id_fkey"
+            columns: ["family_group_id"]
+            isOneToOne: false
+            referencedRelation: "family_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_patient_id_fkey"
             columns: ["patient_id"]
@@ -273,6 +353,7 @@ export type Database = {
     }
     Functions: {
       can_add_document: { Args: { _patient_id: string }; Returns: boolean }
+      can_add_family_member: { Args: { _group_id: string }; Returns: boolean }
       check_emergency_rate_limit: {
         Args: { _ip_hash: string; _token: string }
         Returns: Json
