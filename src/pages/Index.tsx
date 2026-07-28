@@ -145,6 +145,12 @@ const Index = () => {
       </div>
       <SyncStatusBanner />
 
+      {!subLoading && user && !isPaid && (
+        <div className="container mx-auto px-4 pt-3 no-print">
+          <UpgradeBanner variant="compact" reason="generic" />
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="container mx-auto px-4 py-10 md:py-16">
         {authLoading || loadingPatient ? (
