@@ -168,7 +168,7 @@ export default function Pricing() {
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                       {planIcons[plan.slug]}
                     </div>
-                    <h3 className="font-display text-xl font-semibold">{plan.name}</h3>
+                    <h2 className="font-display text-xl font-semibold">{plan.name}</h2>
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="font-display text-3xl font-bold">{formatPrice(plan.price_inr)}</span>
