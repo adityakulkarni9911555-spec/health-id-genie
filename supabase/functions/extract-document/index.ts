@@ -197,28 +197,49 @@ Deno.serve(async (req) => {
     contentBlock = { type: "file", file: { filename: fileName, file_data: dataUrl } };
   }
 
-  const gateway = createLovableAiGatewayProvider(key);
-  const model = gateway("google/gemini-3.6-flash");
+  const chatBody = {
+    model: "google/gemini-3.6-flash",
+    messages: [
+      {
+        role: "user",
+        content: [
+          contentBlock,
+          {
+            type: "text",
+            text: "Extract structured medical information from this document. If a field is not present, return null. Keep summaries concise and factual. Do not invent information. Return only the JSON object requested.",
+          },
+        ],
+      },
+    ],
+  };
 
   let extraction: z.infer<typeof ExtractionSchema> | null = null;
   try {
-    const { output } = await generateText({
-      model,
-      output: Output.object({ schema: ExtractionSchema }),
-      messages: [
-        {
-          role: "user",
-          content: [
-            contentBlock,
-            {
-              type: "text",
-              text: "Extract structured medical information from this document. If a field is not present, return null. Keep summaries concise and factual. Do not invent information.",
-            },
-          ],
-        },
-      ],
+    const chatResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Lovable-API-Key": key,
+      },
+      body: JSON.stringify(chatBody),
     });
-    extraction = output;
+
+    if (!chatResponse.ok) {
+      const errText = await chatResponse.text();
+      throw new Error(`Gateway returned ${chatResponse.status}: ${errText}`);
+    }
+
+    const chatJson = await chatResponse.json();
+    const assistantText = chatJson.choices?.[0]?.message?.content as string | undefined;
+    if (!assistantText) {
+      throw new Error("No content in model response");
+    }
+
+    // Parse JSON from the assistant response (model may wrap it in markdown fences).
+    const jsonMatch = assistantText.match(/```(?:json)?\s*([\s\S]*?)```/);
+    const rawJson = jsonMatch ? jsonMatch[1].trim() : assistantText.trim();
+    const parsedJson = JSON.parse(rawJson);
+    extraction = ExtractionSchema.parse(parsedJson);
   } catch (err) {
     console.error("Extraction failed:", err);
     const updatedDocs = docs.map((d) =>
