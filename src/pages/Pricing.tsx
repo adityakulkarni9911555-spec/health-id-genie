@@ -34,7 +34,7 @@ export default function Pricing() {
       .finally(() => setLoading(false));
   }, [toast]);
 
-  const paidPlansEnabled = false;
+  const paidPlansEnabled = true;
 
   const handleUpgrade = async (plan: SubscriptionPlan) => {
     if (plan.slug === 'free') {
