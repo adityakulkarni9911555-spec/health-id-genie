@@ -1,46 +1,39 @@
-# Why bounce rate is 91%
+## Goal
 
-## What the data shows (last 30 days)
+Bounced visitors currently land on `/auth` or the benefits blog post and see either a login form or a wall of article text — no obvious, intent-matching primary action. Add clear above-the-fold CTAs that match each page's user intent so first-time visitors take a next step instead of leaving.
 
-- 11 visitors, 12 pageviews, **1.09 pages/visit**, **91% bounce**.
-- **10 of 11 visits landed directly on `/auth`** (the sign-in page). 1 landed on an emergency `/e/:token` scan.
-- Sources: 10 Direct, 1 Google app. Devices: 10 mobile, 1 desktop. Countries: IN, US.
+## Changes
 
-So the bounce rate isn't really a content problem — it's a **landing-page problem**: almost everyone is being dropped straight onto the login wall with nothing to read, no value prop, and no reason to click a second page. Emergency scans (`/e/:token`) are also single-purpose by design — the doctor views one page and closes it, which counts as a bounce.
+### 1. `src/pages/Auth.tsx` — hero CTA + signup deep link
 
-## Root causes
+- In the hero (left column), add a prominent primary CTA row directly under the benefits bullets, visible above the fold on both mobile and desktop:
+  - Primary button: **"Create my free health wallet"** → switches the form to signup mode and scrolls/focuses the email field.
+  - Secondary button: **"I already have an account"** → switches to signin mode and focuses email.
+  - Below the buttons: small reassurance line — "Free forever for 1 profile · No credit card · 30-second setup".
+- On mobile (`< lg`), reorder so the hero (headline + bullets + primary CTA) renders **before** the form card, so the CTA is the first thing above the fold instead of the raw form. Keep the form immediately below for users who scroll.
+- Read `?mode=signup` from the URL on mount and default `mode` to `"signup"` when present, so links from the blog land users directly in signup.
 
-1. **`/auth` is the de-facto landing page for shared links.** It shows only a sign-in form — no hero, no explanation of Medora, no secondary CTA — so unauthenticated visitors leave.
-2. **Home (`/`) isn't the entry point people share.** Marketing/social links likely point to `/auth` (or users hit it after clicking a "Sign in" CTA elsewhere).
-3. **Emergency page is intentionally single-view.** It will always bounce; that's correct behavior, but it inflates the metric.
-4. **No internal linking from `/auth`.** Even curious visitors can't reach `/blog/*` or pricing from the login page.
+### 2. `src/pages/BlogBenefitsPHR.tsx` — inline CTA block
 
-## Plan to lower bounce
+- Directly after the intro paragraph (above the fold on desktop and after ~1 scroll on mobile), insert a bordered CTA card:
+  - Heading: "Start your own personal health record"
+  - One-line pitch matching guide intent.
+  - Primary button → `/auth?mode=signup&next=/` labeled **"Create my free health record"**.
+  - Secondary link → `/pricing` labeled "See plans".
+- Add a second, simpler CTA line at the end of the article (before the existing related-reading block) linking to `/auth?mode=signup&next=/`.
 
-1. **Redesign `/auth` as a value-first landing page**
-   - Add a hero above the sign-in card: Medora tagline, 3 benefit bullets (emergency access, document vault, family plan), and a screenshot/illustration.
-   - Add a secondary CTA: "See how it works" → scroll to features, and "Read the guide" → `/blog/benefits-of-personal-health-records`.
-   - Keep the sign-in form on the right (desktop) / below hero (mobile).
+### 3. Optional consistency
 
-2. **Add a footer with internal links on `/auth` and `/`**
-   - Links to `/pricing`, the 3 blog posts, and `/` — gives visitors a second click and improves crawl depth.
+- Apply the same end-of-article CTA pattern to `src/pages/BlogDigitalIdVsBracelets.tsx` and `src/pages/BlogRequestMedicalRecords.tsx` so every blog exit path has a clear conversion route. (One-line addition per file.)
 
-3. **Redirect bare `/auth` visits from marketing sources to `/`**
-   - Anywhere our own marketing/OG/share links point to `/auth`, change them to `/`. Keep `/auth` reachable via the "Sign in" button.
-   - Audit `Logo` link target, OG URLs, and any share strings.
+## Out of scope
 
-4. **Exclude `/e/:token` from bounce-sensitive reporting (documentation only)**
-   - Note in the analytics view that emergency scans are expected single-page sessions so we can read the real bounce rate for marketing pages.
-
-5. **Add "Related reading" block to each blog post**
-   - Link the 3 blog posts to each other + to `/` and `/pricing`. Directly raises pages/visit.
+- No copy changes to `/pricing` or `/` (signed-out `/` already redirects to `/auth`).
+- No new routes, no analytics wiring, no A/B testing framework.
+- No visual redesign of the auth form itself — only hero-side additions and mobile reordering.
 
 ## Technical notes
 
-- Files to touch: `src/pages/Auth.tsx` (hero + CTAs), `src/pages/Index.tsx` (footer component), new `src/components/SiteFooter.tsx`, `src/pages/BlogBenefitsPHR.tsx` / `BlogDigitalIdVsBracelets.tsx` / `BlogRequestMedicalRecords.tsx` (related reading), and any OG/share URL constants in `src/lib/publicUrl.ts` or metadata blocks.
-- No schema, RLS, or auth-flow changes. Sign-in behavior stays identical; we're only adding surrounding content and links.
-- Traffic sample is very small (11 visitors) — after shipping, re-check in 2–3 weeks before drawing conclusions.
-
-<presentation-actions>
-<presentation-link url="/projects/0392aa24-616c-429a-bf3d-b6add5225e03/settings/project-insights">View analytics</presentation-link>
-</presentation-actions>
+- CTA buttons use existing shadcn `Button` variants (`default` + `outline`) and `btn-touch` for tablet sizing — no new tokens or styles.
+- Signup deep link: `useSearchParams().get("mode") === "signup"` sets initial `mode` state in `Auth.tsx`.
+- Focus handling: attach a `ref` to the email input and call `.focus()` from the hero CTA handlers.

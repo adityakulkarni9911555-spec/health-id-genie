@@ -234,7 +234,7 @@ export default function BlogRequestMedicalRecords() {
                 safely with any doctor in an emergency.
               </p>
               <Link
-                to="/auth"
+                to="/auth?mode=signup&next=/"
                 className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90"
               >
                 Create my health record
