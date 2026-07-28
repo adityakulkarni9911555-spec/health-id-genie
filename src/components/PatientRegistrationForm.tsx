@@ -561,11 +561,16 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         />
       </div>
 
+      {!subLoading && !isPaid && pendingFiles.length + 0 >= documentLimit && (
+        <UpgradeBanner variant="block" reason="documents" onUpgrade={() => navigate('/pricing')} />
+      )}
+
       <DocumentUpload
         documents={[]}
         onChange={() => {}}
         pendingFiles={pendingFiles}
         onPendingChange={setPendingFiles}
+        maxFiles={isPaid ? undefined : documentLimit}
       />
 
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-foreground/80 flex gap-3">
