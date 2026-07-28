@@ -25,6 +25,8 @@ export function useSubscription() {
     planSlug: 'free',
     expiresAt: null,
     familyGroupId: null,
+    documentLimit: 5,
+    profileLimit: 1,
     loading: true,
     error: null,
   });
