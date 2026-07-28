@@ -98,7 +98,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-5 py-10 bg-gradient-to-br from-background via-background to-accent/30">
+    <main className="min-h-screen flex items-center justify-center px-5 py-10 bg-gradient-to-br from-background via-background to-accent/30">
       <div className="w-full max-w-md">
         <div className="flex justify-between items-center mb-8">
           <Logo />
