@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { initPostHog, posthog, shutdownPostHog } from '@/lib/posthog';
+import { initPostHog, shutdownPostHog } from '@/lib/posthog';
 
 // Defer PostHog init until the browser is idle so it doesn't compete
 // with the first paint / LCP.
@@ -21,13 +21,7 @@ if (typeof window !== 'undefined') {
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    scheduleIdle(() => {
-      try {
-        posthog.reloadFeatureFlags();
-      } catch {
-        // Ignore if PostHog is not initialized.
-      }
-    });
+    scheduleIdle(initPostHog);
 
     if (import.meta.env.PROD) {
       return () => {
