@@ -1,33 +1,46 @@
-## Problem
+# Why bounce rate is 91%
 
-The QR code on the health card is built from `window.location.origin`. When the card is generated from the Lovable preview URL (`id-preview--*.lovable.app`), the QR points to that preview URL, which is behind Lovable's project auth gate. Anyone else scanning it sees the "Access denied — you do not have access to this project" screen.
+## What the data shows (last 30 days)
 
-Verified in code:
-- `src/components/HealthCardPreview.tsx:50` — QR value uses `${window.location.origin}/e/${patient.shareToken}`
-- `src/components/HealthCard.tsx:110` — same pattern, plus the human-readable fallback URL just below
-- The published site is `https://health-id-genie.lovable.app`, and `/e/:token` is a public route served by the `Emergency` page and the `emergency-lookup` edge function.
+- 11 visitors, 12 pageviews, **1.09 pages/visit**, **91% bounce**.
+- **10 of 11 visits landed directly on `/auth`** (the sign-in page). 1 landed on an emergency `/e/:token` scan.
+- Sources: 10 Direct, 1 Google app. Devices: 10 mobile, 1 desktop. Countries: IN, US.
 
-## Fix
+So the bounce rate isn't really a content problem — it's a **landing-page problem**: almost everyone is being dropped straight onto the login wall with nothing to read, no value prop, and no reason to click a second page. Emergency scans (`/e/:token`) are also single-purpose by design — the doctor views one page and closes it, which counts as a bounce.
 
-Always encode the QR (and the printed fallback URL) against the canonical **published** domain, not the current browser origin.
+## Root causes
 
-1. Add a tiny helper `src/lib/publicUrl.ts` that returns the public origin:
-   - Default: `https://health-id-genie.lovable.app`
-   - Overridable via `VITE_PUBLIC_SITE_URL` env var so future custom domains just work.
-   - Export `publicEmergencyUrl(token)` for reuse.
+1. **`/auth` is the de-facto landing page for shared links.** It shows only a sign-in form — no hero, no explanation of Medora, no secondary CTA — so unauthenticated visitors leave.
+2. **Home (`/`) isn't the entry point people share.** Marketing/social links likely point to `/auth` (or users hit it after clicking a "Sign in" CTA elsewhere).
+3. **Emergency page is intentionally single-view.** It will always bounce; that's correct behavior, but it inflates the metric.
+4. **No internal linking from `/auth`.** Even curious visitors can't reach `/blog/*` or pricing from the login page.
 
-2. Update `src/components/HealthCardPreview.tsx` and `src/components/HealthCard.tsx` to build the QR `value` and the short/fallback text from `publicEmergencyUrl(patient.shareToken)` instead of `window.location.origin`.
+## Plan to lower bounce
 
-3. Leave copy-link / share behavior on the same helper so a link shared from the preview also points to the public site.
+1. **Redesign `/auth` as a value-first landing page**
+   - Add a hero above the sign-in card: Medora tagline, 3 benefit bullets (emergency access, document vault, family plan), and a screenshot/illustration.
+   - Add a secondary CTA: "See how it works" → scroll to features, and "Read the guide" → `/blog/benefits-of-personal-health-records`.
+   - Keep the sign-in form on the right (desktop) / below hero (mobile).
 
-## Not changing
+2. **Add a footer with internal links on `/auth` and `/`**
+   - Links to `/pricing`, the 3 blog posts, and `/` — gives visitors a second click and improves crawl depth.
 
-- No backend, schema, or edge-function changes — `/e/:token` already resolves against live data via `emergency-lookup`.
-- No QR styling or size changes.
-- Existing tokens remain valid; users do not need to regenerate their card. (Reprint recommended so the human-readable URL under the QR also updates, but the token itself is unchanged.)
+3. **Redirect bare `/auth` visits from marketing sources to `/`**
+   - Anywhere our own marketing/OG/share links point to `/auth`, change them to `/`. Keep `/auth` reachable via the "Sign in" button.
+   - Audit `Logo` link target, OG URLs, and any share strings.
 
-## Verification
+4. **Exclude `/e/:token` from bounce-sensitive reporting (documentation only)**
+   - Note in the analytics view that emergency scans are expected single-page sessions so we can read the real bounce rate for marketing pages.
 
-- Build passes.
-- Playwright: render the wallet page, read the QR's `value` prop / rendered `<canvas>` data URL, and confirm it starts with `https://health-id-genie.lovable.app/e/`.
-- Manually confirm the printed fallback text under the QR shows the same public host.
+5. **Add "Related reading" block to each blog post**
+   - Link the 3 blog posts to each other + to `/` and `/pricing`. Directly raises pages/visit.
+
+## Technical notes
+
+- Files to touch: `src/pages/Auth.tsx` (hero + CTAs), `src/pages/Index.tsx` (footer component), new `src/components/SiteFooter.tsx`, `src/pages/BlogBenefitsPHR.tsx` / `BlogDigitalIdVsBracelets.tsx` / `BlogRequestMedicalRecords.tsx` (related reading), and any OG/share URL constants in `src/lib/publicUrl.ts` or metadata blocks.
+- No schema, RLS, or auth-flow changes. Sign-in behavior stays identical; we're only adding surrounding content and links.
+- Traffic sample is very small (11 visitors) — after shipping, re-check in 2–3 weeks before drawing conclusions.
+
+<presentation-actions>
+<presentation-link url="/projects/0392aa24-616c-429a-bf3d-b6add5225e03/settings/project-insights">View analytics</presentation-link>
+</presentation-actions>

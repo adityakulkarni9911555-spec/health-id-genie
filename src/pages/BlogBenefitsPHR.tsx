@@ -184,6 +184,18 @@ export default function BlogBenefitsPHR() {
                 Create my health record
               </Link>
             </div>
+
+            <p className="mt-8 text-sm text-muted-foreground">
+              Related reading:{" "}
+              <Link to="/blog/digital-medical-id-vs-bracelets" className="underline">
+                Digital medical ID vs. bracelets
+              </Link>{" "}
+              and{" "}
+              <Link to="/blog/how-to-request-medical-records" className="underline">
+                How to request medical records
+              </Link>
+              .
+            </p>
           </article>
         </main>
       </div>
