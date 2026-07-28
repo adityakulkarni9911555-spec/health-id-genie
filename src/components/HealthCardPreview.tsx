@@ -193,9 +193,10 @@ Generated: ${new Date().toLocaleString()}
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10 mb-4">
           <CheckCircle2 className="w-10 h-10 text-success" />
         </div>
-        <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+        <h1 className="font-display text-2xl font-bold text-foreground mb-2">
           Your Medora wallet is ready
-        </h2>
+        </h1>
+
         <p className="text-muted-foreground">
           Your Medora Card is saved and stays with you on every device you sign in from.
         </p>
