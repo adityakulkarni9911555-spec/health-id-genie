@@ -103,6 +103,18 @@ export default function Pricing() {
         <meta property="og:title" content="Pricing — Medora Health Wallet Plans" />
         <meta property="og:description" content="Free, Premium, and Family plans for your Medora personal health wallet." />
         <meta property="og:url" content="https://health-id-genie.lovable.app/pricing" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: "Medora Personal Health Wallet",
+          description: "Private digital health wallet with Free, Premium, and Family subscription tiers.",
+          brand: { "@type": "Brand", name: "Medora" },
+          offers: [
+            { "@type": "Offer", name: "Free", price: "0", priceCurrency: "INR", url: "https://health-id-genie.lovable.app/pricing", availability: "https://schema.org/InStock" },
+            { "@type": "Offer", name: "Premium", price: "99", priceCurrency: "INR", url: "https://health-id-genie.lovable.app/pricing", availability: "https://schema.org/InStock", priceSpecification: { "@type": "UnitPriceSpecification", price: "99", priceCurrency: "INR", billingIncrement: 1, unitCode: "MON" } },
+            { "@type": "Offer", name: "Family", price: "199", priceCurrency: "INR", url: "https://health-id-genie.lovable.app/pricing", availability: "https://schema.org/InStock", priceSpecification: { "@type": "UnitPriceSpecification", price: "199", priceCurrency: "INR", billingIncrement: 1, unitCode: "MON" } },
+          ],
+        })}</script>
       </Helmet>
       <header className="sticky top-0 z-50 glass-nav border-b border-border/60">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
