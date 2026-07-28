@@ -1,98 +1,33 @@
-# Medora AI Integration Plan
+## Problem
 
-You selected four AI features. The best starting point is **Smart Document Reading** — it reduces manual entry, improves record quality, and powers the other three features. I recommend a phased rollout so each feature ships and validates before the next.
+The QR code on the health card is built from `window.location.origin`. When the card is generated from the Lovable preview URL (`id-preview--*.lovable.app`), the QR points to that preview URL, which is behind Lovable's project auth gate. Anyone else scanning it sees the "Access denied — you do not have access to this project" screen.
 
-## Phase 1 — Smart Document Reading (start here)
+Verified in code:
+- `src/components/HealthCardPreview.tsx:50` — QR value uses `${window.location.origin}/e/${patient.shareToken}`
+- `src/components/HealthCard.tsx:110` — same pattern, plus the human-readable fallback URL just below
+- The published site is `https://health-id-genie.lovable.app`, and `/e/:token` is a public route served by the `Emergency` page and the `emergency-lookup` edge function.
 
-Goal: When a user uploads a prescription, lab report, discharge summary, or health record, AI extracts structured data and offers to fill the patient's profile.
+## Fix
 
-### Database changes
-- Add `document_chunks` table:
-  - `id uuid`, `patient_id uuid`, `document_path text`, `content text`, `embedding vector(3072)`, `metadata jsonb`, `created_at timestamptz`
-  - RLS: owner-only read/write
-  - HNSW index on `embedding::halfvec(3072)`
-- Extend the `documents` JSONB items to include `extracted_data jsonb` and `status text` (`pending | processed | failed`).
+Always encode the QR (and the printed fallback URL) against the canonical **published** domain, not the current browser origin.
 
-### Backend
-- New Supabase Edge Function: `extract-document`
-  - Accepts `patient_id` + `document_path`
-  - Creates a short-lived signed URL for the file
-  - Calls `google/gemini-3.6-flash` (or `google/gemini-2.5-pro` for complex scans) with the document image/PDF and a structured-output schema
-  - Extracts: medicines, diagnoses, allergies, dates, doctor/hospital name, and any vitals
-  - Saves extracted text chunks + embeddings to `document_chunks`
-  - Updates the document item with `extracted_data` and `status: processed`
+1. Add a tiny helper `src/lib/publicUrl.ts` that returns the public origin:
+   - Default: `https://health-id-genie.lovable.app`
+   - Overridable via `VITE_PUBLIC_SITE_URL` env var so future custom domains just work.
+   - Export `publicEmergencyUrl(token)` for reuse.
 
-### Frontend
-- Update `DocumentUpload.tsx` to show an "Analyze with AI" option after upload.
-- Add an "Apply to profile" flow that pre-fills registration/editing fields from extracted data (user confirms before saving).
+2. Update `src/components/HealthCardPreview.tsx` and `src/components/HealthCard.tsx` to build the QR `value` and the short/fallback text from `publicEmergencyUrl(patient.shareToken)` instead of `window.location.origin`.
 
-## Phase 2 — Natural-Language Record Search
+3. Leave copy-link / share behavior on the same helper so a link shared from the preview also points to the public site.
 
-Goal: Users type questions like "show my 2023 thyroid reports" and get the right documents.
+## Not changing
 
-### Backend
-- New Edge Function: `search-documents`
-  - Embeds the query with `google/gemini-embedding-001`
-  - Calls the `match_documents` SQL function against `document_chunks`
-  - Returns ranked snippets with signed document URLs
+- No backend, schema, or edge-function changes — `/e/:token` already resolves against live data via `emergency-lookup`.
+- No QR styling or size changes.
+- Existing tokens remain valid; users do not need to regenerate their card. (Reprint recommended so the human-readable URL under the QR also updates, but the token itself is unchanged.)
 
-### Frontend
-- Add a search bar to the health card / documents view.
-- Show result snippets grouped by document.
+## Verification
 
-## Phase 3 — Emergency One-Page Summary
-
-Goal: When a doctor scans the QR code, they see a concise AI-generated critical summary alongside raw records.
-
-### Backend
-- New Edge Function: `generate-emergency-summary`
-  - Gathers patient profile + recent document chunks
-  - Calls `google/gemini-3.6-flash` with a strict prompt to produce: current conditions, allergies, active medications, recent events, and emergency contact
-  - Returns markdown summary (no raw data stored; generated on demand)
-
-### Frontend
-- Update `Emergency.tsx` to request and render the summary above the document list.
-- Keep the existing zero-persistence behavior: summary lives only in memory and is wiped on page close.
-
-## Phase 4 — Health Assistant Chatbot
-
-Goal: A private in-app chat that answers questions about the user's own records and general wellness.
-
-### Decisions already made
-- One continuous conversation (not threaded)
-- Database-persisted history
-
-### Database changes
-- Create `chat_messages` table:
-  - `id uuid`, `user_id uuid`, `role text`, `content text`, `parts jsonb`, `created_at timestamptz`
-  - RLS: users can only read/write their own messages
-
-### Backend
-- New Edge Function: `chat`
-  - Streaming response via AI SDK `streamText` + `toUIMessageStreamResponse`
-  - On each message: embed the query, retrieve relevant `document_chunks`, inject them as context
-  - Model: `google/gemini-3.6-flash` for cost-efficient RAG chat
-  - `onFinish`: persist the assistant message to `chat_messages`
-
-### Frontend
-- Add a floating chat button on the health card screen.
-- Build the chat UI using AI Elements (`conversation`, `message`, `prompt-input`, `shimmer`).
-- Load existing messages from the database on open.
-
-## Privacy & Security
-
-- All AI calls happen in Supabase Edge Functions; `LOVABLE_API_KEY` and patient data never reach the browser.
-- Documents are chunked and stored with owner-only RLS.
-- Emergency summary is generated on demand and never cached.
-- Chat history is scoped to the authenticated user.
-- No patient data is used to train models; Lovable AI Gateway passes data through without retention.
-
-## Models
-
-- Document extraction & chat: `google/gemini-3.6-flash` (default), with `google/gemini-2.5-pro` as fallback for poor-quality scans.
-- Embeddings: `google/gemini-embedding-001`.
-- All model IDs are exact Gateway-allowed values.
-
-## Suggested first step
-
-Approve this plan and I'll start with **Phase 1: Smart Document Reading**, which immediately improves the upload experience and lays the vector-search foundation for Phases 2–4.
+- Build passes.
+- Playwright: render the wallet page, read the QR's `value` prop / rendered `<canvas>` data URL, and confirm it starts with `https://health-id-genie.lovable.app/e/`.
+- Manually confirm the printed fallback text under the QR shows the same public host.
