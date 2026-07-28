@@ -194,13 +194,7 @@ const Index = () => {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/60 py-6 mt-12 no-print">
-        <div className="container mx-auto px-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Logo size={20} />
-          <p>Medora · Secure Health Wallet</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 };
