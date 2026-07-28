@@ -123,6 +123,6 @@ export default function AuthCallback() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
