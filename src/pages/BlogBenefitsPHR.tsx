@@ -1,6 +1,24 @@
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
-import { Logo } from "@/components/Logo";
+import {
+  Siren,
+  PillBottle,
+  Stethoscope,
+  Users,
+  Lock,
+  Heart,
+  UserPlus,
+  ListChecks,
+  FileUp,
+  QrCode,
+} from "lucide-react";
+import {
+  BlogShell,
+  FeatureCard,
+  StepCard,
+  Stat,
+  RelatedCard,
+  SectionTitle,
+} from "@/components/BlogShell";
 
 const CANONICAL = "https://health-id-genie.lovable.app/blog/benefits-of-personal-health-records";
 
@@ -68,161 +86,112 @@ export default function BlogBenefitsPHR() {
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border/40 bg-background/70 backdrop-blur">
-          <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-            <Link to="/" className="flex items-center gap-2">
-              <Logo className="h-8 w-8" />
-              <span className="font-semibold">Medora</span>
-            </Link>
-            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
-              Pricing
-            </Link>
+      <BlogShell
+        breadcrumb="Personal health record"
+        eyebrow="Guide"
+        heroIcon={<Heart className="h-3.5 w-3.5" />}
+        title="Your health, always with you."
+        subtitle="A personal health record puts your allergies, meds, and documents in one place — ready for emergencies, doctor visits, and everyday care."
+        readMinutes={3}
+        related={
+          <>
+            <RelatedCard
+              to="/blog/digital-medical-id-vs-bracelets"
+              eyebrow="Compare"
+              title="Digital medical ID vs. bracelet"
+            />
+            <RelatedCard
+              to="/blog/how-to-request-medical-records"
+              eyebrow="How-to"
+              title="Request records from providers"
+            />
+          </>
+        }
+      >
+        {/* Stats strip */}
+        <section className="grid grid-cols-3 gap-3">
+          <Stat value="2 min" label="Setup" />
+          <Stat value="0" label="Paperwork" />
+          <Stat value="24/7" label="Access" />
+        </section>
+
+        {/* Why it matters */}
+        <section>
+          <SectionTitle>Why it matters</SectionTitle>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <FeatureCard
+              icon={<Siren className="h-5 w-5" />}
+              title="Emergency ready"
+              accent="danger"
+            >
+              Paramedics scan one QR and see your blood group, allergies, and
+              conditions — even if you can't speak.
+            </FeatureCard>
+            <FeatureCard
+              icon={<PillBottle className="h-5 w-5" />}
+              title="No medication mix-ups"
+              accent="warning"
+            >
+              Every allergy and current med, on hand for any new prescriber.
+              Fewer interactions, fewer mistakes.
+            </FeatureCard>
+            <FeatureCard
+              icon={<Stethoscope className="h-5 w-5" />}
+              title="Faster doctor visits"
+              accent="primary"
+            >
+              Share prior reports and prescriptions in one tap — no more digging
+              through WhatsApp or paper folders.
+            </FeatureCard>
+            <FeatureCard
+              icon={<Users className="h-5 w-5" />}
+              title="Family friendly"
+              accent="success"
+            >
+              One place for kids' vaccines, parents' prescriptions, and
+              everyone's emergency info.
+            </FeatureCard>
           </div>
-        </header>
+        </section>
 
-        <main className="mx-auto max-w-3xl px-6 py-12">
-          <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted-foreground">
-            <Link to="/" className="hover:text-foreground">Home</Link>
-            <span className="mx-2">/</span>
-            <span>Blog</span>
-            <span className="mx-2">/</span>
-            <span className="text-foreground">Benefits of a personal health record</span>
-          </nav>
-
-          <article className="prose prose-slate max-w-none dark:prose-invert">
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Benefits of a Personal Health Record — Why Every Family Needs One
-            </h1>
-            <p className="mt-4 text-lg text-muted-foreground">
-              A personal health record (PHR) puts your medical history, allergies, medications, and
-              key documents in one place you control — ready for emergencies, doctor visits, and
-              day-to-day care.
-            </p>
-
-            <div className="not-prose my-8 rounded-2xl border border-primary/20 bg-primary/5 p-5 sm:p-6">
-              <h2 className="mt-0 text-lg sm:text-xl font-semibold tracking-tight">
-                Start your own personal health record
+        {/* Privacy callout */}
+        <section className="rounded-3xl border border-border/60 bg-card/60 p-6 sm:p-8">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Lock className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="font-display text-xl font-bold sm:text-2xl">
+                You own the data
               </h2>
-              <p className="mt-1 text-sm sm:text-base text-muted-foreground">
-                Free to begin — build your emergency-ready health wallet in under two minutes.
+              <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+                Hospital records live in the hospital. Your PHR lives with you.
+                Choose what to store, who sees it, and when. Emergency access is
+                read-only, time-limited, and revocable.
               </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link
-                  to="/auth?mode=signup&next=/"
-                  className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90"
-                >
-                  Create my free health record
-                </Link>
-                <Link
-                  to="/pricing"
-                  className="inline-flex items-center rounded-lg border border-border px-5 py-2.5 text-sm font-medium hover:bg-muted"
-                >
-                  See plans
-                </Link>
-              </div>
             </div>
+          </div>
+        </section>
 
-
-            <h2>What is a personal health record?</h2>
-            <p>
-              A personal health record is a digital, patient-owned file of your health information.
-              Unlike a hospital's electronic medical record, a PHR follows <em>you</em> across
-              clinics, cities, and specialists. It typically includes your blood group, allergies,
-              chronic conditions, current medications, vaccination history, past reports, and an
-              emergency contact.
-            </p>
-
-            <h2>1. Emergency readiness that can save a life</h2>
-            <p>
-              In a road accident, allergic reaction, or sudden cardiac event, minutes matter. If
-              you're unconscious, paramedics have to guess your blood group, drug allergies, and
-              existing conditions. A PHR with a secure emergency QR code lets a clinician scan and
-              instantly see:
-            </p>
-            <ul>
-              <li>Blood group and known drug allergies</li>
-              <li>Chronic conditions like diabetes, epilepsy, or heart disease</li>
-              <li>Current medications and dosages</li>
-              <li>Emergency contact and treating doctor</li>
-            </ul>
-            <p>
-              Leading health authorities including{" "}
-              <a href="https://www.mayoclinic.org/" target="_blank" rel="noopener noreferrer">
-                Mayo Clinic
-              </a>{" "}
-              recommend keeping this information accessible at all times.
-            </p>
-
-            <h2>2. Track allergies and medications without slip-ups</h2>
-            <p>
-              Adverse drug reactions are one of the most common preventable medical errors. A PHR
-              lets you record every allergy — antibiotics, painkillers, foods, latex — so any
-              prescribing doctor sees the full list before writing a new script. Medication
-              tracking also helps flag dangerous interactions when you visit a new specialist.
-            </p>
-
-            <h2>3. Faster, better doctor visits</h2>
-            <p>
-              How often have you struggled to remember when a symptom started, what a previous
-              doctor prescribed, or which lab did last year's test? A PHR turns a fifteen-minute
-              consultation into a productive one. Share prior reports, imaging, and prescriptions
-              in one tap — no more digging through WhatsApp forwards or paper folders.
-            </p>
-
-            <h2>4. Better care for kids, parents, and dependents</h2>
-            <p>
-              A family health record is especially valuable for children's vaccination schedules
-              and for elderly parents managing multiple prescriptions. Instead of separate folders
-              per person, one shared wallet keeps everyone's information current and accessible to
-              the caregivers who need it.
-            </p>
-
-            <h2>5. You own your data</h2>
-            <p>
-              Hospital records live in the hospital's system. A personal health record lives with
-              you. You choose what to store, who can view it, and when to revoke access.
-              Medora's emergency access, for example, is read-only, time-limited, and shows only
-              the fields you've marked safe to share — never the full document library.
-            </p>
-
-            <h2>How to start your personal health record</h2>
-            <ol>
-              <li>Create an account and add your basic profile — name, blood group, age.</li>
-              <li>List your allergies, chronic conditions, and current medications.</li>
-              <li>Upload key documents: recent prescriptions, discharge summaries, lab reports.</li>
-              <li>Set an emergency contact and generate your emergency QR code.</li>
-              <li>Print or save the QR code in your wallet, phone case, or car glovebox.</li>
-            </ol>
-
-            <div className="mt-10 rounded-2xl border border-border bg-muted/30 p-6">
-              <h3 className="mt-0 text-xl font-semibold">Start your Medora health wallet</h3>
-              <p className="mb-4 text-muted-foreground">
-                Free to begin — no card required. Add your details in under two minutes and get an
-                emergency QR code you can share with any doctor.
-              </p>
-              <Link
-                to="/auth?mode=signup&next=/"
-                className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90"
-              >
-                Create my health record
-              </Link>
-            </div>
-
-            <p className="mt-8 text-sm text-muted-foreground">
-              Related reading:{" "}
-              <Link to="/blog/digital-medical-id-vs-bracelets" className="underline">
-                Digital medical ID vs. bracelets
-              </Link>{" "}
-              and{" "}
-              <Link to="/blog/how-to-request-medical-records" className="underline">
-                How to request medical records
-              </Link>
-              .
-            </p>
-          </article>
-        </main>
-      </div>
+        {/* How to start */}
+        <section>
+          <SectionTitle>Start in 4 steps</SectionTitle>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <StepCard n={1} title="Create account" icon={<UserPlus className="h-4 w-4" />}>
+              Add name, blood group, age — 30 seconds.
+            </StepCard>
+            <StepCard n={2} title="List essentials" icon={<ListChecks className="h-4 w-4" />}>
+              Allergies, chronic conditions, current meds.
+            </StepCard>
+            <StepCard n={3} title="Upload docs" icon={<FileUp className="h-4 w-4" />}>
+              Prescriptions, discharge notes, lab reports.
+            </StepCard>
+            <StepCard n={4} title="Print your QR" icon={<QrCode className="h-4 w-4" />}>
+              Keep it in your wallet, phone case, or glovebox.
+            </StepCard>
+          </div>
+        </section>
+      </BlogShell>
     </>
   );
 }
