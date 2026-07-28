@@ -170,19 +170,8 @@ Generated: ${new Date().toLocaleString()}
         <HealthCard patient={patient} />
       </div>
 
-      {!subLoading && (
-        <div className="flex items-center justify-center gap-2 mb-6 no-print">
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${isPaid ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-            <Crown className="w-3.5 h-3.5" />
-            {isFamily ? 'Family plan' : isPaid ? 'Premium plan' : 'Free plan'}
-          </span>
-          {!isPaid && (
-            <Button variant="link" size="sm" className="text-xs h-auto p-0" onClick={() => navigate('/pricing')}>
-              Upgrade
-            </Button>
-          )}
-        </div>
-      )}
+      {/* Plan chip hidden until paid plans launch */}
+
 
       {/* Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 no-print">
