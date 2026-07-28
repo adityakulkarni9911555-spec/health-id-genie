@@ -51,9 +51,11 @@ export const DocumentUpload = ({
   maxSizeMB = 10,
   maxFiles = MAX_FILES,
   disabled,
+  onAnalyze,
 }: DocumentUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   const handleFiles = async (files: FileList | null) => {
