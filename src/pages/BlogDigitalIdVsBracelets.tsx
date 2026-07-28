@@ -54,7 +54,7 @@ export default function BlogDigitalIdVsBracelets() {
         <title>Digital Medical ID vs. Medical Alert Bracelet | Medora</title>
         <meta
           name="description"
-          content="Medical alert bracelets fit a few engraved lines. A digital medical ID stores your full health record, updates instantly, and shares with any doctor via QR. Compare both."
+          content="Traditional medical alert bracelets fit only a few engraved lines. A digital medical ID stores your full health record and updates instantly. Compare both here."
         />
         <link rel="canonical" href={CANONICAL} />
         <meta property="og:type" content="article" />
