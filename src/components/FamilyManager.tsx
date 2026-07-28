@@ -36,7 +36,14 @@ export function FamilyManager({ groupId }: FamilyManagerProps) {
     if (error) {
       toast({ title: 'Could not load family members', description: error.message, variant: 'destructive' });
     } else {
-      setMembers(data || []);
+      setMembers(
+        (data || []).map((m) => ({
+          id: m.id,
+          user_id: m.user_id,
+          invited_email: m.invited_email,
+          status: m.status as FamilyMember['status'],
+        }))
+      );
     }
     setLoading(false);
   };
