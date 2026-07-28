@@ -130,6 +130,34 @@ export const DocumentUpload = ({
     onChange(documents.filter((_, i) => i !== idx));
   };
 
+  const handleAnalyze = async (doc: PatientDocument) => {
+    if (!onAnalyze || analyzingPaths.has(doc.path)) return;
+    setAnalyzingPaths((prev) => new Set(prev).add(doc.path));
+    try {
+      const updated = await onAnalyze(doc);
+      if (updated) {
+        onChange(documents.map((d) => (d.path === doc.path ? updated : d)));
+      }
+      toast({
+        title: 'Analysis complete',
+        description: `${doc.name} has been analyzed.`,
+      });
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: 'Analysis failed',
+        description: err instanceof Error ? err.message : 'Could not analyze this document.',
+        variant: 'destructive',
+      });
+    } finally {
+      setAnalyzingPaths((prev) => {
+        const next = new Set(prev);
+        next.delete(doc.path);
+        return next;
+      });
+    }
+  };
+
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
