@@ -44,6 +44,7 @@ export const DocumentUpload = ({
   pendingFiles = [],
   onPendingChange,
   maxSizeMB = 10,
+  maxFiles = MAX_FILES,
   disabled,
 }: DocumentUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
