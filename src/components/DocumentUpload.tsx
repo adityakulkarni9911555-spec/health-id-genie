@@ -10,6 +10,9 @@ export interface PatientDocument {
   type: string;
   size: number;
   uploadedAt: string;
+  status?: 'pending' | 'processing' | 'processed' | 'failed';
+  extractedData?: Record<string, unknown>;
+  extractedAt?: string;
 }
 
 interface DocumentUploadProps {
@@ -25,6 +28,8 @@ interface DocumentUploadProps {
   maxSizeMB?: number;
   maxFiles?: number;
   disabled?: boolean;
+  /** Optional AI extraction handler. Called with the document to analyze. */
+  onAnalyze?: (doc: PatientDocument) => Promise<PatientDocument | void>;
 }
 
 const ALLOWED_TYPES = new Set([
