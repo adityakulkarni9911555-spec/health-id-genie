@@ -37,10 +37,29 @@ export default function Auth() {
   const { toast } = useToast();
   const next = sanitizeNext(params.get("next"));
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const initialMode = params.get("mode") === "signup" ? "signup" : "signin";
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const emailRef = useRef<HTMLInputElement>(null);
+
+  const focusEmail = () => {
+    // Give the mobile viewport a beat to reorder/render before scrolling.
+    setTimeout(() => {
+      emailRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      emailRef.current?.focus({ preventScroll: true });
+    }, 50);
+  };
+
+  const startSignup = () => {
+    setMode("signup");
+    focusEmail();
+  };
+  const startSignin = () => {
+    setMode("signin");
+    focusEmail();
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
