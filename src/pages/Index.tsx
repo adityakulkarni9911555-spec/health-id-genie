@@ -213,7 +213,7 @@ const FeatureCard = ({
     <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/10 to-[hsl(174,62%,45%)]/10 flex items-center justify-center text-primary mb-3 group-hover:scale-105 transition-transform">
       {icon}
     </div>
-    <h3 className="font-semibold text-foreground mb-1 text-sm">{title}</h3>
+    <h2 className="font-semibold text-foreground mb-1 text-sm">{title}</h2>
     <p className="text-xs text-muted-foreground">{description}</p>
   </div>
 );
