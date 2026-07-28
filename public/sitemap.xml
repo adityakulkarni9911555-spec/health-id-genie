@@ -11,11 +11,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://health-id-genie.lovable.app/auth</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>https://health-id-genie.lovable.app/blog/benefits-of-personal-health-records</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
