@@ -153,7 +153,7 @@ const Index = () => {
         ) : (
           <>
             {/* Hero Section */}
-            <div className="text-center mb-12 animate-fade-in max-w-3xl mx-auto">
+            <div className="text-center mb-12 max-w-3xl mx-auto">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-xs font-medium mb-5 border border-accent-foreground/10">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Your health, in your pocket</span>

@@ -1,23 +1,34 @@
 import { useEffect } from 'react';
 import { initPostHog, posthog, shutdownPostHog } from '@/lib/posthog';
 
-// Initialize as early as possible so feature flags are ready before render.
-initPostHog();
+// Defer PostHog init until the browser is idle so it doesn't compete
+// with the first paint / LCP.
+function scheduleIdle(cb: () => void) {
+  if (typeof window === 'undefined') return;
+  const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback;
+  if (typeof ric === 'function') {
+    ric(cb, { timeout: 2000 });
+  } else {
+    setTimeout(cb, 0);
+  }
+}
+
+if (typeof window !== 'undefined') {
+  scheduleIdle(() => {
+    initPostHog();
+  });
+}
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // Kick off a feature-flag reload once the provider mounts. This is a
-    // no-op if flags are already loaded, but ensures the /decide request is
-    // sent promptly for A/B test assignment.
-    try {
-      posthog.reloadFeatureFlags();
-    } catch {
-      // Ignore if PostHog is not initialized.
-    }
+    scheduleIdle(() => {
+      try {
+        posthog.reloadFeatureFlags();
+      } catch {
+        // Ignore if PostHog is not initialized.
+      }
+    });
 
-    // In production, send a clean pageleave on unmount. In development,
-    // React Strict Mode can mount/unmount quickly, so we skip shutdown
-    // to avoid killing the analytics session during HMR.
     if (import.meta.env.PROD) {
       return () => {
         shutdownPostHog();
