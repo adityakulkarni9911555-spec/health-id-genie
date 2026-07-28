@@ -158,6 +158,6 @@ export default function OAuthConsent() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
