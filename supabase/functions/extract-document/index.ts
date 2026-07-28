@@ -1,8 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@^2.89.0";
 import { z } from "npm:zod@^3.25.76";
-import { generateText, Output } from "npm:ai";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
-import { createLovableAiGatewayProvider } from "../_shared/ai-gateway.ts";
 
 const BUCKET = "patient-documents";
 
