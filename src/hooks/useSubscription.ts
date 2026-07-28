@@ -14,6 +14,8 @@ export interface SubscriptionState {
   planSlug: string;
   expiresAt: string | null;
   familyGroupId: string | null;
+  documentLimit: number;
+  profileLimit: number;
   loading: boolean;
   error: string | null;
 }
