@@ -213,6 +213,19 @@ Generated: ${new Date().toLocaleString()}
         </Button>
       </div>
 
+      {/* Family management */}
+      {!subLoading && isFamily && familyGroupId && (
+        <div className="mt-6 no-print">
+          <FamilyManager groupId={familyGroupId} />
+        </div>
+      )}
+
+      {!subLoading && !isFamily && (
+        <div className="mt-6 no-print">
+          <UpgradeBanner variant="card" reason="family" />
+        </div>
+      )}
+
       {/* Emergency link controls */}
       {shareUrl && (
         <div className="mt-6 form-section no-print">
