@@ -137,7 +137,7 @@ export default function Auth() {
 
           <div className="grid gap-10 lg:grid-cols-2 lg:items-center max-w-6xl mx-auto">
             {/* Hero */}
-            <section className="space-y-6 order-2 lg:order-1">
+            <section className="space-y-6 order-1 lg:order-1">
               <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight">
                 Your health record, ready when it matters most.
               </h1>
@@ -150,6 +150,19 @@ export default function Auth() {
                 <li className="flex gap-3"><span aria-hidden className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /> Encrypted document vault — owner-only, always in sync</li>
                 <li className="flex gap-3"><span aria-hidden className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /> Family plan — manage records for kids and parents</li>
               </ul>
+              <div className="space-y-3 pt-1">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button type="button" onClick={startSignup} className="btn-touch sm:flex-1" size="lg">
+                    Create my free health wallet
+                  </Button>
+                  <Button type="button" onClick={startSignin} variant="outline" className="btn-touch sm:flex-1" size="lg">
+                    I already have an account
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Free forever for 1 profile · No credit card · 30-second setup
+                </p>
+              </div>
               <div className="flex flex-wrap gap-4 text-sm">
                 <Link to="/blog/benefits-of-personal-health-records" className="text-primary font-medium hover:underline">
                   Read the guide →
@@ -161,7 +174,7 @@ export default function Auth() {
             </section>
 
             {/* Sign-in card */}
-            <div className="order-1 lg:order-2 w-full max-w-md lg:justify-self-end">
+            <div className="order-2 lg:order-2 w-full max-w-md lg:justify-self-end">
               <div className="form-section p-7 sm:p-8 space-y-6">
                 <div>
                   <h2 className="font-display text-2xl font-semibold tracking-tight">
