@@ -232,31 +232,62 @@ export const DocumentUpload = ({
 
       {(pendingFiles.length > 0 || documents.length > 0) && (
         <ul className="space-y-2">
-          {documents.map((doc, idx) => (
-            <li
-              key={`u-${idx}`}
-              className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card"
-            >
-              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
-                <FileText className="w-5 h-5 text-success" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{doc.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatSize(doc.size)} · Uploaded
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeUploaded(idx)}
-                aria-label={`Remove ${doc.name}`}
+          {documents.map((doc, idx) => {
+            const isAnalyzing = analyzingPaths.has(doc.path);
+            const status = doc.status ?? 'pending';
+            return (
+              <li
+                key={`u-${idx}`}
+                className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card"
               >
-                <X className="w-4 h-4" />
-              </Button>
-            </li>
-          ))}
+                <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-5 h-5 text-success" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{doc.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatSize(doc.size)} · Uploaded
+                    {status === 'processed' && (
+                      <span className="inline-flex items-center gap-1 ml-2 text-success">
+                        <CheckCircle2 className="w-3 h-3" /> Analyzed
+                      </span>
+                    )}
+                    {status === 'failed' && (
+                      <span className="inline-flex items-center gap-1 ml-2 text-destructive">
+                        <AlertCircle className="w-3 h-3" /> Analysis failed
+                      </span>
+                    )}
+                    {status === 'processing' || isAnalyzing ? (
+                      <span className="inline-flex items-center gap-1 ml-2 text-primary">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Analyzing…
+                      </span>
+                    ) : null}
+                  </p>
+                </div>
+                {onAnalyze && status !== 'processing' && !isAnalyzing && status !== 'processed' && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleAnalyze(doc)}
+                    aria-label={`Analyze ${doc.name} with AI`}
+                    title="Analyze with AI"
+                  >
+                    <Sparkles className="w-4 h-4 text-primary" />
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeUploaded(idx)}
+                  aria-label={`Remove ${doc.name}`}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </li>
+            );
+          })}
           {pendingFiles.map((file, idx) => (
             <li
               key={`p-${idx}`}
