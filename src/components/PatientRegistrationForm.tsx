@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/FormInput';
@@ -10,8 +11,10 @@ import { Patient, PatientFormData, BLOOD_GROUPS, CHRONIC_CONDITIONS } from '@/ty
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useSubscription } from '@/hooks/useSubscription';
 import { enqueuePatient } from '@/lib/offlineQueue';
 import { DocumentUpload } from '@/components/DocumentUpload';
+import { UpgradeBanner } from '@/components/UpgradeBanner';
 import {
   uploadPatientDocuments,
   persistPatientDocuments,
