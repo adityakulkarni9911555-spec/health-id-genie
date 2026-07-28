@@ -55,10 +55,10 @@ export const DocumentUpload = ({
     if (!files || files.length === 0) return;
     const list = Array.from(files);
 
-    if (documents.length + pendingFiles.length + list.length > MAX_FILES) {
+    if (documents.length + pendingFiles.length + list.length > maxFiles) {
       toast({
         title: 'Too many files',
-        description: `You can attach up to ${MAX_FILES} files.`,
+        description: `You can attach up to ${maxFiles} files on your current plan.`,
         variant: 'destructive',
       });
       return;
