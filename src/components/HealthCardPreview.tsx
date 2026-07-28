@@ -368,39 +368,81 @@ Generated: ${new Date().toLocaleString()}
               <FileText className="w-4 h-4 text-primary" />
               Attached Documents ({patient.documents.length})
             </h4>
-            <ul className="space-y-2">
-              {patient.documents.map((doc) => (
-                <li
-                  key={doc.path}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{doc.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(doc.size / 1024).toFixed(1)} KB
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => openDocument(doc.path)}
-                    disabled={openingPath === doc.path}
+            <ul className="space-y-3">
+              {patient.documents.map((doc) => {
+                const isAnalyzing = analyzingPaths.has(doc.path);
+                const status = doc.status ?? 'pending';
+                return (
+                  <li
+                    key={doc.path}
+                    className="p-3 rounded-xl border border-border bg-card"
                   >
-                    {openingPath === doc.path ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <ExternalLink className="w-4 h-4 mr-1" />
-                        Open
-                      </>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{doc.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(doc.size / 1024).toFixed(1)} KB
+                          {status === 'processed' && (
+                            <span className="inline-flex items-center gap-1 ml-2 text-success">
+                              <CheckCircle2 className="w-3 h-3" /> Analyzed
+                            </span>
+                          )}
+                          {status === 'failed' && (
+                            <span className="inline-flex items-center gap-1 ml-2 text-destructive">
+                              <AlertCircle className="w-3 h-3" /> Analysis failed
+                            </span>
+                          )}
+                          {(status === 'processing' || isAnalyzing) && (
+                            <span className="inline-flex items-center gap-1 ml-2 text-primary">
+                              <Loader2 className="w-3 h-3 animate-spin" /> Analyzing…
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleAnalyze(doc.path)}
+                        disabled={isAnalyzing || status === 'processing' || status === 'processed'}
+                        aria-label={status === 'processed' ? `${doc.name} already analyzed` : `Analyze ${doc.name} with AI`}
+                        title={status === 'processed' ? 'Already analyzed' : 'Analyze with AI'}
+                      >
+                        {isAnalyzing || status === 'processing' ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Sparkles className={`w-4 h-4 ${status === 'processed' ? 'text-success' : 'text-primary'}`} />
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openDocument(doc.path)}
+                        disabled={openingPath === doc.path}
+                      >
+                        {openingPath === doc.path ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <>
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            Open
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {doc.extractedData && (
+                      <div className="mt-3 pt-3 border-t border-dashed border-border">
+                        <ExtractionSummary data={doc.extractedData} />
+                      </div>
                     )}
-                  </Button>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
