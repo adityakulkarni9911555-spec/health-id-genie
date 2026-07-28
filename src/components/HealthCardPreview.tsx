@@ -1,7 +1,11 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { HealthCard } from '@/components/HealthCard';
+import { FamilyManager } from '@/components/FamilyManager';
+import { UpgradeBanner } from '@/components/UpgradeBanner';
 import { Patient } from '@/types/patient';
+import { useSubscription } from '@/hooks/useSubscription';
 import {
   Download,
   Printer,
@@ -14,6 +18,8 @@ import {
   RefreshCw,
   ShieldCheck,
   Copy,
+  Crown,
+  Users,
 } from 'lucide-react';
 import { getSignedDocumentUrl } from '@/lib/patientDocuments';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,6 +36,8 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   const [openingPath, setOpeningPath] = useState<string | null>(null);
   const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { planSlug, isPaid, isFamily, familyGroupId, documentLimit, loading: subLoading } = useSubscription();
 
   const shareUrl = patient.shareToken
     ? `${window.location.origin}/e/${patient.shareToken}`
@@ -151,10 +159,30 @@ Generated: ${new Date().toLocaleString()}
         </p>
       </div>
 
+      {!subLoading && !isPaid && (
+        <div className="mb-6 no-print">
+          <UpgradeBanner variant="compact" reason="documents" remaining={Math.max(0, documentLimit - patient.documents.length)} />
+        </div>
+      )}
+
       {/* Card Preview */}
       <div ref={cardRef} className="mb-8 print:shadow-none">
         <HealthCard patient={patient} />
       </div>
+
+      {!subLoading && (
+        <div className="flex items-center justify-center gap-2 mb-6 no-print">
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${isPaid ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+            <Crown className="w-3.5 h-3.5" />
+            {isFamily ? 'Family plan' : isPaid ? 'Premium plan' : 'Free plan'}
+          </span>
+          {!isPaid && (
+            <Button variant="link" size="sm" className="text-xs h-auto p-0" onClick={() => navigate('/pricing')}>
+              Upgrade
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 no-print">
@@ -184,6 +212,19 @@ Generated: ${new Date().toLocaleString()}
           Print Card
         </Button>
       </div>
+
+      {/* Family management */}
+      {!subLoading && isFamily && familyGroupId && (
+        <div className="mt-6 no-print">
+          <FamilyManager groupId={familyGroupId} />
+        </div>
+      )}
+
+      {!subLoading && !isFamily && (
+        <div className="mt-6 no-print">
+          <UpgradeBanner variant="card" reason="family" />
+        </div>
+      )}
 
       {/* Emergency link controls */}
       {shareUrl && (

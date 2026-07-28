@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { PatientRegistrationForm } from '@/components/PatientRegistrationForm';
 import { HealthCardPreview } from '@/components/HealthCardPreview';
 import { Logo } from '@/components/Logo';
 import { SyncStatusBanner } from '@/components/SyncStatusBanner';
 import { DeviceConditionBanner } from '@/components/DeviceConditionBanner';
+import { UpgradeBanner } from '@/components/UpgradeBanner';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Patient } from '@/types/patient';
-import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Loader2 } from 'lucide-react';
+import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Loader2, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +23,8 @@ const Index = () => {
   const [loadingPatient, setLoadingPatient] = useState(true);
   const isOnline = useOnlineStatus();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { planSlug, isPaid, isFamily, loading: subLoading } = useSubscription();
 
   useEffect(() => {
     if (authLoading) return;
@@ -105,6 +109,19 @@ const Index = () => {
                   <span className="font-medium">Offline</span>
                 </div>
               )}
+              {!subLoading && user && (
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    isPaid
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary'
+                  }`}
+                >
+                  <Crown className="w-3.5 h-3.5" />
+                  {isFamily ? 'Family' : isPaid ? 'Premium' : 'Free'}
+                </button>
+              )}
               <ThemeToggle compact />
               {user && (
                 <Button
@@ -127,6 +144,12 @@ const Index = () => {
         <DeviceConditionBanner />
       </div>
       <SyncStatusBanner />
+
+      {!subLoading && user && !isPaid && (
+        <div className="container mx-auto px-4 pt-3 no-print">
+          <UpgradeBanner variant="compact" reason="generic" />
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-10 md:py-16">

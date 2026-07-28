@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import OAuthConsent from "./pages/OAuthConsent";
 import Emergency from "./pages/Emergency";
+import Pricing from "./pages/Pricing";
 import { SplashScreen } from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/e/:token" element={<Emergency />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

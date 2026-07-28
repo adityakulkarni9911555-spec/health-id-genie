@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/FormInput';
@@ -10,8 +11,10 @@ import { Patient, PatientFormData, BLOOD_GROUPS, CHRONIC_CONDITIONS } from '@/ty
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useSubscription } from '@/hooks/useSubscription';
 import { enqueuePatient } from '@/lib/offlineQueue';
 import { DocumentUpload } from '@/components/DocumentUpload';
+import { UpgradeBanner } from '@/components/UpgradeBanner';
 import {
   uploadPatientDocuments,
   persistPatientDocuments,
@@ -78,6 +81,8 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const { toast } = useToast();
   const isOnline = useOnlineStatus();
+  const navigate = useNavigate();
+  const { planSlug, isPaid, isFamily, documentLimit, loading: subLoading } = useSubscription();
 
   const totalSteps = 3;
 
@@ -556,11 +561,16 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         />
       </div>
 
+      {!subLoading && !isPaid && pendingFiles.length >= documentLimit && (
+        <UpgradeBanner variant="card" reason="documents" />
+      )}
+
       <DocumentUpload
         documents={[]}
         onChange={() => {}}
         pendingFiles={pendingFiles}
         onPendingChange={setPendingFiles}
+        maxFiles={isPaid ? undefined : documentLimit}
       />
 
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-foreground/80 flex gap-3">

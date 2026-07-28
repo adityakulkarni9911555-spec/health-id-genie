@@ -2,9 +2,26 @@ import { supabase } from '@/integrations/supabase/client';
 import type { PatientDocument } from '@/components/DocumentUpload';
 
 const BUCKET = 'patient-documents';
+const FREE_DOCUMENT_LIMIT = 5;
 
 const slugify = (name: string) =>
   name.replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/_+/g, '_').slice(0, 80);
+
+async function getPlanDocumentLimit(userId: string): Promise<number> {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('plan_slug')
+    .eq('id', userId)
+    .maybeSingle();
+
+  const { data: plan } = await supabase
+    .from('subscription_plans')
+    .select('max_documents')
+    .eq('slug', profile?.plan_slug || 'free')
+    .maybeSingle();
+
+  return plan?.max_documents ?? FREE_DOCUMENT_LIMIT;
+}
 
 export async function uploadPatientDocument(
   patientId: string,
@@ -13,6 +30,22 @@ export async function uploadPatientDocument(
   const { data: userRes } = await supabase.auth.getUser();
   const userId = userRes.user?.id;
   if (!userId) throw new Error('You must be signed in to upload documents.');
+
+  const { data: patient } = await supabase
+    .from('patients')
+    .select('documents')
+    .eq('id', patientId)
+    .eq('owner_id', userId)
+    .maybeSingle();
+
+  const currentDocs = Array.isArray(patient?.documents)
+    ? ((patient?.documents as unknown) as PatientDocument[])
+    : [];
+  const limit = await getPlanDocumentLimit(userId);
+  if (limit !== null && currentDocs.length >= limit) {
+    throw new Error(`Document limit reached. Upgrade your plan to upload more.`);
+  }
+
   const safeName = slugify(file.name);
   const path = `${userId}/${patientId}/${Date.now()}_${safeName}`;
 
