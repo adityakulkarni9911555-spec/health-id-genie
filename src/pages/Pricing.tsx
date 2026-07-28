@@ -34,13 +34,22 @@ export default function Pricing() {
       .finally(() => setLoading(false));
   }, [toast]);
 
+  const paidPlansEnabled = false;
+
   const handleUpgrade = async (plan: SubscriptionPlan) => {
-    if (!user) {
-      navigate('/auth?next=/pricing');
-      return;
-    }
     if (plan.slug === 'free') {
       navigate('/');
+      return;
+    }
+    if (!paidPlansEnabled) {
+      toast({
+        title: 'Paid plans coming soon',
+        description: 'We’re finalising payments. Enjoy the free plan in the meantime.',
+      });
+      return;
+    }
+    if (!user) {
+      navigate('/auth?next=/pricing');
       return;
     }
     setBusyPlan(plan.slug);
@@ -173,11 +182,19 @@ export default function Pricing() {
                   <Button
                     className="w-full btn-touch"
                     variant={plan.slug === 'free' ? 'outline' : 'default'}
-                    disabled={isCurrent || isDisabled || busyPlan === plan.slug}
+                    disabled={isCurrent || isDisabled || busyPlan === plan.slug || (!paidPlansEnabled && plan.price_inr > 0)}
                     onClick={() => handleUpgrade(plan)}
                   >
                     {busyPlan === plan.slug && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    {isCurrent ? 'Current plan' : isDisabled ? 'Downgrade in settings' : plan.price_inr === 0 ? 'Continue free' : 'Upgrade'}
+                    {isCurrent
+                      ? 'Current plan'
+                      : isDisabled
+                      ? 'Downgrade in settings'
+                      : plan.price_inr === 0
+                      ? 'Continue free'
+                      : !paidPlansEnabled
+                      ? 'Coming soon'
+                      : 'Upgrade'}
                   </Button>
                 </CardContent>
               </Card>
@@ -186,8 +203,9 @@ export default function Pricing() {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-10 max-w-xl mx-auto">
-          All plans keep your data private and encrypted. You can cancel anytime. Payments are processed securely by Razorpay.
+          All plans keep your data private and encrypted. Paid plans launch soon — for now, enjoy Medora free.
         </p>
+
       </main>
     </div>
   );
