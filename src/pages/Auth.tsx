@@ -10,6 +10,7 @@ import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { useAuthABTest, trackAuthEvent } from "@/hooks/useAuthABTest";
 
 const NEXT_STORAGE_KEY = "medora:postAuthNext";
 
@@ -36,6 +37,7 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const next = sanitizeNext(params.get("next"));
+  const { variant: abVariant, ready: abReady } = useAuthABTest();
 
   const initialMode = params.get("mode") === "signup" ? "signup" : "signin";
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
@@ -43,6 +45,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
+  const pageViewTracked = useRef(false);
 
   const focusEmail = () => {
     // Give the mobile viewport a beat to reorder/render before scrolling.
@@ -53,13 +56,22 @@ export default function Auth() {
   };
 
   const startSignup = () => {
+    trackAuthEvent('signup_started', { variant: abVariant, source: 'hero_cta' });
     setMode("signup");
     focusEmail();
   };
   const startSignin = () => {
+    trackAuthEvent('signin_started', { variant: abVariant, source: 'hero_cta' });
     setMode("signin");
     focusEmail();
   };
+
+  useEffect(() => {
+    if (abReady && !pageViewTracked.current) {
+      pageViewTracked.current = true;
+      trackAuthEvent('auth_page_view', { variant: abVariant });
+    }
+  }, [abReady, abVariant]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -100,11 +112,13 @@ export default function Auth() {
           const { error: siErr } = await supabase.auth.signInWithPassword({ email, password });
           if (siErr) throw siErr;
         }
+        trackAuthEvent('signup_completed', { variant: abVariant });
         toast({ title: "Welcome!", description: "Your account is ready." });
         navigate(next, { replace: true });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        trackAuthEvent('signin_completed', { variant: abVariant });
         navigate(next, { replace: true });
       }
     } catch (err) {
@@ -136,33 +150,66 @@ export default function Auth() {
           </div>
 
           <div className="grid gap-10 lg:grid-cols-2 lg:items-center max-w-6xl mx-auto">
-            {/* Hero */}
+            {/* Hero — A/B test variant */}
             <section className="space-y-6 order-1 lg:order-1">
-              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight">
-                Your health record, ready when it matters most.
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-lg">
-                Medora is a private, personal health wallet. Store medical records, allergies, and
-                emergency info — and let any doctor scan a secure QR to see it in seconds.
-              </p>
-              <ul className="space-y-3 text-base">
-                <li className="flex gap-3"><span aria-hidden className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /> Emergency QR access — read-only and time-limited</li>
-                <li className="flex gap-3"><span aria-hidden className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /> Encrypted document vault — owner-only, always in sync</li>
-                <li className="flex gap-3"><span aria-hidden className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /> Family plan — manage records for kids and parents</li>
-              </ul>
-              <div className="space-y-3 pt-1">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button type="button" onClick={startSignup} className="btn-touch sm:flex-1" size="lg">
-                    Create my free health wallet
-                  </Button>
-                  <Button type="button" onClick={startSignin} variant="outline" className="btn-touch sm:flex-1" size="lg">
-                    I already have an account
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Free forever for 1 profile · No credit card · 30-second setup
-                </p>
-              </div>
+              {abVariant === 'alternate' ? (
+                <>
+                  <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight">
+                    Get an emergency-ready health ID in 60 seconds.
+                  </h1>
+                  <p className="text-lg text-muted-foreground max-w-lg">
+                    Doctors can scan your Medora QR and see allergies, conditions, and documents
+                    instantly — even if your phone is locked.
+                  </p>
+                  <ul className="space-y-3 text-base">
+                    <li className="flex gap-3"><span aria-hidden className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /> One QR code, always up to date</li>
+                    <li className="flex gap-3"><span aria-hidden className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /> Read-only access for doctors and first responders</li>
+                    <li className="flex gap-3"><span aria-hidden className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /> Private by design — nothing stored on third-party devices</li>
+                  </ul>
+                  <div className="space-y-3 pt-1">
+                    <Button type="button" onClick={startSignup} className="btn-touch w-full sm:w-auto" size="lg">
+                      Create my free health ID
+                    </Button>
+                    <p className="text-sm text-muted-foreground">
+                      Already have a Medora ID?{' '}
+                      <button type="button" className="text-primary font-medium hover:underline" onClick={startSignin}>
+                        Sign in
+                      </button>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Free forever for 1 profile · No credit card · 60-second setup
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight">
+                    Your health record, ready when it matters most.
+                  </h1>
+                  <p className="text-lg text-muted-foreground max-w-lg">
+                    Medora is a private, personal health wallet. Store medical records, allergies, and
+                    emergency info — and let any doctor scan a secure QR to see it in seconds.
+                  </p>
+                  <ul className="space-y-3 text-base">
+                    <li className="flex gap-3"><span aria-hidden className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /> Emergency QR access — read-only and time-limited</li>
+                    <li className="flex gap-3"><span aria-hidden className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /> Encrypted document vault — owner-only, always in sync</li>
+                    <li className="flex gap-3"><span aria-hidden className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /> Family plan — manage records for kids and parents</li>
+                  </ul>
+                  <div className="space-y-3 pt-1">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button type="button" onClick={startSignup} className="btn-touch sm:flex-1" size="lg">
+                        Create my free health wallet
+                      </Button>
+                      <Button type="button" onClick={startSignin} variant="outline" className="btn-touch sm:flex-1" size="lg">
+                        I already have an account
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Free forever for 1 profile · No credit card · 30-second setup
+                    </p>
+                  </div>
+                </>
+              )}
               <div className="flex flex-wrap gap-4 text-sm">
                 <Link to="/blog/benefits-of-personal-health-records" className="text-primary font-medium hover:underline">
                   Read the guide →
