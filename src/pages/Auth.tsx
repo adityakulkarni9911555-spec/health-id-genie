@@ -190,7 +190,7 @@ export default function Auth() {
                 <form onSubmit={handleEmail} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+                    <Input ref={emailRef} id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
