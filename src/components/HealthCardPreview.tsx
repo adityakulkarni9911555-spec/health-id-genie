@@ -121,6 +121,41 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
     }
   };
 
+  const handleAnalyze = async (path: string) => {
+    setAnalyzingPaths((prev) => new Set(prev).add(path));
+    try {
+      const updatedDoc = await analyzePatientDocument(patient.id, path);
+      setPatient((prev) => ({
+        ...prev,
+        documents: prev.documents.map((d) => (d.path === path ? updatedDoc : d)),
+      }));
+      toast({
+        title: 'Analysis complete',
+        description: 'AI has extracted key details from this document.',
+      });
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: 'Analysis failed',
+        description: err instanceof Error ? err.message : 'Could not analyze this document.',
+        variant: 'destructive',
+      });
+      // Mark as failed locally so the user can retry.
+      setPatient((prev) => ({
+        ...prev,
+        documents: prev.documents.map((d) =>
+          d.path === path ? { ...d, status: 'failed' as const } : d
+        ),
+      }));
+    } finally {
+      setAnalyzingPaths((prev) => {
+        const next = new Set(prev);
+        next.delete(path);
+        return next;
+      });
+    }
+  };
+
   const handlePrint = () => {
     window.print();
   };
