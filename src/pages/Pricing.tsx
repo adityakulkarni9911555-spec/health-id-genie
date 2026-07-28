@@ -121,7 +121,7 @@ export default function Pricing() {
           <div className="flex items-center gap-3">
             <Logo size={36} />
             <div>
-              <h1 className="font-display text-lg font-bold text-foreground tracking-tight">Medora</h1>
+              <h1 className="font-display text-lg font-bold text-foreground tracking-tight">Medora Pricing</h1>
               <p className="text-xs text-muted-foreground">Choose your plan</p>
             </div>
           </div>

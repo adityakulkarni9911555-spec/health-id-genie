@@ -82,9 +82,9 @@ const Index = () => {
               <Logo size={40} className="drop-shadow-sm" />
               <div>
                 <h1 className="font-display text-lg font-bold text-foreground tracking-tight leading-none">
-                  Medora
+                  Medora — Your Digital Health Wallet
                 </h1>
-                <p className="text-xs text-muted-foreground mt-0.5">Digital Health ID</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Private by design</p>
               </div>
             </div>
 
