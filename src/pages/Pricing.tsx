@@ -182,13 +182,6 @@ export default function Pricing() {
                   <Button
                     className="w-full btn-touch"
                     variant={plan.slug === 'free' ? 'outline' : 'default'}
-                    disabled={isCurrent || isDisabled || busyPlan === plan.slug}
-                    onClick={() => handleUpgrade(plan)}
-                  >
-                    {busyPlan === plan.slug && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  <Button
-                    className="w-full btn-touch"
-                    variant={plan.slug === 'free' ? 'outline' : 'default'}
                     disabled={isCurrent || isDisabled || busyPlan === plan.slug || (!paidPlansEnabled && plan.price_inr > 0)}
                     onClick={() => handleUpgrade(plan)}
                   >
