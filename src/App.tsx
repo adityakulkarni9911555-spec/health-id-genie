@@ -13,6 +13,7 @@ import Emergency from "./pages/Emergency";
 import Pricing from "./pages/Pricing";
 import BlogBenefitsPHR from "./pages/BlogBenefitsPHR";
 import BlogDigitalIdVsBracelets from "./pages/BlogDigitalIdVsBracelets";
+import BlogRequestMedicalRecords from "./pages/BlogRequestMedicalRecords";
 import { SplashScreen } from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
