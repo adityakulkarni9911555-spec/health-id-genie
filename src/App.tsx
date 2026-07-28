@@ -13,6 +13,7 @@ import Emergency from "./pages/Emergency";
 import Pricing from "./pages/Pricing";
 import BlogBenefitsPHR from "./pages/BlogBenefitsPHR";
 import BlogDigitalIdVsBracelets from "./pages/BlogDigitalIdVsBracelets";
+import BlogRequestMedicalRecords from "./pages/BlogRequestMedicalRecords";
 import { SplashScreen } from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => {
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/blog/benefits-of-personal-health-records" element={<BlogBenefitsPHR />} />
             <Route path="/blog/digital-medical-id-vs-bracelets" element={<BlogDigitalIdVsBracelets />} />
+            <Route path="/blog/how-to-request-medical-records" element={<BlogRequestMedicalRecords />} />
 
             <Route path="/e/:token" element={<Emergency />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

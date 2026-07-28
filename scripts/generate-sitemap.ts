@@ -15,6 +15,7 @@ const entries: SitemapEntry[] = [
   { path: "/pricing", changefreq: "weekly", priority: "0.8" },
   { path: "/blog/benefits-of-personal-health-records", changefreq: "monthly", priority: "0.7" },
   { path: "/blog/digital-medical-id-vs-bracelets", changefreq: "monthly", priority: "0.7" },
+  { path: "/blog/how-to-request-medical-records", changefreq: "monthly", priority: "0.7" },
 ];
 
 function generateSitemap(entries: SitemapEntry[]) {
