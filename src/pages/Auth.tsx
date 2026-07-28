@@ -142,19 +142,19 @@ export default function Auth() {
         <meta property="og:description" content="Access your Medora health wallet. Private by design." />
         <meta property="og:url" content="https://health-id-genie.lovable.app/auth" />
       </Helmet>
-      <main className="min-h-screen bg-gradient-to-br from-background via-background to-accent/30">
-        <div className="container mx-auto px-5 py-8">
-          <div className="flex justify-between items-center mb-10">
+      <main className="min-h-screen bg-background auth-first-screen">
+        <div className="container mx-auto px-5 py-6 sm:py-8">
+          <div className="flex justify-between items-center h-12 mb-8 sm:mb-10">
             <Link to="/" aria-label="Medora home"><Logo /></Link>
             <ThemeToggle compact />
           </div>
 
-          <div className="grid gap-10 lg:grid-cols-2 lg:items-center max-w-6xl mx-auto">
+          <div className="grid gap-8 lg:gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,448px)] lg:items-start max-w-6xl mx-auto">
             {/* Hero — A/B test variant */}
-            <section className="space-y-6 order-1 lg:order-1">
+            <section className="space-y-5 sm:space-y-6 order-1 lg:order-1 min-h-[430px] sm:min-h-[400px] lg:min-h-[520px] flex flex-col justify-center">
               {abVariant === 'alternate' ? (
                 <>
-                  <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight">
+                  <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight">
                     Get an emergency-ready health ID in 60 seconds.
                   </h1>
                   <p className="text-lg text-muted-foreground max-w-lg">
@@ -183,7 +183,7 @@ export default function Auth() {
                 </>
               ) : (
                 <>
-                  <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight">
+                  <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight">
                     Your health record, ready when it matters most.
                   </h1>
                   <p className="text-lg text-muted-foreground max-w-lg">
@@ -221,10 +221,10 @@ export default function Auth() {
             </section>
 
             {/* Sign-in card */}
-            <div className="order-2 lg:order-2 w-full max-w-md lg:justify-self-end">
-              <div className="form-section p-7 sm:p-8 space-y-6">
+            <div className="order-2 lg:order-2 w-full max-w-md lg:max-w-none lg:justify-self-end min-h-[430px] sm:min-h-[390px]">
+              <div className="form-section p-7 sm:p-8 space-y-6 min-h-[430px] sm:min-h-[390px]">
                 <div>
-                  <h2 className="font-display text-2xl font-semibold tracking-tight">
+                  <h2 className="font-display text-2xl font-semibold leading-tight">
                     {mode === "signup" ? "Create your Medora wallet" : "Your Medora wallet"}
                   </h2>
                   <p className="text-sm text-muted-foreground mt-1">

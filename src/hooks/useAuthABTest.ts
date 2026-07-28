@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { posthog } from '@/lib/posthog';
+import { capturePostHogEvent, getPostHogFlagVariant } from '@/lib/posthog';
 
 export type AuthHeroVariant = 'control' | 'alternate';
 
@@ -8,7 +8,7 @@ const STORAGE_KEY = 'medora:ab:auth_hero_variant';
 
 function readStoredVariant(): AuthHeroVariant | null {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) ?? sessionStorage.getItem(STORAGE_KEY);
     if (raw === 'control' || raw === 'alternate') return raw;
   } catch {
     // Ignore storage errors (private mode, etc.).
@@ -18,6 +18,7 @@ function readStoredVariant(): AuthHeroVariant | null {
 
 function storeVariant(variant: AuthHeroVariant) {
   try {
+    localStorage.setItem(STORAGE_KEY, variant);
     sessionStorage.setItem(STORAGE_KEY, variant);
   } catch {
     // Ignore storage errors.
@@ -36,69 +37,31 @@ export function useAuthABTest() {
   const [variant, setVariant] = useState<AuthHeroVariant>(() => {
     const stored = readStoredVariant();
     if (stored) return stored;
-    // Temporary placeholder until PostHog decides.
-    return 'control';
+    const assigned = coinFlip();
+    storeVariant(assigned);
+    return assigned;
   });
 
-  const [ready, setReady] = useState(false);
+  const [ready] = useState(true);
 
   useEffect(() => {
-    const stored = readStoredVariant();
-    if (stored) {
-      setVariant(stored);
-      setReady(true);
-      return;
-    }
-
-    let assigned: AuthHeroVariant | null = null;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    // PostHog's feature flags may already be cached or may arrive shortly.
-    // We use the callback API so we react as soon as flags are loaded.
-    const unsubscribe = posthog.onFeatureFlags((flags, flagVariants) => {
-      if (import.meta.env.DEV) {
-        console.log('[PostHog] onFeatureFlags', flags, flagVariants);
-      }
-      if (assigned) return; // already decided
-
-      const value = flagVariants?.[FLAG_KEY] ?? posthog.getFeatureFlag(FLAG_KEY);
-      if (value === 'alternate') assigned = 'alternate';
-      else if (value === 'control') assigned = 'control';
-
-      if (!assigned) {
-        assigned = coinFlip();
-      }
-
-      storeVariant(assigned);
-      setVariant(assigned);
-      setReady(true);
-      if (timer) clearTimeout(timer);
-
-      posthog.capture('ab_variant_assigned', {
-        experiment: FLAG_KEY,
-        variant: assigned,
-        fallback: !flags.includes(FLAG_KEY),
-      });
+    setVariant((current) => {
+      storeVariant(current);
+      return current;
     });
 
-    // Safety net: if PostHog never fires the callback, still pick a variant.
-    timer = setTimeout(() => {
-      if (import.meta.env.DEV) {
-        console.log('[PostHog] safety net fired');
-      }
-      if (assigned) return;
-      unsubscribe?.();
-      assigned = coinFlip();
-      storeVariant(assigned);
-      setVariant(assigned);
-      setReady(true);
-    }, 2000);
+    const idleTimer = window.setTimeout(() => {
+      const remoteVariant = getPostHogFlagVariant(FLAG_KEY);
+      capturePostHogEvent('ab_variant_assigned', {
+        experiment: FLAG_KEY,
+        variant,
+        remoteVariant,
+        lockedForStability: true,
+      });
+    }, 2500);
 
-    return () => {
-      if (timer) clearTimeout(timer);
-      unsubscribe?.();
-    };
-  }, []);
+    return () => window.clearTimeout(idleTimer);
+  }, [variant]);
 
   return useMemo(() => ({ variant, ready, flagKey: FLAG_KEY }), [variant, ready]);
 }
@@ -108,10 +71,7 @@ export function trackAuthEvent(
   properties: Record<string, unknown> = {}
 ) {
   try {
-    const result = posthog.capture(event, properties);
-    if (import.meta.env.DEV) {
-      console.log('[PostHog] capture', event, properties, 'result:', result, 'distinct_id:', posthog.get_distinct_id?.());
-    }
+    capturePostHogEvent(event, properties);
   } catch (err) {
     // Analytics are best-effort.
     if (import.meta.env.DEV) {
