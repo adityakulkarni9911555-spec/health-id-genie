@@ -36,6 +36,8 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   const [openingPath, setOpeningPath] = useState<string | null>(null);
   const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { planSlug, isPaid, isFamily, familyGroupId, documentLimit, loading: subLoading } = useSubscription();
 
   const shareUrl = patient.shareToken
     ? `${window.location.origin}/e/${patient.shareToken}`
