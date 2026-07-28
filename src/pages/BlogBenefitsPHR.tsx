@@ -100,6 +100,30 @@ export default function BlogBenefitsPHR() {
               day-to-day care.
             </p>
 
+            <div className="not-prose my-8 rounded-2xl border border-primary/20 bg-primary/5 p-5 sm:p-6">
+              <h2 className="mt-0 text-lg sm:text-xl font-semibold tracking-tight">
+                Start your own personal health record
+              </h2>
+              <p className="mt-1 text-sm sm:text-base text-muted-foreground">
+                Free to begin — build your emergency-ready health wallet in under two minutes.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link
+                  to="/auth?mode=signup&next=/"
+                  className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90"
+                >
+                  Create my free health record
+                </Link>
+                <Link
+                  to="/pricing"
+                  className="inline-flex items-center rounded-lg border border-border px-5 py-2.5 text-sm font-medium hover:bg-muted"
+                >
+                  See plans
+                </Link>
+              </div>
+            </div>
+
+
             <h2>What is a personal health record?</h2>
             <p>
               A personal health record is a digital, patient-owned file of your health information.
