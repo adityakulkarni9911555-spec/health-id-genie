@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { PatientRegistrationForm } from '@/components/PatientRegistrationForm';
 import { HealthCardPreview } from '@/components/HealthCardPreview';
 import { Logo } from '@/components/Logo';
 import { SyncStatusBanner } from '@/components/SyncStatusBanner';
 import { DeviceConditionBanner } from '@/components/DeviceConditionBanner';
+import { UpgradeBanner } from '@/components/UpgradeBanner';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Patient } from '@/types/patient';
-import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Loader2 } from 'lucide-react';
+import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Loader2, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { supabase } from '@/integrations/supabase/client';
