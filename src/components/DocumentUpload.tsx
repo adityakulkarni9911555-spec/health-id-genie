@@ -54,6 +54,7 @@ export const DocumentUpload = ({
   onAnalyze,
 }: DocumentUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const { toast } = useToast();
