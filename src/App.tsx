@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./pages/Auth";
 import { SplashScreen } from "./components/SplashScreen";
+import { RouteLoader } from "./components/RouteLoader";
+
 
 // Code-split every non-auth route. /auth is the landing page and stays eager.
 const Index = lazy(() => import("./pages/Index"));
@@ -60,7 +62,7 @@ const App = () => {
         <Sonner />
         {!splashDone && <SplashScreen onDone={handleSplashDone} />}
         <BrowserRouter>
-          <Suspense fallback={null}>
+          <Suspense fallback={<RouteLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/index" element={<Navigate to="/" replace />} />
