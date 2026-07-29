@@ -202,6 +202,15 @@ export const DocumentUpload = ({
           disabled={disabled || uploading || documents.length + pendingFiles.length >= maxFiles}
           onChange={(e) => handleFiles(e.target.files)}
         />
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          disabled={disabled || uploading || documents.length + pendingFiles.length >= maxFiles}
+          onChange={(e) => handleFiles(e.target.files)}
+        />
         <div className="flex flex-col items-center gap-2">
           {uploading ? (
             <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -216,19 +225,36 @@ export const DocumentUpload = ({
           <p className="text-xs text-muted-foreground">
             Prescriptions, reports, ID proofs, insurance card
           </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="mt-2"
-            disabled={disabled || uploading || documents.length + pendingFiles.length >= maxFiles}
-            onClick={(e) => {
-              e.stopPropagation();
-              inputRef.current?.click();
-            }}
-          >
-            {documents.length + pendingFiles.length >= maxFiles ? 'Limit reached' : 'Choose files'}
-          </Button>
+          <div className="mt-3 flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="btn-touch"
+              disabled={disabled || uploading || documents.length + pendingFiles.length >= maxFiles}
+              onClick={(e) => {
+                e.stopPropagation();
+                inputRef.current?.click();
+              }}
+            >
+              <Paperclip className="w-4 h-4 mr-2" />
+              {documents.length + pendingFiles.length >= maxFiles ? 'Limit reached' : 'Choose files'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="btn-touch"
+              disabled={disabled || uploading || documents.length + pendingFiles.length >= maxFiles}
+              onClick={(e) => {
+                e.stopPropagation();
+                cameraInputRef.current?.click();
+              }}
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              Scan document
+            </Button>
+          </div>
         </div>
       </div>
 
