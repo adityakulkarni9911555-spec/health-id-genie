@@ -1,32 +1,41 @@
-## Goal
+## Why your page isn't showing in Google (yet)
 
-On the "Your Medora wallet is ready" page (shown after registration), let the user add or scan documents in place — without going back to Update details.
+Being live is not the same as being indexed. Google has to discover the site, crawl it, decide it's worth indexing, and only then does it appear in search. For a brand new Lovable app on a `.lovable.app` subdomain, that usually takes days to weeks — and it will not happen at all until Google knows the site exists.
 
-## Placement
+Here's what I checked and what's actually going on:
 
-Add a compact **"Add documents"** section immediately below the Health Card preview and above the existing action row (Update details / Download / Print). It uses the same `DocumentUpload` component already used in the registration form, wired to upload straight into the user's existing patient record.
+### What's fine
+- `robots.txt` allows Googlebot on all public pages (only internal routes like `/auth/`, `/e/`, `/.lovable/` are disallowed — correct).
+- `sitemap.xml` exists at `https://health-id-genie.lovable.app/sitemap.xml` and lists the homepage, `/pricing`, and the 4 blog posts.
+- Per-route titles, descriptions, canonicals and JSON-LD are in place from the recent SEO work.
 
-```text
-[ Health Card ]
-[ Add documents  ← new section (upload zone + Choose files / Scan document) ]
-[ Update details ] [ Download Card ] [ Print Card ]
-```
+### The real reasons you can't find it
+1. **Google has almost certainly never crawled the site.** You have not verified the domain in Google Search Console or submitted the sitemap, so Google has no signal that this URL exists. Waiting won't fix this on a `.lovable.app` subdomain — you have to tell Google.
+2. **You're probably searching wrong.** Typing "Medora" into Google will surface bigger, older sites with the same name long before yours. Until you have backlinks and history, your site only shows up for very specific queries. Test with `site:health-id-genie.lovable.app` — if that returns nothing, the site is genuinely not indexed yet.
+3. **New sites take time.** Even after submission, first indexing typically takes 3–14 days. Ranking for competitive terms like "digital health card" takes months and depends on backlinks, not on-page SEO alone.
+4. **A `.lovable.app` subdomain will never rank well for competitive terms.** Google heavily favors root domains. If SEO matters to you, connecting a custom domain (e.g. `medora.app`) is the single biggest lever.
 
-This keeps the existing "Attached Documents" list further down as the read/analyze view, while the new section is a dedicated write surface at the top of the actions area.
+## What I'll do
 
-## Behavior
+### Step 1 — Verify the site in Google Search Console
+Use the built-in Google Search Console connector to:
+- Request a verification token
+- Inject the `google-site-verification` meta tag into `index.html`
+- Ask you to publish once so the tag goes live
+- Call Google to verify ownership
+- Register the site as a property
 
-- Uses the existing `DocumentUpload` component in **immediate upload mode**, so each file/scan is uploaded to Storage and appended to `patient.documents` right away.
-- Reuses `uploadPatientDocument` + `persistPatientDocuments` from `src/lib/patientDocuments.ts` — same size / type / count / plan-limit checks, same storage path.
-- After a successful upload, `HealthCardPreview` updates local `patient` state so the new file appears instantly in the "Attached Documents" list below and the plan's remaining-slots banner updates.
-- Camera capture reuses the "Scan document" button already added to `DocumentUpload` (rear camera via `capture="environment"`, safe fallback to file picker).
-- Hidden in print view (`no-print`).
+### Step 2 — Submit the sitemap
+Once verified, submit `https://health-id-genie.lovable.app/sitemap.xml` via the Search Console API so Google starts crawling all 7 listed URLs immediately instead of waiting to discover them.
 
-## Files to change
+### Step 3 — Give you the "is it indexed?" check
+Explain how to use `site:health-id-genie.lovable.app` in Google to watch indexing progress over the next 1–2 weeks, and how to use the URL Inspection tool in Search Console to request indexing for specific pages.
 
-- `src/components/HealthCardPreview.tsx`
-  - Import `DocumentUpload` and the upload/persist helpers.
-  - Add an `onDocumentsChange` handler that calls `persistPatientDocuments(patient.id, next)` and updates local `patient` state.
-  - Render `<DocumentUpload>` in a new `form-section no-print` block between the card preview and the actions grid, passing `documents={patient.documents}`, `uploadImmediately={{ upload: (f) => uploadPatientDocument(patient.id, f) }}`, and the plan's `documentLimit` as `maxFiles`.
+### What I won't do without asking
+- Connect a custom domain — that's a decision (and cost) for you. I'll mention it as the biggest ranking lever but won't push it.
+- Change any content, keywords, or metadata — the on-page SEO is already solid; the missing piece is discoverability, not quality.
 
-No changes to the database, storage, or the registration form — this is purely a new entry point to the existing upload pipeline.
+## Technical details
+- Verification uses the `google_search_console` connector's Site Verification API with `METHOD=META`, token embedded in `index.html` `<head>`.
+- After verification: `PUT /webmasters/v3/sites/{encoded siteUrl}` to register, then `PUT /webmasters/v3/sites/{siteUrl}/sitemaps/{encoded sitemap URL}` to submit.
+- Requires you to click Publish once between token injection and verification so Google can fetch the live meta tag.
