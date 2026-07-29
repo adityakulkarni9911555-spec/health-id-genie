@@ -27,7 +27,13 @@ import {
   Calendar,
   ClipboardList,
 } from 'lucide-react';
-import { getSignedDocumentUrl, analyzePatientDocument } from '@/lib/patientDocuments';
+import {
+  getSignedDocumentUrl,
+  analyzePatientDocument,
+  uploadPatientDocument,
+  persistPatientDocuments,
+} from '@/lib/patientDocuments';
+import { DocumentUpload, type PatientDocument } from '@/components/DocumentUpload';
 import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
