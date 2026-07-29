@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { SiteFooter } from "@/components/SiteFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +8,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Loader2 } from "lucide-react";
-import { Helmet } from "react-helmet-async";
 import { useAuthABTest, trackAuthEvent } from "@/hooks/useAuthABTest";
+
+// Heavy / below-the-fold: load after first paint.
+const SiteFooter = lazy(() => import("@/components/SiteFooter").then(m => ({ default: m.SiteFooter })));
 
 const NEXT_STORAGE_KEY = "medora:postAuthNext";
 
@@ -73,6 +74,33 @@ export default function Auth() {
     }
   }, [abReady, abVariant]);
 
+  // Set page metadata without pulling in react-helmet-async on the critical path.
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Sign In — Medora Personal Health Wallet";
+    const setMeta = (selector: string, attr: string, value: string) => {
+      let el = document.head.querySelector<HTMLMetaElement | HTMLLinkElement>(selector);
+      if (!el) {
+        if (selector.startsWith("link")) {
+          el = document.createElement("link");
+          (el as HTMLLinkElement).rel = "canonical";
+        } else {
+          el = document.createElement("meta");
+          const nameMatch = selector.match(/\[(name|property)="([^"]+)"\]/);
+          if (nameMatch) (el as HTMLMetaElement).setAttribute(nameMatch[1], nameMatch[2]);
+        }
+        document.head.appendChild(el);
+      }
+      el.setAttribute(attr, value);
+    };
+    setMeta('meta[name="description"]', "content", "Sign in or create your Medora account to access your private personal health wallet — medical records, allergies, and emergency info in one place.");
+    setMeta('link[rel="canonical"]', "href", "https://health-id-genie.lovable.app/auth");
+    setMeta('meta[property="og:title"]', "content", "Sign In — Medora Personal Health Wallet");
+    setMeta('meta[property="og:description"]', "content", "Access your Medora health wallet. Private by design.");
+    setMeta('meta[property="og:url"]', "content", "https://health-id-genie.lovable.app/auth");
+    return () => { document.title = prevTitle; };
+  }, []);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
@@ -134,14 +162,7 @@ export default function Auth() {
 
   return (
     <>
-      <Helmet>
-        <title>Sign In — Medora Personal Health Wallet</title>
-        <meta name="description" content="Sign in or create your Medora account to access your private personal health wallet — medical records, allergies, and emergency info in one place." />
-        <link rel="canonical" href="https://health-id-genie.lovable.app/auth" />
-        <meta property="og:title" content="Sign In — Medora Personal Health Wallet" />
-        <meta property="og:description" content="Access your Medora health wallet. Private by design." />
-        <meta property="og:url" content="https://health-id-genie.lovable.app/auth" />
-      </Helmet>
+
       <main className="min-h-screen bg-background auth-first-screen">
         <div className="container mx-auto px-5 py-6 sm:py-8">
           <div className="flex justify-between items-center h-12 mb-8 sm:mb-10">
@@ -259,7 +280,7 @@ export default function Auth() {
             </div>
           </div>
         </div>
-        <SiteFooter />
+        <Suspense fallback={null}><SiteFooter /></Suspense>
       </main>
     </>
   );

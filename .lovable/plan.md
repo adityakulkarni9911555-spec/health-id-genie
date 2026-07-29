@@ -1,41 +1,56 @@
-## Why your page isn't showing in Google (yet)
+## Goal
 
-Being live is not the same as being indexed. Google has to discover the site, crawl it, decide it's worth indexing, and only then does it appear in search. For a brand new Lovable app on a `.lovable.app` subdomain, that usually takes days to weeks — and it will not happen at all until Google knows the site exists.
+Bring the published site's Core Web Vitals into passing range:
+- LCP < 2.5s (currently ~29s)
+- FCP < 1.8s (currently ~52s)
+- CLS < 0.1 (currently 0.41)
 
-Here's what I checked and what's actually going on:
+FCP of 52s is not a rendering problem — that magnitude means the browser is blocked on the network before HTML/JS even parses. So the plan attacks both: shrink and defer the critical path, then stabilize layout.
 
-### What's fine
-- `robots.txt` allows Googlebot on all public pages (only internal routes like `/auth/`, `/e/`, `/.lovable/` are disallowed — correct).
-- `sitemap.xml` exists at `https://health-id-genie.lovable.app/sitemap.xml` and lists the homepage, `/pricing`, and the 4 blog posts.
-- Per-route titles, descriptions, canonicals and JSON-LD are in place from the recent SEO work.
+## What to change
 
-### The real reasons you can't find it
-1. **Google has almost certainly never crawled the site.** You have not verified the domain in Google Search Console or submitted the sitemap, so Google has no signal that this URL exists. Waiting won't fix this on a `.lovable.app` subdomain — you have to tell Google.
-2. **You're probably searching wrong.** Typing "Medora" into Google will surface bigger, older sites with the same name long before yours. Until you have backlinks and history, your site only shows up for very specific queries. Test with `site:health-id-genie.lovable.app` — if that returns nothing, the site is genuinely not indexed yet.
-3. **New sites take time.** Even after submission, first indexing typically takes 3–14 days. Ranking for competitive terms like "digital health card" takes months and depends on backlinks, not on-page SEO alone.
-4. **A `.lovable.app` subdomain will never rank well for competitive terms.** Google heavily favors root domains. If SEO matters to you, connecting a custom domain (e.g. `medora.app`) is the single biggest lever.
+### 1. Shrink the initial JS bundle (biggest LCP/FCP win)
 
-## What I'll do
+- Add `build.rollupOptions.output.manualChunks` in `vite.config.ts` to split vendor code: `react`/`react-dom`/`react-router` in one chunk, `@supabase/*` in another, `@tanstack/react-query` in a third, Radix UI primitives in a fourth. Prevents the current single mega-chunk that blocks first paint.
+- Lazy-load heavy providers that aren't needed for first paint:
+  - Move `HelmetProvider` import in `src/main.tsx` behind `React.lazy` — Helmet isn't needed until after mount.
+  - Lazy-load `QueryClientProvider`, `TooltipProvider`, `Toaster`, `Sonner` in `src/App.tsx` via `React.lazy` + a wrapper, so `/auth` (which uses none of them for first paint) doesn't ship them upfront.
+- `Auth.tsx` currently imports `react-helmet-async` synchronously — swap for a small `<title>`/`<meta>` update via `document.title` in `useEffect` on the auth page only, dropping Helmet from the auth entry.
 
-### Step 1 — Verify the site in Google Search Console
-Use the built-in Google Search Console connector to:
-- Request a verification token
-- Inject the `google-site-verification` meta tag into `index.html`
-- Ask you to publish once so the tag goes live
-- Call Google to verify ownership
-- Register the site as a property
+### 2. Route-level code-splitting for `/auth`
 
-### Step 2 — Submit the sitemap
-Once verified, submit `https://health-id-genie.lovable.app/sitemap.xml` via the Search Console API so Google starts crawling all 7 listed URLs immediately instead of waiting to discover them.
+- The landing route users hit is `/auth`. Currently `Auth` is imported eagerly in `App.tsx` (`import Auth from "./pages/Auth"`). Keep it eager but strip its imports of anything not needed above the fold: `useAuthABTest` (PostHog flag lookup), `Helmet`, and the `SiteFooter` — lazy-load them.
+- `useAuthABTest.ts` reads PostHog on mount. Wrap the whole hook in `requestIdleCallback` so it never runs in the FCP window.
 
-### Step 3 — Give you the "is it indexed?" check
-Explain how to use `site:health-id-genie.lovable.app` in Google to watch indexing progress over the next 1–2 weeks, and how to use the URL Inspection tool in Search Console to request indexing for specific pages.
+### 3. Kill the splash screen contribution to LCP
 
-### What I won't do without asking
-- Connect a custom domain — that's a decision (and cost) for you. I'll mention it as the biggest ranking lever but won't push it.
-- Change any content, keywords, or metadata — the on-page SEO is already solid; the missing piece is discoverability, not quality.
+- `SplashScreen` is skipped on `/auth`, but on `/` it currently paints a gradient overlay + animated pulse ring, and its H1 "Medora" is likely the LCP element. Reduce hold to 150ms max and mark the H1 with `fetchpriority` semantics (inline critical CSS for the heading font-size + weight so it paints in the first frame).
 
-## Technical details
-- Verification uses the `google_search_console` connector's Site Verification API with `METHOD=META`, token embedded in `index.html` `<head>`.
-- After verification: `PUT /webmasters/v3/sites/{encoded siteUrl}` to register, then `PUT /webmasters/v3/sites/{siteUrl}/sitemaps/{encoded sitemap URL}` to submit.
-- Requires you to click Publish once between token injection and verification so Google can fetch the live meta tag.
+### 4. Preload the auth hero elements
+
+- Add `<link rel="preload" as="fetch" href="https://kfvpqejwnhqqwrswjkqj.supabase.co/auth/v1/token" crossorigin>` — already preconnected, but not preloading. Skip if it triggers auth calls; just keep `preconnect`.
+- Add `<link rel="modulepreload">` in `index.html` for the built `Auth.tsx` chunk name (via a small vite plugin or manual after first build).
+
+### 5. Fix CLS (0.43 → <0.1)
+
+CLS is layout jumping after paint. Root causes in this codebase:
+- `SplashScreen` unmounts and pushes real content in — reserve the same viewport height for the shell before splash unmounts.
+- `Auth.tsx` toggles between `signin`/`signup` mode which changes form height — set `min-height` on the form container so the switch doesn't reflow.
+- Icon-only buttons (`ThemeToggle`, sign-out) in the header render after hydration — set explicit `w`/`h` on their placeholders.
+- Fonts: `index.css` says "system fonts for first paint" but `font-display` isn't declared on any `@font-face`. Audit and add `font-display: swap` to every custom font (if any remain), and set `font-family` on `<html>` in inline CSS so the fallback matches metrics.
+
+### 6. Defer non-critical third parties
+
+- PostHog: already idle-loaded, but `useAuthABTest` calls `getPostHogFlagVariant` on mount — defer as noted above.
+- `lovable-tagger` is dev-only ✓.
+- `mcpPlugin()` runs in prod — confirm it doesn't inject a runtime script into `index.html`; if it does, remove from prod build.
+
+### 7. Verification
+
+Build locally, then run Playwright against the preview with `page.evaluate` reading `PerformanceObserver` LCP/CLS/FCP entries and print them. Confirm each metric before declaring done. Also check Network panel for the largest blocking resource and iterate if any single chunk is still >150KB gzipped.
+
+## Technical notes
+
+- Order of impact: (1) bundle split + lazy providers is the single biggest win — Helmet + React Query + Supabase JS + Radix likely sum to ~250KB gzipped on the critical path today. Expect FCP to drop by an order of magnitude just from this.
+- The 52s FCP suggests the user's network was severely constrained during the measurement; even after fixes, results depend on where the test ran from. I will validate against a throttled Fast 3G profile in Playwright to prove the improvement is real, not just fast-network luck.
+- No visual/design changes. No business-logic changes. All edits are in `vite.config.ts`, `src/main.tsx`, `src/App.tsx`, `src/pages/Auth.tsx`, `src/hooks/useAuthABTest.ts`, `src/components/SplashScreen.tsx`, `src/index.css`, and `index.html`.
