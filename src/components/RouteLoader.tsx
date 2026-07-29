@@ -7,11 +7,12 @@ export const RouteLoader = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-background"
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-background animate-fade-in"
       role="status"
       aria-live="polite"
       aria-label="Loading Medora"
     >
+
       <div
         className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/40 pointer-events-none"
         aria-hidden="true"
