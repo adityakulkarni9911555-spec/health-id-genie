@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { SiteFooter } from "@/components/SiteFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +8,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Loader2 } from "lucide-react";
-import { Helmet } from "react-helmet-async";
 import { useAuthABTest, trackAuthEvent } from "@/hooks/useAuthABTest";
+
+// Heavy / below-the-fold: load after first paint.
+const SiteFooter = lazy(() => import("@/components/SiteFooter").then(m => ({ default: m.SiteFooter })));
 
 const NEXT_STORAGE_KEY = "medora:postAuthNext";
 
