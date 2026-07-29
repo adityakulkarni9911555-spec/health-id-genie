@@ -27,7 +27,13 @@ import {
   Calendar,
   ClipboardList,
 } from 'lucide-react';
-import { getSignedDocumentUrl, analyzePatientDocument } from '@/lib/patientDocuments';
+import {
+  getSignedDocumentUrl,
+  analyzePatientDocument,
+  uploadPatientDocument,
+  persistPatientDocuments,
+} from '@/lib/patientDocuments';
+import { DocumentUpload, type PatientDocument } from '@/components/DocumentUpload';
 import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -214,6 +220,32 @@ Generated: ${new Date().toLocaleString()}
       </div>
 
       {/* Plan chip hidden until paid plans launch */}
+
+      {/* Quick add documents (upload or scan without leaving this page) */}
+      <div className="mb-6 form-section no-print">
+        <DocumentUpload
+          documents={patient.documents as PatientDocument[]}
+          maxFiles={documentLimit || undefined}
+          uploadImmediately={{
+            upload: (file) => uploadPatientDocument(patient.id, file),
+          }}
+          onChange={async (docs) => {
+            setPatient((prev) => ({ ...prev, documents: docs }));
+            try {
+              await persistPatientDocuments(patient.id, docs);
+            } catch (err) {
+              console.error(err);
+              toast({
+                title: 'Could not save documents',
+                description: err instanceof Error ? err.message : 'Please try again.',
+                variant: 'destructive',
+              });
+            }
+          }}
+        />
+      </div>
+
+
 
 
       {/* Actions */}
