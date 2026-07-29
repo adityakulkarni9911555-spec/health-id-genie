@@ -18,7 +18,7 @@ import {
 } from "@/components/BlogShell";
 
 const CANONICAL =
-  "https://health-id-genie.lovable.app/blog/smartphone-emergency-medical-id-guide";
+  "https://medorahealthwallet.lovable.app/blog/smartphone-emergency-medical-id-guide";
 
 const articleSchema = {
   "@context": "https://schema.org",

@@ -22,7 +22,7 @@ import {
   Stat,
 } from "@/components/BlogShell";
 
-const CANONICAL = "https://health-id-genie.lovable.app/blog/how-to-request-medical-records";
+const CANONICAL = "https://medorahealthwallet.lovable.app/blog/how-to-request-medical-records";
 
 const articleSchema = {
   "@context": "https://schema.org",

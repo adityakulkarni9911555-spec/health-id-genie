@@ -21,13 +21,13 @@ const NotFound = () => {
           content="This Medora page doesn't exist. Return home to open your personal health wallet."
         />
         <meta name="robots" content="noindex, follow" />
-        <link rel="canonical" href="https://health-id-genie.lovable.app/404" />
+        <link rel="canonical" href="https://medorahealthwallet.lovable.app/404" />
         <meta property="og:title" content="Page not found — Medora" />
         <meta
           property="og:description"
           content="This Medora page doesn't exist. Return home to open your personal health wallet."
         />
-        <meta property="og:url" content="https://health-id-genie.lovable.app/404" />
+        <meta property="og:url" content="https://medorahealthwallet.lovable.app/404" />
         <meta name="twitter:title" content="Page not found — Medora" />
         <meta
           name="twitter:description"

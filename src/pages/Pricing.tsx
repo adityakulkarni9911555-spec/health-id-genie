@@ -99,10 +99,10 @@ export default function Pricing() {
       <Helmet>
         <title>Pricing — Medora Health Wallet Plans</title>
         <meta name="description" content="Compare Medora subscription plans. Free personal wallet, Premium ₹99/mo for unlimited documents, and Family ₹199/mo for up to 6 members." />
-        <link rel="canonical" href="https://health-id-genie.lovable.app/pricing" />
+        <link rel="canonical" href="https://medorahealthwallet.lovable.app/pricing" />
         <meta property="og:title" content="Pricing — Medora Health Wallet Plans" />
         <meta property="og:description" content="Free, Premium, and Family plans for your Medora personal health wallet." />
-        <meta property="og:url" content="https://health-id-genie.lovable.app/pricing" />
+        <meta property="og:url" content="https://medorahealthwallet.lovable.app/pricing" />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Product",
@@ -110,9 +110,9 @@ export default function Pricing() {
           description: "Private digital health wallet with Free, Premium, and Family subscription tiers.",
           brand: { "@type": "Brand", name: "Medora" },
           offers: [
-            { "@type": "Offer", name: "Free", price: "0", priceCurrency: "INR", url: "https://health-id-genie.lovable.app/pricing", availability: "https://schema.org/InStock" },
-            { "@type": "Offer", name: "Premium", price: "99", priceCurrency: "INR", url: "https://health-id-genie.lovable.app/pricing", availability: "https://schema.org/InStock", priceSpecification: { "@type": "UnitPriceSpecification", price: "99", priceCurrency: "INR", billingIncrement: 1, unitCode: "MON" } },
-            { "@type": "Offer", name: "Family", price: "199", priceCurrency: "INR", url: "https://health-id-genie.lovable.app/pricing", availability: "https://schema.org/InStock", priceSpecification: { "@type": "UnitPriceSpecification", price: "199", priceCurrency: "INR", billingIncrement: 1, unitCode: "MON" } },
+            { "@type": "Offer", name: "Free", price: "0", priceCurrency: "INR", url: "https://medorahealthwallet.lovable.app/pricing", availability: "https://schema.org/InStock" },
+            { "@type": "Offer", name: "Premium", price: "99", priceCurrency: "INR", url: "https://medorahealthwallet.lovable.app/pricing", availability: "https://schema.org/InStock", priceSpecification: { "@type": "UnitPriceSpecification", price: "99", priceCurrency: "INR", billingIncrement: 1, unitCode: "MON" } },
+            { "@type": "Offer", name: "Family", price: "199", priceCurrency: "INR", url: "https://medorahealthwallet.lovable.app/pricing", availability: "https://schema.org/InStock", priceSpecification: { "@type": "UnitPriceSpecification", price: "199", priceCurrency: "INR", billingIncrement: 1, unitCode: "MON" } },
           ],
         })}</script>
       </Helmet>

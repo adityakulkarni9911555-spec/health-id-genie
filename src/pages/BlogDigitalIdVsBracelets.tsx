@@ -7,7 +7,7 @@ import {
   SectionTitle,
 } from "@/components/BlogShell";
 
-const CANONICAL = "https://health-id-genie.lovable.app/blog/digital-medical-id-vs-bracelets";
+const CANONICAL = "https://medorahealthwallet.lovable.app/blog/digital-medical-id-vs-bracelets";
 
 const articleSchema = {
   "@context": "https://schema.org",

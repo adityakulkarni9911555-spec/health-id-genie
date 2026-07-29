@@ -114,10 +114,10 @@ export default function Auth() {
       el.setAttribute(attr, value);
     };
     setMeta('meta[name="description"]', "content", "Sign in or create your Medora account to access your private personal health wallet — medical records, allergies, and emergency info in one place.");
-    setMeta('link[rel="canonical"]', "href", "https://health-id-genie.lovable.app/auth");
+    setMeta('link[rel="canonical"]', "href", "https://medorahealthwallet.lovable.app/auth");
     setMeta('meta[property="og:title"]', "content", "Sign In — Medora Personal Health Wallet");
     setMeta('meta[property="og:description"]', "content", "Access your Medora health wallet. Private by design.");
-    setMeta('meta[property="og:url"]', "content", "https://health-id-genie.lovable.app/auth");
+    setMeta('meta[property="og:url"]', "content", "https://medorahealthwallet.lovable.app/auth");
     return () => { document.title = prevTitle; };
   }, []);
 
