@@ -1,7 +1,7 @@
 import { writeFileSync } from "fs";
 import { resolve } from "path";
 
-const BASE_URL = "https://health-id-genie.lovable.app";
+const BASE_URL = "https://medorahealthwallet.lovable.app";
 
 interface SitemapEntry {
   path: string;
