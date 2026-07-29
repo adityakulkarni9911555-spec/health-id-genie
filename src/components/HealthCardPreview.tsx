@@ -221,6 +221,32 @@ Generated: ${new Date().toLocaleString()}
 
       {/* Plan chip hidden until paid plans launch */}
 
+      {/* Quick add documents (upload or scan without leaving this page) */}
+      <div className="mb-6 form-section no-print">
+        <DocumentUpload
+          documents={patient.documents as PatientDocument[]}
+          maxFiles={documentLimit || undefined}
+          uploadImmediately={{
+            upload: (file) => uploadPatientDocument(patient.id, file),
+          }}
+          onChange={async (docs) => {
+            setPatient((prev) => ({ ...prev, documents: docs }));
+            try {
+              await persistPatientDocuments(patient.id, docs);
+            } catch (err) {
+              console.error(err);
+              toast({
+                title: 'Could not save documents',
+                description: err instanceof Error ? err.message : 'Please try again.',
+                variant: 'destructive',
+              });
+            }
+          }}
+        />
+      </div>
+
+
+
 
       {/* Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 no-print">
