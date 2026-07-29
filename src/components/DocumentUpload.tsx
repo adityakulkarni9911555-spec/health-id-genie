@@ -120,6 +120,7 @@ export const DocumentUpload = ({
     }
 
     if (inputRef.current) inputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   const removePending = (idx: number) => {
