@@ -63,24 +63,37 @@ const App = () => {
         {!splashDone && <SplashScreen onDone={handleSplashDone} />}
         <BrowserRouter>
           <Suspense fallback={<RouteLoader />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/index" element={<Navigate to="/" replace />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/blog/benefits-of-personal-health-records" element={<BlogBenefitsPHR />} />
-              <Route path="/blog/digital-medical-id-vs-bracelets" element={<BlogDigitalIdVsBracelets />} />
-              <Route path="/blog/how-to-request-medical-records" element={<BlogRequestMedicalRecords />} />
-              <Route path="/blog/smartphone-emergency-medical-id-guide" element={<BlogSmartphoneEmergencyId />} />
-
-              <Route path="/e/:token" element={<Emergency />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AnimatedRoutes />
           </Suspense>
         </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
+
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="animate-fade-in">
+      <Routes location={location}>
+        <Route path="/" element={<Index />} />
+        <Route path="/index" element={<Navigate to="/" replace />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/blog/benefits-of-personal-health-records" element={<BlogBenefitsPHR />} />
+        <Route path="/blog/digital-medical-id-vs-bracelets" element={<BlogDigitalIdVsBracelets />} />
+        <Route path="/blog/how-to-request-medical-records" element={<BlogRequestMedicalRecords />} />
+        <Route path="/blog/smartphone-emergency-medical-id-guide" element={<BlogSmartphoneEmergencyId />} />
+        <Route path="/e/:token" element={<Emergency />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </div>
+  );
+};
+
       </TooltipProvider>
     </QueryClientProvider>
   );
