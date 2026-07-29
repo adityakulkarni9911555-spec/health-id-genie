@@ -13,8 +13,8 @@ export const SplashScreen = ({ onDone }: SplashScreenProps) => {
   useEffect(() => {
     const lite = powerSaver || reducedMotion;
     // Keep the splash short so it never blocks LCP measurement.
-    const holdMs = lite ? 300 : 900;
-    const fadeMs = lite ? 120 : 200;
+    const holdMs = lite ? 200 : 500;
+    const fadeMs = lite ? 100 : 150;
 
     const leaveTimer = window.setTimeout(() => setLeaving(true), holdMs);
     const doneTimer = window.setTimeout(onDone, holdMs + fadeMs);
@@ -24,6 +24,7 @@ export const SplashScreen = ({ onDone }: SplashScreenProps) => {
       window.clearTimeout(doneTimer);
     };
   }, [onDone, powerSaver, reducedMotion]);
+
 
   return (
     <div
