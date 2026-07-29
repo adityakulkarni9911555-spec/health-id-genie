@@ -94,9 +94,5 @@ const AnimatedRoutes = () => {
   );
 };
 
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
-};
 
 export default App;
