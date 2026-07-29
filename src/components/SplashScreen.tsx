@@ -44,15 +44,16 @@ export const SplashScreen = ({ onDone }: SplashScreenProps) => {
           100% { transform: scale(1.9); opacity: 0; }
         }
         @keyframes splash-logo-in {
-          0% { transform: scale(0.9); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
+          0% { transform: scale(0.96); }
+          100% { transform: scale(1); }
         }
         .splash-pulse-ring {
           animation: splash-pulse 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
         }
         .splash-logo {
-          animation: splash-logo-in 400ms ease-out both;
+          animation: splash-logo-in 250ms ease-out both;
         }
+
         @media (prefers-reduced-motion: reduce) {
           .splash-pulse-ring { animation: none; opacity: 0; }
           .splash-logo { animation: none; opacity: 1; transform: none; }
