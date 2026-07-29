@@ -42,7 +42,9 @@ export default defineConfig(({ mode }) => ({
           if (id.includes("embla-carousel")) return "carousel";
           if (id.includes("react-day-picker")) return "daypicker";
           if (id.includes("cmdk") || id.includes("vaul") || id.includes("sonner") || id.includes("input-otp")) return "ui-extras";
-          if (id.includes("/react/") || id.includes("/react-dom/") || id.includes("scheduler")) return "react";
+          // Do NOT manually chunk react/react-dom/scheduler — Vite handles
+          // their init order; splitting them causes TDZ errors at runtime.
+
         },
       },
     },
