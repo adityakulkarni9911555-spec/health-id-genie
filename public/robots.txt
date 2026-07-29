@@ -18,4 +18,4 @@ Disallow: /auth/
 Disallow: /.lovable/
 
 
-Sitemap: https://health-id-genie.lovable.app/sitemap.xml
+Sitemap: https://medorahealthwallet.lovable.app/sitemap.xml
