@@ -74,6 +74,26 @@ export default function Auth() {
     }
   }, [abReady, abVariant]);
 
+  // Warm up likely next routes during idle time so post-auth navigation is instant.
+  useEffect(() => {
+    const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+    const run = () => {
+      import("./Index");
+      import("./Pricing");
+      import("@/components/SiteFooter");
+    };
+    const id = typeof ric === "function" ? ric(run, { timeout: 3000 }) : window.setTimeout(run, 1500);
+    return () => {
+      if (typeof ric === "function") {
+        const cic = (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback;
+        cic?.(id as number);
+      } else {
+        window.clearTimeout(id as number);
+      }
+    };
+  }, []);
+
+
   // Set page metadata without pulling in react-helmet-async on the critical path.
   useEffect(() => {
     const prevTitle = document.title;
