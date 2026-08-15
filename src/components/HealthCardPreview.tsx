@@ -245,6 +245,12 @@ Generated: ${new Date().toLocaleString()}
         />
       </div>
 
+      {/* Natural-language search across analysed documents */}
+      <div className="mb-6 no-print">
+        <RecordSearch patientId={patient.id} />
+      </div>
+
+
 
 
 
