@@ -7,6 +7,8 @@ export interface DeviceConditions {
   lowMemory: boolean;
   slowConnection: boolean;
   reducedMotion: boolean;
+  /** True when sustained frame-rate loss suggests the device is throttling (overheating). */
+  thermalThrottling: boolean;
   /** True when we should aggressively reduce work (animations, polling, media). */
   powerSaver: boolean;
 }
@@ -44,6 +46,41 @@ const publish = (next: DeviceConditions) => {
   listeners.forEach((l) => l(next));
 };
 
+// Browsers expose no thermal API, so we infer heat-related throttling from a
+// sustained drop in frame rate while the tab is visible.
+let thermalThrottling = false;
+
+const startThermalWatch = (onChange: () => void) => {
+  if (typeof window === 'undefined' || typeof requestAnimationFrame !== 'function') return;
+  let frames = 0;
+  let windowStart = performance.now();
+  let slowWindows = 0;
+
+  const tick = (now: number) => {
+    frames += 1;
+    const elapsed = now - windowStart;
+    if (elapsed >= 2000) {
+      const fps = (frames * 1000) / elapsed;
+      const visible = typeof document === 'undefined' || !document.hidden;
+      if (visible && fps < 20) {
+        slowWindows += 1;
+      } else if (fps > 40) {
+        slowWindows = 0;
+      }
+      const next = slowWindows >= 3;
+      if (next !== thermalThrottling) {
+        thermalThrottling = next;
+        onChange();
+      }
+      frames = 0;
+      windowStart = now;
+    }
+    requestAnimationFrame(tick);
+  };
+
+  requestAnimationFrame(tick);
+};
+
 const compute = (
   battery: BatteryLike | null,
   reducedMotion: boolean
@@ -62,7 +99,11 @@ const compute = (
     batteryLevel !== null && !charging && batteryLevel <= 0.2;
 
   const powerSaver =
-    saveData || lowBattery || (lowMemory && slowConnection) || reducedMotion;
+    saveData ||
+    lowBattery ||
+    thermalThrottling ||
+    (lowMemory && slowConnection) ||
+    reducedMotion;
 
   return {
     batteryLevel,
@@ -71,6 +112,7 @@ const compute = (
     lowMemory,
     slowConnection,
     reducedMotion,
+    thermalThrottling,
     powerSaver,
   };
 };
@@ -104,6 +146,8 @@ const init = async () => {
   const mm = window.matchMedia('(prefers-reduced-motion: reduce)');
   mm.addEventListener?.('change', refresh);
 
+  startThermalWatch(refresh);
+
   refresh();
 };
 
@@ -117,6 +161,7 @@ export const useDeviceConditions = (): DeviceConditions => {
         lowMemory: false,
         slowConnection: false,
         reducedMotion: readReducedMotion(),
+        thermalThrottling: false,
         powerSaver: false,
       }
   );
