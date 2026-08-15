@@ -34,6 +34,8 @@ import {
   persistPatientDocuments,
 } from '@/lib/patientDocuments';
 import { DocumentUpload, type PatientDocument } from '@/components/DocumentUpload';
+import { RecordSearch } from '@/components/RecordSearch';
+
 import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
