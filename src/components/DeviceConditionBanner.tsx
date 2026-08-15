@@ -1,8 +1,8 @@
 import { useDeviceConditions } from '@/hooks/useDeviceConditions';
-import { BatteryLow, Gauge, WifiOff } from 'lucide-react';
+import { BatteryLow, Gauge, WifiOff, Thermometer } from 'lucide-react';
 
 export const DeviceConditionBanner = () => {
-  const { powerSaver, batteryLevel, charging, saveData, slowConnection } =
+  const { powerSaver, batteryLevel, charging, saveData, slowConnection, thermalThrottling } =
     useDeviceConditions();
 
   if (!powerSaver) return null;
@@ -11,7 +11,9 @@ export const DeviceConditionBanner = () => {
     typeof batteryLevel === 'number' ? Math.round(batteryLevel * 100) : null;
 
   const reason =
-    pct !== null && !charging && batteryLevel! <= 0.2
+    thermalThrottling
+      ? 'Device running hot — cooling-friendly mode on'
+      : pct !== null && !charging && batteryLevel! <= 0.2
       ? `Battery ${pct}% — power-saving mode on`
       : saveData
       ? 'Data Saver on — using lightweight mode'
@@ -19,8 +21,9 @@ export const DeviceConditionBanner = () => {
       ? 'Slow connection — lightweight mode on'
       : 'Lightweight mode on';
 
-  const Icon =
-    pct !== null && pct <= 20 && !charging
+  const Icon = thermalThrottling
+    ? Thermometer
+    : pct !== null && pct <= 20 && !charging
       ? BatteryLow
       : saveData
       ? Gauge
