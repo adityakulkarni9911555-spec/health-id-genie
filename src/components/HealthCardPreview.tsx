@@ -34,6 +34,8 @@ import {
   persistPatientDocuments,
 } from '@/lib/patientDocuments';
 import { DocumentUpload, type PatientDocument } from '@/components/DocumentUpload';
+import { RecordSearch } from '@/components/RecordSearch';
+
 import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -244,6 +246,12 @@ Generated: ${new Date().toLocaleString()}
           }}
         />
       </div>
+
+      {/* Natural-language search across analysed documents */}
+      <div className="mb-6 no-print">
+        <RecordSearch patientId={patient.id} />
+      </div>
+
 
 
 
