@@ -8,14 +8,14 @@
 - Team members: Aryan Singh, Lathick Chitla
 - Medora logo, tagline "Your Personal Health Wallet", Ideathon/event line
 
-Produce a judge-ready pitch deck PDF (A4 landscape, 14 pages, well under 15) using Medora's real branding and live app screenshots, delivered as a downloadable file.
+Produce a judge-ready pitch deck PDF (A4 landscape, 13 pages, well under 15) using Medora's real branding and live app screenshots, delivered as a downloadable file.
 
-## Cover page
+## Cover page (single page)
 
 - Team Name: Medora
 - College: Bhavan's Hazarimal Somani College
 - Contact Email: aa3095517@gmail.com
-- Team member: Aryan Singh
+- Team members: Aryan Singh, Lathick Chitla
 - Medora logo, tagline "Your Personal Health Wallet", Ideathon/event line
 
 ## Deck outline (14 pages)
