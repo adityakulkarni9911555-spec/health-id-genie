@@ -43,7 +43,7 @@ Produce a judge-ready pitch deck PDF (A4 landscape, 13 pages, well under 15) usi
 
 ## Quality check
 
-- Convert every page to an image and inspect all 14 for overflow, clipped text, missing screenshots, contrast, and ordering; fix and re-render until clean.
+- Convert every page to an image and inspect all 13 for overflow, clipped text, missing screenshots, contrast, and ordering; fix and re-render until clean.
 - Confirm page count <= 15 and file size well under typical upload limits.
 
 No app source files change — this is a document deliverable only.
