@@ -1,5 +1,13 @@
 # Medora Pitch Deck for Unstop Submission
 
+## Cover page
+
+- Team Name: Medora
+- College: Bhavan's Hazarimal Somani College
+- Contact Email: aa3095517@gmail.com
+- Team members: Aryan Singh, Lathick Chitla
+- Medora logo, tagline "Your Personal Health Wallet", Ideathon/event line
+
 Produce a judge-ready pitch deck PDF (A4 landscape, 14 pages, well under 15) using Medora's real branding and live app screenshots, delivered as a downloadable file.
 
 ## Cover page
@@ -25,7 +33,7 @@ Produce a judge-ready pitch deck PDF (A4 landscape, 14 pages, well under 15) usi
 11. Privacy & security — owner-only access, RLS, private storage, expiring document links
 12. Business model — Free / Premium / Family tiers with limits (from the live pricing page)
 13. Roadmap & impact — next 6-12 months, target reach
-14. Team & ask — Aryan Singh, contact email, support requested
+14. Team & ask — Aryan Singh & Lathick Chitla, contact email, support requested
 
 ## Technical approach
 
