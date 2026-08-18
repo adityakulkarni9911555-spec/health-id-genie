@@ -33,7 +33,7 @@ Produce a judge-ready pitch deck PDF (A4 landscape, 14 pages, well under 15) usi
 11. Privacy & security — owner-only access, RLS, private storage, expiring document links
 12. Business model — Free / Premium / Family tiers with limits (from the live pricing page)
 13. Roadmap & impact — next 6-12 months, target reach
-14. Team & ask — Aryan Singh, contact email, support requested
+14. Team & ask — Aryan Singh & Lathick Chitla, contact email, support requested
 
 ## Technical approach
 
