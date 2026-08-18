@@ -1,49 +1,42 @@
-## Problem
+# Medora Pitch Deck for Unstop Submission
 
-When users navigate between pages (e.g. `/auth` → `/`, or to `/pricing`), they briefly see a blank white screen. This happens because every non-`/auth` route is lazy-loaded (`React.lazy`) and the `<Suspense>` fallback in `src/App.tsx` is currently `null`, so nothing renders while the route chunk downloads.
+Produce a judge-ready pitch deck PDF (A4 landscape, 14 pages, well under 15) using Medora's real branding and live app screenshots, delivered as a downloadable file.
 
-## Solution
+## Cover page
 
-Reuse the Medora splash visual (logo + pulse ring, "Your health, in your pocket") as a lightweight **route transition loader** so users always see the brand instead of white.
+- Team Name: Medora
+- College: Bhavan's Hazarimal Somani College
+- Contact Email: aa3095517@gmail.com
+- Team member: Aryan Singh
+- Medora logo, tagline "Your Personal Health Wallet", Ideathon/event line
 
-### Changes
+## Deck outline (14 pages)
 
-1. **New component `src/components/RouteLoader.tsx`**
-   - A stripped-down version of `SplashScreen` — same logo, same pulse animation, same background gradient, no timers, no `onDone` callback.
-   - Respects `useDeviceConditions` (disables the pulse on power-saver / reduced-motion, just shows the static logo).
-   - Renders full-screen (`fixed inset-0`) on top of the app.
-   - Only appears while a lazy chunk is loading, then unmounts as soon as React finishes suspending.
+1. Cover — team, college, email, logo
+2. The problem — records scattered, emergencies without medical history
+3. Who it hurts — patients, families, emergency responders (with data points framed as estimates)
+4. Solution — Medora personal health wallet, one-line pitch + hero screenshot
+5. How it works — 3 steps: register, upload/scan, share QR (flow diagram)
+6. Product walkthrough 1 — registration + health card screenshots
+7. Product walkthrough 2 — wallet, document upload, camera scan screenshots
+8. Emergency QR — always-current share token, clinician one-page view screenshot
+9. AI layer — smart document reading, natural-language record search
+10. Built for real conditions — offline-first sync, low-battery/device-heat power saving, tablet/mobile UI
+11. Privacy & security — owner-only access, RLS, private storage, expiring document links
+12. Business model — Free / Premium / Family tiers with limits (from the live pricing page)
+13. Roadmap & impact — next 6-12 months, target reach
+14. Team & ask — Aryan Singh, contact email, support requested
 
-2. **`src/App.tsx`** — use `<RouteLoader />` as the `<Suspense fallback>` instead of `null`. That single change covers every lazy route (`/`, `/pricing`, all blog pages, `/e/:token`, `/auth/callback`, etc.).
+## Technical approach
 
-3. **Avoid a flash for already-cached routes**
-   - The idle-time prefetch already added in `src/pages/Auth.tsx` warms `/` and `/pricing`, so those transitions typically resolve synchronously and the loader never appears.
-   - For uncached chunks, the loader shows only for the duration of the network fetch, keeping brand continuity.
+- Capture fresh screenshots of the live app (auth/landing, wallet + health card, document upload, emergency page, pricing) via Playwright at a clean viewport into `/tmp`.
+- Build an HTML slide template using Medora's existing tokens (purple-indigo primary, teal accent, Plus Jakarta Sans/Inter) and render to PDF with Playwright at A4 landscape, one page per slide.
+- Only claims already implemented in the app go into the deck; forward-looking items are labelled roadmap.
+- Save as `/mnt/documents/Medora_Pitch_Deck.pdf` and surface it as a downloadable artifact.
 
-### What the loader looks like
+## Quality check
 
-Same visual language as the initial splash:
+- Convert every page to an image and inspect all 14 for overflow, clipped text, missing screenshots, contrast, and ordering; fix and re-render until clean.
+- Confirm page count <= 15 and file size well under typical upload limits.
 
-```text
-┌────────────────────────────┐
-│                            │
-│         ◯ (pulse)          │
-│         [Medora logo]      │
-│           Medora           │
-│  Your health, in your pocket │
-│                            │
-└────────────────────────────┘
-```
-
-Background: subtle `background → accent/40` gradient (already defined in tokens), no hardcoded colors.
-
-### What is intentionally NOT changed
-
-- The initial `SplashScreen` (session-scoped, shown once) stays as-is — it still hides on `/auth`, `/e/:token`, `/pricing`, and blog routes to protect LCP on SEO-critical pages.
-- No new animations, no video file (a real video would hurt load time on every navigation); the loader is pure CSS/SVG so it's instant.
-- No changes to backend, routing, auth, or data layers.
-
-### Files touched
-
-- `src/components/RouteLoader.tsx` — new (~40 lines)
-- `src/App.tsx` — 1-line change to the Suspense fallback
+No app source files change — this is a document deliverable only.
