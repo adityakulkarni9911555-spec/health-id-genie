@@ -8,19 +8,19 @@
 - Team members: Aryan Singh, Lathick Chitla
 - Medora logo, tagline "Your Personal Health Wallet", Ideathon/event line
 
-Produce a judge-ready pitch deck PDF (A4 landscape, 14 pages, well under 15) using Medora's real branding and live app screenshots, delivered as a downloadable file.
+Produce a judge-ready pitch deck PDF (A4 landscape, 13 pages, well under 15) using Medora's real branding and live app screenshots, delivered as a downloadable file.
 
-## Cover page
+## Cover page (single page)
 
 - Team Name: Medora
 - College: Bhavan's Hazarimal Somani College
 - Contact Email: aa3095517@gmail.com
-- Team member: Aryan Singh
+- Team members: Aryan Singh, Lathick Chitla
 - Medora logo, tagline "Your Personal Health Wallet", Ideathon/event line
 
-## Deck outline (14 pages)
+## Deck outline (13 pages)
 
-1. Cover — team, college, email, logo
+1. Cover — team name, college, email, team members, logo, tagline
 2. The problem — records scattered, emergencies without medical history
 3. Who it hurts — patients, families, emergency responders (with data points framed as estimates)
 4. Solution — Medora personal health wallet, one-line pitch + hero screenshot
@@ -32,8 +32,7 @@ Produce a judge-ready pitch deck PDF (A4 landscape, 14 pages, well under 15) usi
 10. Built for real conditions — offline-first sync, low-battery/device-heat power saving, tablet/mobile UI
 11. Privacy & security — owner-only access, RLS, private storage, expiring document links
 12. Business model — Free / Premium / Family tiers with limits (from the live pricing page)
-13. Roadmap & impact — next 6-12 months, target reach
-14. Team & ask — Aryan Singh & Lathick Chitla, contact email, support requested
+13. Ask & roadmap — support requested, next 6-12 months, target reach
 
 ## Technical approach
 
@@ -44,7 +43,7 @@ Produce a judge-ready pitch deck PDF (A4 landscape, 14 pages, well under 15) usi
 
 ## Quality check
 
-- Convert every page to an image and inspect all 14 for overflow, clipped text, missing screenshots, contrast, and ordering; fix and re-render until clean.
+- Convert every page to an image and inspect all 13 for overflow, clipped text, missing screenshots, contrast, and ordering; fix and re-render until clean.
 - Confirm page count <= 15 and file size well under typical upload limits.
 
 No app source files change — this is a document deliverable only.
