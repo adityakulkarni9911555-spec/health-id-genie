@@ -262,7 +262,7 @@ export default function Auth() {
             </section>
 
             {/* Sign-in card */}
-            <div className="order-2 lg:order-2 w-full max-w-md lg:max-w-none lg:justify-self-end min-h-[430px] sm:min-h-[390px]">
+            <div className="order-2 lg:order-2 w-full max-w-md lg:max-w-md lg:justify-self-center min-h-[430px] sm:min-h-[390px]">
               <div className="form-section p-7 sm:p-8 space-y-6 min-h-[430px] sm:min-h-[390px]">
                 <div>
                   <h2 className="font-display text-2xl font-semibold leading-tight">
