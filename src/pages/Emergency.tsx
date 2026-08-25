@@ -208,8 +208,32 @@ const Emergency = () => {
       window.clearTimeout(watchdog);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, reloadKey]);
 
+  const retry = () => {
+    widgetIdRef.current = null;
+    setData(null);
+    setState('loading');
+    setReloadKey((k) => k + 1);
+  };
+
+  if (state === 'wiped') {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center bg-card border border-border rounded-2xl p-8 shadow-sm">
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <ShieldAlert className="w-7 h-7 text-primary" />
+          </div>
+          <h1 className="font-display text-xl font-bold mb-2">Emergency info hidden</h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            For privacy, the record was cleared from this device when you left the
+            page. Tap below to load the latest info again.
+          </p>
+          <Button onClick={retry}>Show emergency info again</Button>
+        </div>
+      </div>
+    );
+  }
 
   if (state === 'loading') {
     return (
@@ -220,6 +244,7 @@ const Emergency = () => {
       </div>
     );
   }
+
 
   if (state === 'ratelimited') {
     return (
