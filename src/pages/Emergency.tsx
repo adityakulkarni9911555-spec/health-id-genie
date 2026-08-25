@@ -59,11 +59,13 @@ declare global {
 const Emergency = () => {
   const { token } = useParams<{ token: string }>();
   const [data, setData] = useState<EmergencyPayload | null>(null);
-  const [state, setState] = useState<'loading' | 'ready' | 'notfound' | 'error' | 'ratelimited'>(
-    'loading'
-  );
+  const [state, setState] = useState<
+    'loading' | 'ready' | 'notfound' | 'error' | 'ratelimited' | 'wiped'
+  >('loading');
+  const [reloadKey, setReloadKey] = useState(0);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
+
 
   useEffect(() => {
     document.title = 'Emergency Medical Info · Medora';
