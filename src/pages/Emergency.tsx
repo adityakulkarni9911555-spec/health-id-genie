@@ -464,7 +464,8 @@ const Emergency = () => {
             variant="outline"
             onClick={() => {
               setData(null);
-              setState('loading');
+              setState('wiped');
+
               window.close();
               // If the tab can't be closed by script, send them away.
               setTimeout(() => {
