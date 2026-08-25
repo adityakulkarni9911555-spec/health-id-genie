@@ -86,7 +86,8 @@ const Emergency = () => {
     // Wipe everything the moment the tab is hidden, closed, or navigated away.
     const wipe = () => {
       setData(null);
-      setState('loading');
+      setState('wiped');
+
       // Belt-and-suspenders: also clear any strays this route could have created.
       try {
         Object.keys(sessionStorage)
