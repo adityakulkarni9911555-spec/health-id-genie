@@ -207,7 +207,7 @@ export default function Pricing() {
                       <ul className="space-y-1 text-muted-foreground">
                         <li className="flex gap-2">
                           <span className="text-primary">•</span>
-                          <span>One subscription covers you + up to 5 family members.</span>
+                          <span>One subscription covers you + up to 4 family members.</span>
                         </li>
                         <li className="flex gap-2">
                           <span className="text-primary">•</span>
@@ -215,7 +215,7 @@ export default function Pricing() {
                         </li>
                         <li className="flex gap-2">
                           <span className="text-primary">•</span>
-                          <span>Total of 6 profiles under one bill.</span>
+                          <span>Total of 5 profiles under one bill.</span>
                         </li>
                       </ul>
                     </div>
