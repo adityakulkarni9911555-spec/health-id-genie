@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      card_orders: {
+        Row: {
+          address_line1: string
+          address_line2: string | null
+          amount_inr: number
+          card_data: Json
+          city: string
+          created_at: string
+          delivery_name: string
+          delivery_phone: string
+          id: string
+          owner_id: string
+          pack_slug: string
+          patient_id: string
+          pincode: string
+          quantity: number
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          state: string
+          status: string
+          tracking_note: string | null
+          updated_at: string
+        }
+        Insert: {
+          address_line1: string
+          address_line2?: string | null
+          amount_inr: number
+          card_data?: Json
+          city: string
+          created_at?: string
+          delivery_name: string
+          delivery_phone: string
+          id?: string
+          owner_id: string
+          pack_slug?: string
+          patient_id: string
+          pincode: string
+          quantity?: number
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          state: string
+          status?: string
+          tracking_note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address_line1?: string
+          address_line2?: string | null
+          amount_inr?: number
+          card_data?: Json
+          city?: string
+          created_at?: string
+          delivery_name?: string
+          delivery_phone?: string
+          id?: string
+          owner_id?: string
+          pack_slug?: string
+          patient_id?: string
+          pincode?: string
+          quantity?: number
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          state?: string
+          status?: string
+          tracking_note?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_orders_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_chunks: {
         Row: {
           content: string
@@ -338,6 +415,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_subscriptions: {
         Row: {
           created_at: string
@@ -397,6 +495,13 @@ export type Database = {
         Returns: Json
       }
       effective_plan: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       match_documents: {
         Args: {
           _patient_id: string
@@ -417,7 +522,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -544,6 +649,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
