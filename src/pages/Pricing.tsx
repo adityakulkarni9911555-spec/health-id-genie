@@ -201,6 +201,25 @@ export default function Pricing() {
                       <span>Sync across devices</span>
                     </li>
                   </ul>
+                  {plan.slug === 'family' && (
+                    <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/20 text-sm">
+                      <p className="font-medium text-foreground mb-1">How it works</p>
+                      <ul className="space-y-1 text-muted-foreground">
+                        <li className="flex gap-2">
+                          <span className="text-primary">•</span>
+                          <span>One subscription covers you + up to 4 family members.</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="text-primary">•</span>
+                          <span>Each member stores their own private records.</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="text-primary">•</span>
+                          <span>Total of 5 profiles under one bill.</span>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
                   <Button
                     className="w-full btn-touch"
                     variant={plan.slug === 'free' ? 'outline' : 'default'}

@@ -106,9 +106,14 @@ export function FamilyManager({ groupId }: FamilyManagerProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        <p className="text-sm text-muted-foreground">
-          {activeCount + 1} of 5 profiles used. {pendingCount} pending invitation{pendingCount === 1 ? '' : 's'}.
-        </p>
+        <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-sm space-y-1">
+          <p className="font-medium text-foreground">
+            {activeCount + 1} of 5 profiles used ({pendingCount} pending)
+          </p>
+          <p className="text-muted-foreground">
+            One Family plan covers you plus up to 4 members. Everyone keeps their own private records.
+          </p>
+        </div>
 
         <form onSubmit={handleInvite} className="flex gap-2">
           <div className="flex-1">
