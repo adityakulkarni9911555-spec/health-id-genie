@@ -129,7 +129,7 @@ export function FamilyManager({ groupId }: FamilyManagerProps) {
               required
             />
           </div>
-          <Button type="submit" disabled={busy || members.length >= 4}>
+          <Button type="submit" disabled={busy || members.length >= 5}>
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
             <span className="ml-2 hidden sm:inline">Invite</span>
           </Button>
