@@ -35,6 +35,8 @@ import {
 } from '@/lib/patientDocuments';
 import { DocumentUpload, type PatientDocument } from '@/components/DocumentUpload';
 import { RecordSearch } from '@/components/RecordSearch';
+import { PrintedCardOrder } from '@/components/PrintedCardOrder';
+
 
 import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { supabase } from '@/integrations/supabase/client';
