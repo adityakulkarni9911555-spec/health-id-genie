@@ -285,6 +285,13 @@ Generated: ${new Date().toLocaleString()}
         </Button>
       </div>
 
+      {/* Order a physical card */}
+      <div className="mt-6 no-print">
+        <PrintedCardOrder patient={patient} />
+      </div>
+
+
+
       {/* Family management */}
       {!subLoading && isFamily && familyGroupId && (
         <div className="mt-6 no-print">
