@@ -84,6 +84,8 @@ const AnimatedRoutes = () => {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/admin/card-orders" element={<AdminCardOrders />} />
+
         <Route path="/blog/benefits-of-personal-health-records" element={<BlogBenefitsPHR />} />
         <Route path="/blog/digital-medical-id-vs-bracelets" element={<BlogDigitalIdVsBracelets />} />
         <Route path="/blog/how-to-request-medical-records" element={<BlogRequestMedicalRecords />} />
