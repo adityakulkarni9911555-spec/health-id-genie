@@ -200,7 +200,12 @@ export default function Pricing() {
                       <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
                       <span>Sync across devices</span>
                     </li>
+                    <li className="flex items-start gap-2 text-sm">
+                      <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                      <span>Printed wallet card available any time — ₹299</span>
+                    </li>
                   </ul>
+
                   {plan.slug === 'family' && (
                     <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/20 text-sm">
                       <p className="font-medium text-foreground mb-1">How it works</p>
