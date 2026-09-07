@@ -16,6 +16,8 @@ const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const Emergency = lazy(() => import("./pages/Emergency"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const AdminCardOrders = lazy(() => import("./pages/AdminCardOrders"));
+
 const BlogBenefitsPHR = lazy(() => import("./pages/BlogBenefitsPHR"));
 const BlogDigitalIdVsBracelets = lazy(() => import("./pages/BlogDigitalIdVsBracelets"));
 const BlogRequestMedicalRecords = lazy(() => import("./pages/BlogRequestMedicalRecords"));
