@@ -35,6 +35,8 @@ import {
 } from '@/lib/patientDocuments';
 import { DocumentUpload, type PatientDocument } from '@/components/DocumentUpload';
 import { RecordSearch } from '@/components/RecordSearch';
+import { PrintedCardOrder } from '@/components/PrintedCardOrder';
+
 
 import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { supabase } from '@/integrations/supabase/client';
@@ -284,6 +286,13 @@ Generated: ${new Date().toLocaleString()}
           Print Card
         </Button>
       </div>
+
+      {/* Order a physical card */}
+      <div className="mt-6 no-print">
+        <PrintedCardOrder patient={patient} />
+      </div>
+
+
 
       {/* Family management */}
       {!subLoading && isFamily && familyGroupId && (
