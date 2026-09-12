@@ -54,42 +54,6 @@ export async function createCardOrder(payload: {
   return data as CreatedOrder;
 }
 
-export async function payForCardOrder(
-  order: CreatedOrder,
-  buyer: { name: string; email: string },
-  onSuccess: () => void,
-  onError: (msg: string) => void
-) {
-  await loadRazorpayScript();
-
-  const rzp = new window.Razorpay({
-    key: order.key_id,
-    amount: order.amount,
-    currency: order.currency,
-    name: 'Medora',
-    description: order.pack_name,
-    order_id: order.order_id,
-    prefill: { name: buyer.name, email: buyer.email },
-    theme: { color: '#7c3aed' },
-    handler: async (response: {
-      razorpay_payment_id: string;
-      razorpay_order_id: string;
-      razorpay_signature: string;
-    }) => {
-      const { error } = await supabase.functions.invoke('card-order-verify', {
-        body: { ...response, card_order_id: order.card_order_id },
-      });
-      if (error) {
-        onError('We could not confirm your payment. Please contact support.');
-        return;
-      }
-      onSuccess();
-    },
-    modal: { ondismiss: () => onError('Payment cancelled') },
-  });
-
-  rzp.open();
-}
 
 export async function listCardOrders(): Promise<CardOrder[]> {
   const { data, error } = await supabase
@@ -106,8 +70,8 @@ export async function cancelCardOrder(id: string): Promise<void> {
 }
 
 export const CARD_ORDER_STATUS_LABEL: Record<string, string> = {
-  pending: 'Awaiting payment',
-  paid: 'Paid — queued for printing',
+  pending: 'Order received — queued for printing',
+  paid: 'Queued for printing',
   printing: 'Printing',
   shipped: 'Shipped',
   delivered: 'Delivered',
