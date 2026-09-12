@@ -26,7 +26,7 @@ interface AdminOrder {
 }
 
 const NEXT_STATUS: Record<string, string> = {
-  paid: 'printing',
+  pending: 'printing',
   printing: 'shipped',
   shipped: 'delivered',
 };
@@ -42,7 +42,7 @@ export default function AdminCardOrders() {
     const { data } = await supabase
       .from('card_orders')
       .select('*')
-      .neq('status', 'pending')
+      .neq('status', 'cancelled')
       .order('created_at', { ascending: false });
     setOrders((data ?? []) as AdminOrder[]);
     setLoading(false);

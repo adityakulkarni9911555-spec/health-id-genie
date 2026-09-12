@@ -1,5 +1,4 @@
 import { supabase } from '@/integrations/supabase/client';
-import { loadRazorpayScript } from '@/lib/razorpay';
 
 export const CARD_PACKS = {
   single: { slug: 'single', label: '1 printed card', quantity: 1, priceInr: 299 },
