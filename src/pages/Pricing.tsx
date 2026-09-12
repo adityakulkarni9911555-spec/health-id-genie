@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription, loadPlans, type SubscriptionPlan } from '@/hooks/useSubscription';
-import { openRazorpayCheckout, createRazorpayOrder } from '@/lib/razorpay';
+
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Check, Loader2, Sparkles, Users, Zap } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
