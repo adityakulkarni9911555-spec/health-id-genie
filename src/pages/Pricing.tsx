@@ -4,9 +4,9 @@ import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+
 import { useSubscription, loadPlans, type SubscriptionPlan } from '@/hooks/useSubscription';
-import { openRazorpayCheckout, createRazorpayOrder } from '@/lib/razorpay';
+
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Check, Loader2, Sparkles, Users, Zap } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
@@ -20,7 +20,7 @@ const planIcons: Record<string, React.ReactNode> = {
 export default function Pricing() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  
   const { planSlug, isPaid, loading: subLoading } = useSubscription();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,50 +35,17 @@ export default function Pricing() {
       .finally(() => setLoading(false));
   }, [toast]);
 
-  const paidPlansEnabled = true;
+  const paidPlansEnabled = false;
 
   const handleUpgrade = async (plan: SubscriptionPlan) => {
     if (plan.slug === 'free') {
       navigate('/');
       return;
     }
-    if (!paidPlansEnabled) {
-      toast({
-        title: 'Paid plans coming soon',
-        description: 'We’re finalising payments. Enjoy the free plan in the meantime.',
-      });
-      return;
-    }
-    if (!user) {
-      navigate('/auth?next=/pricing');
-      return;
-    }
-    setBusyPlan(plan.slug);
-    try {
-      const order = await createRazorpayOrder(plan.slug as 'premium' | 'family');
-      await openRazorpayCheckout(
-        order,
-        user.email || '',
-        user.user_metadata?.full_name || 'Medora User',
-        () => {
-          toast({ title: 'Welcome to Medora Premium!', description: 'Your plan is now active.' });
-          navigate('/');
-        },
-        (msg) => {
-          if (msg !== 'Payment cancelled') {
-            toast({ title: 'Payment failed', description: msg, variant: 'destructive' });
-          }
-          setBusyPlan(null);
-        }
-      );
-    } catch (e) {
-      toast({
-        title: 'Could not start checkout',
-        description: e instanceof Error ? e.message : String(e),
-        variant: 'destructive',
-      });
-      setBusyPlan(null);
-    }
+    toast({
+      title: 'Paid plans coming soon',
+      description: 'Medora is completely free to use right now.',
+    });
   };
 
   const formatPrice = (paise: number) => {
@@ -202,7 +169,7 @@ export default function Pricing() {
                     </li>
                     <li className="flex items-start gap-2 text-sm">
                       <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                      <span>Printed wallet card available any time — ₹299</span>
+                      <span>Printed wallet card available any time — free while in beta</span>
                     </li>
                   </ul>
 

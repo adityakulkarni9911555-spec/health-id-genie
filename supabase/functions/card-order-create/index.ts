@@ -65,12 +65,6 @@ Deno.serve(async (req) => {
     const { pack_slug, patient_id, card_data, delivery } = parsed.data;
     const pack = PACKS[pack_slug];
 
-    const keyId = Deno.env.get('RAZORPAY_KEY_ID');
-    const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
-    if (!keyId || !keySecret) {
-      return jsonResponse({ error: 'Payment provider not configured' }, 503);
-    }
-
     const admin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -87,26 +81,6 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'Patient not found' }, 404);
     }
 
-    const orderRes = await fetch('https://api.razorpay.com/v1/orders', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Basic ' + btoa(`${keyId}:${keySecret}`),
-      },
-      body: JSON.stringify({
-        amount: pack.price_inr,
-        currency: 'INR',
-        receipt: `card_${userId.slice(0, 12)}_${Date.now()}`,
-        notes: { user_id: userId, pack_slug, app: 'medora', kind: 'card_order' },
-      }),
-    });
-
-    const orderBody = await orderRes.json();
-    if (!orderRes.ok) {
-      console.error('Razorpay card order creation failed:', orderBody);
-      return jsonResponse({ error: 'Could not create order' }, 502);
-    }
-
     const { data: inserted, error: insertError } = await admin
       .from('card_orders')
       .insert({
@@ -115,9 +89,8 @@ Deno.serve(async (req) => {
         pack_slug,
         quantity: pack.quantity,
         card_data,
-        amount_inr: pack.price_inr,
+        amount_inr: 0,
         status: 'pending',
-        razorpay_order_id: orderBody.id,
         ...delivery,
       })
       .select('id')
@@ -131,10 +104,7 @@ Deno.serve(async (req) => {
     return jsonResponse(
       {
         card_order_id: inserted.id,
-        order_id: orderBody.id,
-        amount: pack.price_inr,
-        currency: 'INR',
-        key_id: keyId,
+        amount_inr: 0,
         pack_slug,
         pack_name: pack.name,
       },
