@@ -38,10 +38,7 @@ export interface CardOrder {
 
 interface CreatedOrder {
   card_order_id: string;
-  order_id: string;
-  amount: number;
-  currency: string;
-  key_id: string;
+  amount_inr: number;
   pack_slug: string;
   pack_name: string;
 }
