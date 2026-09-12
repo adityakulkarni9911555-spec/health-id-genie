@@ -97,24 +97,13 @@ export const PrintedCardOrder = ({ patient }: Props) => {
         },
       });
 
-      await payForCardOrder(
-        order,
-        { name: patient.fullName, email: user?.email ?? '' },
-        () => {
-          setBusy(false);
-          setOpen(false);
-          refresh();
-          toast({
-            title: 'Card ordered',
-            description: 'We will print and post it within 5–7 working days.',
-          });
-        },
-        (msg) => {
-          setBusy(false);
-          refresh();
-          toast({ title: msg, variant: 'destructive' });
-        }
-      );
+      setBusy(false);
+      setOpen(false);
+      refresh();
+      toast({
+        title: 'Card ordered',
+        description: `${order.pack_name} — we will print and post it within 5–7 working days.`,
+      });
     } catch (e) {
       setBusy(false);
       toast({
