@@ -169,7 +169,7 @@ export default function Pricing() {
                     </li>
                     <li className="flex items-start gap-2 text-sm">
                       <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                      <span>Printed wallet card available any time — ₹299</span>
+                      <span>Printed wallet card available any time — free while in beta</span>
                     </li>
                   </ul>
 

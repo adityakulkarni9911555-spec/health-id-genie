@@ -200,7 +200,7 @@ export const PrintedCardOrder = ({ patient }: Props) => {
       {!open ? (
         <Button className="btn-touch w-full sm:w-auto" onClick={() => setOpen(true)}>
           <CreditCard className="w-5 h-5 mr-2" />
-          Order printed card — ₹{CARD_PACKS.single.priceInr}
+          Order printed card — free while in beta
         </Button>
       ) : (
         <div className="space-y-5">
@@ -219,7 +219,7 @@ export const PrintedCardOrder = ({ patient }: Props) => {
                   }`}
                 >
                   <p className="font-medium text-foreground text-sm">{p.label}</p>
-                  <p className="text-sm text-muted-foreground">₹{p.priceInr} · delivery included</p>
+                  <p className="text-sm text-muted-foreground">Free · delivery included</p>
                 </button>
               );
             })}
@@ -343,7 +343,7 @@ export const PrintedCardOrder = ({ patient }: Props) => {
               ) : (
                 <Truck className="w-5 h-5 mr-2" />
               )}
-              Pay ₹{selected.priceInr} and order
+              Place order
             </Button>
             <Button variant="outline" className="btn-touch" onClick={() => setOpen(false)}>
               Cancel
@@ -363,7 +363,7 @@ export const PrintedCardOrder = ({ patient }: Props) => {
             >
               <div className="min-w-0">
                 <p className="text-sm text-foreground">
-                  {o.quantity} card{o.quantity > 1 ? 's' : ''} · ₹{Math.round(o.amount_inr / 100)}
+                  {o.quantity} card{o.quantity > 1 ? 's' : ''}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
                   {CARD_ORDER_STATUS_LABEL[o.status] ?? o.status}
