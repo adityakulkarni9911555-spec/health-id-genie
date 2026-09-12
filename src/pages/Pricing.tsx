@@ -4,7 +4,7 @@ import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+
 import { useSubscription, loadPlans, type SubscriptionPlan } from '@/hooks/useSubscription';
 
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -20,7 +20,7 @@ const planIcons: Record<string, React.ReactNode> = {
 export default function Pricing() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  
   const { planSlug, isPaid, loading: subLoading } = useSubscription();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
