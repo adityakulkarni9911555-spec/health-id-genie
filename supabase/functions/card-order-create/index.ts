@@ -65,12 +65,6 @@ Deno.serve(async (req) => {
     const { pack_slug, patient_id, card_data, delivery } = parsed.data;
     const pack = PACKS[pack_slug];
 
-    const keyId = Deno.env.get('RAZORPAY_KEY_ID');
-    const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
-    if (!keyId || !keySecret) {
-      return jsonResponse({ error: 'Payment provider not configured' }, 503);
-    }
-
     const admin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
