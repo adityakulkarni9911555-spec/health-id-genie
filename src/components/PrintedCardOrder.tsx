@@ -14,7 +14,6 @@ import {
   type CardPackSlug,
   type CardOrder,
   createCardOrder,
-  payForCardOrder,
   listCardOrders,
   cancelCardOrder,
 } from '@/lib/cardOrders';

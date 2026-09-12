@@ -35,50 +35,17 @@ export default function Pricing() {
       .finally(() => setLoading(false));
   }, [toast]);
 
-  const paidPlansEnabled = true;
+  const paidPlansEnabled = false;
 
   const handleUpgrade = async (plan: SubscriptionPlan) => {
     if (plan.slug === 'free') {
       navigate('/');
       return;
     }
-    if (!paidPlansEnabled) {
-      toast({
-        title: 'Paid plans coming soon',
-        description: 'We’re finalising payments. Enjoy the free plan in the meantime.',
-      });
-      return;
-    }
-    if (!user) {
-      navigate('/auth?next=/pricing');
-      return;
-    }
-    setBusyPlan(plan.slug);
-    try {
-      const order = await createRazorpayOrder(plan.slug as 'premium' | 'family');
-      await openRazorpayCheckout(
-        order,
-        user.email || '',
-        user.user_metadata?.full_name || 'Medora User',
-        () => {
-          toast({ title: 'Welcome to Medora Premium!', description: 'Your plan is now active.' });
-          navigate('/');
-        },
-        (msg) => {
-          if (msg !== 'Payment cancelled') {
-            toast({ title: 'Payment failed', description: msg, variant: 'destructive' });
-          }
-          setBusyPlan(null);
-        }
-      );
-    } catch (e) {
-      toast({
-        title: 'Could not start checkout',
-        description: e instanceof Error ? e.message : String(e),
-        variant: 'destructive',
-      });
-      setBusyPlan(null);
-    }
+    toast({
+      title: 'Paid plans coming soon',
+      description: 'Medora is completely free to use right now.',
+    });
   };
 
   const formatPrice = (paise: number) => {
