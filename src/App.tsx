@@ -35,6 +35,7 @@ function shouldSkipSplash(): boolean {
   if (path.startsWith('/e/')) return true;
   if (path === '/auth' || path.startsWith('/auth/')) return true;
   if (path === '/pricing') return true;
+  if (path === '/medical-id-card') return true;
   if (path.startsWith('/blog/')) return true;
   if (path.startsWith('/.lovable/')) return true;
   try {
