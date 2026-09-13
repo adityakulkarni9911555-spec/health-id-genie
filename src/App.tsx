@@ -22,6 +22,7 @@ const BlogBenefitsPHR = lazy(() => import("./pages/BlogBenefitsPHR"));
 const BlogDigitalIdVsBracelets = lazy(() => import("./pages/BlogDigitalIdVsBracelets"));
 const BlogRequestMedicalRecords = lazy(() => import("./pages/BlogRequestMedicalRecords"));
 const BlogSmartphoneEmergencyId = lazy(() => import("./pages/BlogSmartphoneEmergencyId"));
+const MedicalIdCard = lazy(() => import("./pages/MedicalIdCard"));
 
 const queryClient = new QueryClient();
 
@@ -91,6 +92,7 @@ const AnimatedRoutes = () => {
         <Route path="/blog/digital-medical-id-vs-bracelets" element={<BlogDigitalIdVsBracelets />} />
         <Route path="/blog/how-to-request-medical-records" element={<BlogRequestMedicalRecords />} />
         <Route path="/blog/smartphone-emergency-medical-id-guide" element={<BlogSmartphoneEmergencyId />} />
+        <Route path="/medical-id-card" element={<MedicalIdCard />} />
         <Route path="/e/:token" element={<Emergency />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
