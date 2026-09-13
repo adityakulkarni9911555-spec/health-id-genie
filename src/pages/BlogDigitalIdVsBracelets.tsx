@@ -92,14 +92,14 @@ export default function BlogDigitalIdVsBracelets() {
         related={
           <>
             <RelatedCard
+              to="/medical-id-card"
+              eyebrow="Free tool"
+              title="Create a medical ID card"
+            />
+            <RelatedCard
               to="/blog/benefits-of-personal-health-records"
               eyebrow="Guide"
               title="Benefits of a personal health record"
-            />
-            <RelatedCard
-              to="/blog/smartphone-emergency-medical-id-guide"
-              eyebrow="How-to"
-              title="Set up phone Medical ID"
             />
           </>
         }
