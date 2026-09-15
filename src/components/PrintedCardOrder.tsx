@@ -197,12 +197,20 @@ export const PrintedCardOrder = ({ patient }: Props) => {
         </div>
       </div>
 
-      {!open ? (
-        <Button className="btn-touch w-full sm:w-auto" onClick={() => setOpen(true)}>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <Button className="btn-touch w-full sm:w-auto" disabled>
           <CreditCard className="w-5 h-5 mr-2" />
-          Order printed card — free while in beta
+          Printed cards — coming soon
         </Button>
-      ) : (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+          <Sparkles className="w-3.5 h-3.5" /> Upcoming feature
+        </span>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        We're preparing doorstep delivery of this exact card, printed on durable PVC with your live QR code. Ordering will open here soon.
+      </p>
+
+      {false && (open || !open) && (
         <div className="space-y-5">
           {/* Pack */}
           <div className="grid gap-3 sm:grid-cols-2">
