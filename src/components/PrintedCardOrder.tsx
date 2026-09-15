@@ -17,7 +17,7 @@ import {
   listCardOrders,
   cancelCardOrder,
 } from '@/lib/cardOrders';
-import { CreditCard, Loader2, Truck, ShieldCheck, Droplets, AlertTriangle } from 'lucide-react';
+import { CreditCard, Loader2, Truck, ShieldCheck, Droplets, AlertTriangle, Sparkles } from 'lucide-react';
 
 interface Props {
   patient: Patient;
