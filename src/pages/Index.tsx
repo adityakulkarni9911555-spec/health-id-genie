@@ -17,6 +17,7 @@ import { SiteFooter } from '@/components/SiteFooter';
 import { supabase } from '@/integrations/supabase/client';
 import { loadPatientForCurrentUser } from '@/lib/patientProfile';
 import { useToast } from '@/hooks/use-toast';
+import { Helmet } from 'react-helmet-async';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -75,6 +76,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background hero-surface">
+      <Helmet>
+        <title>Medora Health — Your Personal Health Wallet</title>
+        <meta name="description" content="Medora is a personal health wallet app. The Medora Health app keeps your medical records, allergies, medications, and emergency info private and always with you." />
+        <link rel="canonical" href="https://medorahealthwallet.lovable.app/" />
+        <meta property="og:title" content="Medora Health — Your Personal Health Wallet" />
+        <meta property="og:description" content="Medora is a personal health wallet app. Your medical records, allergies, and emergency info — private by design, always with you." />
+        <meta property="og:url" content="https://medorahealthwallet.lovable.app/" />
+      </Helmet>
       {/* Header */}
       <header className="sticky top-0 z-50 glass-nav border-b border-border/60 no-print">
         <div className="container mx-auto px-4 py-3">
