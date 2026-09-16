@@ -140,75 +140,88 @@ export const PrintedCardOrder = ({ patient }: Props) => {
         </div>
       </div>
 
-      {/* Physical card preview */}
-      <div className="grid gap-3 sm:grid-cols-2 mb-4">
-        <div className="rounded-xl border border-border bg-card p-4 shadow-sm aspect-[85.6/54] flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <div className="min-w-0">
-              <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">
-                Medora Card
-              </p>
-              <p className="font-display font-bold text-foreground text-sm truncate">
-                {patient.fullName}
-              </p>
-            </div>
-            {patient.bloodGroup && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-destructive/10 text-destructive text-[10px] font-bold">
-                <Droplets className="w-3 h-3" />
-                {patient.bloodGroup}
-              </span>
-            )}
-          </div>
-          <div className="flex items-end justify-between gap-2">
-            <div className="min-w-0 space-y-0.5">
-              <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold">
-                Emergency
-              </p>
-              <p className="text-xs font-medium text-foreground truncate">
-                {patient.emergencyContact}
-              </p>
-              {allergies.length > 0 && (
-                <p className="text-[10px] text-warning font-semibold truncate flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3" />
-                  {allergies.join(', ')}
+      {/* Physical card preview with coming-soon veil */}
+      <div className="relative mb-4">
+        <div className="grid gap-3 sm:grid-cols-2 opacity-70 saturate-[0.85]">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm aspect-[85.6/54] flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div className="min-w-0">
+                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">
+                  Medora Card
                 </p>
+                <p className="font-display font-bold text-foreground text-sm truncate">
+                  {patient.fullName}
+                </p>
+              </div>
+              {patient.bloodGroup && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-destructive/10 text-destructive text-[10px] font-bold">
+                  <Droplets className="w-3 h-3" />
+                  {patient.bloodGroup}
+                </span>
               )}
             </div>
-            <div className="bg-white p-1 rounded">
-              <QRCodeSVG value={shareUrl} size={44} level="M" includeMargin={false} />
+            <div className="flex items-end justify-between gap-2">
+              <div className="min-w-0 space-y-0.5">
+                <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold">
+                  Emergency
+                </p>
+                <p className="text-xs font-medium text-foreground truncate">
+                  {patient.emergencyContact}
+                </p>
+                {allergies.length > 0 && (
+                  <p className="text-[10px] text-warning font-semibold truncate flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" />
+                    {allergies.join(', ')}
+                  </p>
+                )}
+              </div>
+              <div className="bg-white p-1 rounded">
+                <QRCodeSVG value={shareUrl} size={44} level="M" includeMargin={false} />
+              </div>
             </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-muted/40 p-4 aspect-[85.6/54] flex flex-col justify-center gap-1 text-xs text-muted-foreground">
+            <p className="text-[9px] uppercase tracking-[0.2em] font-semibold text-foreground">
+              Back of card
+            </p>
+            {conditions.length > 0 && <p>Conditions: {conditions.join(', ')}</p>}
+            {showInsurance && patient.insuranceProvider && (
+              <p>
+                Insurance: {patient.insuranceProvider}
+                {patient.policyNumber ? ` · ${patient.policyNumber}` : ''}
+              </p>
+            )}
+            <p className="flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3" /> Scan the QR for up-to-date records
+            </p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-muted/40 p-4 aspect-[85.6/54] flex flex-col justify-center gap-1 text-xs text-muted-foreground">
-          <p className="text-[9px] uppercase tracking-[0.2em] font-semibold text-foreground">
-            Back of card
-          </p>
-          {conditions.length > 0 && <p>Conditions: {conditions.join(', ')}</p>}
-          {showInsurance && patient.insuranceProvider && (
-            <p>
-              Insurance: {patient.insuranceProvider}
-              {patient.policyNumber ? ` · ${patient.policyNumber}` : ''}
-            </p>
-          )}
-          <p className="flex items-center gap-1">
-            <ShieldCheck className="w-3 h-3" /> Scan the QR for up-to-date records
-          </p>
+        {/* Coming soon ribbon */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="inline-flex items-center gap-2 rounded-full bg-card/90 backdrop-blur-sm border border-primary/30 px-4 py-2 shadow-md">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">Coming soon</span>
+          </span>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <Button className="btn-touch w-full sm:w-auto" disabled>
-          <CreditCard className="w-5 h-5 mr-2" />
-          Printed cards — coming soon
+      {/* Upcoming notice */}
+      <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground">
+            Printed PVC cards are on the way
+          </p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            This exact card — durable PVC, live QR code — delivered to your door. Ordering opens here soon, and you'll be the first to know.
+          </p>
+        </div>
+        <Button variant="outline" className="w-full sm:w-auto min-h-[48px]" disabled>
+          <Truck className="w-4 h-4 mr-2" />
+          Order a printed card
         </Button>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-          <Sparkles className="w-3.5 h-3.5" /> Upcoming feature
-        </span>
       </div>
-      <p className="text-sm text-muted-foreground">
-        We're preparing doorstep delivery of this exact card, printed on durable PVC with your live QR code. Ordering will open here soon.
-      </p>
 
       {false && (open || !open) && (
         <div className="space-y-5">
