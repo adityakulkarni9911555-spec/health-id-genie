@@ -36,6 +36,7 @@ import {
 import { DocumentUpload, type PatientDocument } from '@/components/DocumentUpload';
 import { RecordSearch } from '@/components/RecordSearch';
 import { PrintedCardOrder } from '@/components/PrintedCardOrder';
+import { DocumentReminder } from '@/components/DocumentReminder';
 
 
 import { publicEmergencyUrl } from '@/lib/publicUrl';
