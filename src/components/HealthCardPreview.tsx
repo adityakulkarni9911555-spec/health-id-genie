@@ -36,6 +36,7 @@ import {
 import { DocumentUpload, type PatientDocument } from '@/components/DocumentUpload';
 import { RecordSearch } from '@/components/RecordSearch';
 import { PrintedCardOrder } from '@/components/PrintedCardOrder';
+import { DocumentReminder } from '@/components/DocumentReminder';
 
 
 import { publicEmergencyUrl } from '@/lib/publicUrl';
@@ -49,6 +50,7 @@ interface HealthCardPreviewProps {
 
 export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCardPreviewProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [patient, setPatient] = useState<Patient>(initialPatient);
   const [openingPath, setOpeningPath] = useState<string | null>(null);
   const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
@@ -225,8 +227,18 @@ Generated: ${new Date().toLocaleString()}
 
       {/* Plan chip hidden until paid plans launch */}
 
+      {/* Reminder to keep documents up to date */}
+      <div className="mb-6">
+        <DocumentReminder
+          documents={patient.documents as PatientDocument[]}
+          onUploadClick={() =>
+            uploadSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        />
+      </div>
+
       {/* Quick add documents (upload or scan without leaving this page) */}
-      <div className="mb-6 form-section no-print">
+      <div ref={uploadSectionRef} className="mb-6 form-section no-print">
         <DocumentUpload
           documents={patient.documents as PatientDocument[]}
           maxFiles={documentLimit || undefined}
