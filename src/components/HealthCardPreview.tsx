@@ -50,6 +50,7 @@ interface HealthCardPreviewProps {
 
 export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCardPreviewProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [patient, setPatient] = useState<Patient>(initialPatient);
   const [openingPath, setOpeningPath] = useState<string | null>(null);
   const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
