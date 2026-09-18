@@ -225,8 +225,18 @@ Generated: ${new Date().toLocaleString()}
 
       {/* Plan chip hidden until paid plans launch */}
 
+      {/* Reminder to keep documents up to date */}
+      <div className="mb-6">
+        <DocumentReminder
+          documents={patient.documents as PatientDocument[]}
+          onUploadClick={() =>
+            uploadSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        />
+      </div>
+
       {/* Quick add documents (upload or scan without leaving this page) */}
-      <div className="mb-6 form-section no-print">
+      <div ref={uploadSectionRef} className="mb-6 form-section no-print">
         <DocumentUpload
           documents={patient.documents as PatientDocument[]}
           maxFiles={documentLimit || undefined}
