@@ -255,6 +255,41 @@ export type Database = {
           },
         ]
       }
+      patient_document_pins: {
+        Row: {
+          created_at: string
+          failed_attempts: number
+          locked_until: string | null
+          patient_id: string
+          pin_hash: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          failed_attempts?: number
+          locked_until?: string | null
+          patient_id: string
+          pin_hash: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          failed_attempts?: number
+          locked_until?: string | null
+          patient_id?: string
+          pin_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_document_pins_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: true
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           allergies: string[] | null
@@ -494,7 +529,9 @@ export type Database = {
         Args: { _ip_hash: string; _token: string }
         Returns: Json
       }
+      clear_document_pin: { Args: { _patient_id: string }; Returns: boolean }
       effective_plan: { Args: { _user_id: string }; Returns: string }
+      has_document_pin: { Args: { _patient_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -519,6 +556,14 @@ export type Database = {
       remaining_document_slots: {
         Args: { _patient_id: string }
         Returns: number
+      }
+      set_document_pin: {
+        Args: { _patient_id: string; _pin: string }
+        Returns: boolean
+      }
+      verify_document_pin: {
+        Args: { _patient_id: string; _pin: string }
+        Returns: Json
       }
     }
     Enums: {
