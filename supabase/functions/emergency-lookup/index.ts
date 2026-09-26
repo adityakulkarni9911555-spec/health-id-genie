@@ -5,6 +5,7 @@ import { z } from 'npm:zod@3';
 const InputSchema = z.object({
   token: z.string().uuid(),
   turnstile_token: z.string().min(10).max(4096).optional(),
+  pin: z.string().regex(/^[0-9]{4}$/).optional(),
 });
 
 const jsonResponse = (body: unknown, status: number, extraHeaders: Record<string, string> = {}) =>
