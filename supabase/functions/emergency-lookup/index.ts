@@ -5,6 +5,7 @@ import { z } from 'npm:zod@3';
 const InputSchema = z.object({
   token: z.string().uuid(),
   turnstile_token: z.string().min(10).max(4096).optional(),
+  pin: z.string().regex(/^[0-9]{4}$/).optional(),
 });
 
 const jsonResponse = (body: unknown, status: number, extraHeaders: Record<string, string> = {}) =>
@@ -136,22 +137,41 @@ Deno.serve(async (req) => {
       ? (patient.documents as StoredDoc[])
       : [];
 
-    const signed = await Promise.all(
-      docs.map(async (d) => {
-        if (!d?.path) return null;
-        const { data: s } = await admin.storage
-          .from('patient-documents')
-          .createSignedUrl(d.path, 60 * 5);
-        if (!s?.signedUrl) return null;
-        return {
-          name: d.name ?? d.path.split('/').pop() ?? 'document',
-          url: s.signedUrl,
-          type: d.type ?? null,
-          size: d.size ?? null,
-          uploaded_at: d.uploaded_at ?? null,
-        };
-      }),
-    );
+    // 5) Tier 2 — documents may be protected by a 4-digit PIN set by the patient.
+    const { data: pinCheck, error: pinErr } = await admin.rpc('verify_document_pin', {
+      _patient_id: patient.id,
+      _pin: parsed.data.pin ?? null,
+    });
+    if (pinErr) {
+      console.error('pin rpc failed', pinErr);
+      return jsonResponse({ error: 'server_error' }, 500);
+    }
+    const pinResult = (pinCheck ?? { ok: true, reason: 'no_pin' }) as {
+      ok: boolean;
+      reason?: string;
+      retry_after?: number;
+      attempts_left?: number;
+    };
+    const docsUnlocked = pinResult.ok;
+
+    const signed = docsUnlocked
+      ? await Promise.all(
+          docs.map(async (d) => {
+            if (!d?.path) return null;
+            const { data: s } = await admin.storage
+              .from('patient-documents')
+              .createSignedUrl(d.path, 60 * 5);
+            if (!s?.signedUrl) return null;
+            return {
+              name: d.name ?? d.path.split('/').pop() ?? 'document',
+              url: s.signedUrl,
+              type: d.type ?? null,
+              size: d.size ?? null,
+              uploaded_at: d.uploaded_at ?? null,
+            };
+          }),
+        )
+      : [];
 
     admin
       .from('emergency_access_logs')
@@ -177,6 +197,11 @@ Deno.serve(async (req) => {
           emergency_contact: patient.emergency_contact,
         },
         documents: signed.filter(Boolean),
+        documents_locked: !docsUnlocked,
+        document_count: docs.length,
+        pin_status: pinResult.reason ?? null,
+        pin_retry_after: pinResult.retry_after ?? null,
+        pin_attempts_left: pinResult.attempts_left ?? null,
       },
       200,
     );
