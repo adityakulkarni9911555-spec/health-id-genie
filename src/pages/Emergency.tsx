@@ -9,9 +9,13 @@ import {
   ExternalLink,
   Loader2,
   ShieldAlert,
+  Lock,
+  Unlock,
+  Scale,
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface EmergencyDoc {
   name: string;
@@ -34,7 +38,22 @@ interface EmergencyPayload {
     emergency_contact: string;
   };
   documents: EmergencyDoc[];
+  documents_locked?: boolean;
+  document_count?: number;
+  pin_status?: string | null;
+  pin_retry_after?: number | null;
+  pin_attempts_left?: number | null;
 }
+
+/** Show only the first 2 and last 3 digits: +91 98••• ••214 */
+const maskPhone = (raw: string) => {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length < 6) return '•'.repeat(Math.max(digits.length, 4));
+  const cc = digits.length > 10 ? `+${digits.slice(0, digits.length - 10)} ` : '';
+  const local = digits.slice(-10);
+  return `${cc}${local.slice(0, 2)}••• ••${local.slice(-3)}`;
+};
+
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
@@ -63,6 +82,9 @@ const Emergency = () => {
     'loading' | 'ready' | 'notfound' | 'error' | 'ratelimited' | 'wiped'
   >('loading');
   const [reloadKey, setReloadKey] = useState(0);
+  const [pinInput, setPinInput] = useState('');
+  const [pinBusy, setPinBusy] = useState(false);
+  const [pinError, setPinError] = useState<string | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
@@ -116,14 +138,14 @@ const Emergency = () => {
   }, []);
 
 
-  const runLookup = async (turnstileToken?: string) => {
+  const runLookup = async (turnstileToken?: string, pin?: string) => {
     if (!token) {
       setState('notfound');
       return;
     }
     try {
       const { data: res, error } = await supabase.functions.invoke('emergency-lookup', {
-        body: { token, turnstile_token: turnstileToken },
+        body: { token, turnstile_token: turnstileToken, pin },
       });
       if (error || !res || (res as any).error) {
         const errBody = (res as any)?.error;
@@ -136,10 +158,40 @@ const Emergency = () => {
       }
       setData(res as EmergencyPayload);
       setState('ready');
+      return res as EmergencyPayload;
     } catch {
       setState('error');
     }
   };
+
+  const submitPin = async () => {
+    if (!/^[0-9]{4}$/.test(pinInput)) {
+      setPinError('Enter the 4-digit PIN.');
+      return;
+    }
+    setPinBusy(true);
+    setPinError(null);
+    const res = await runLookup(undefined, pinInput);
+    setPinBusy(false);
+    if (!res) return;
+    if (res.documents_locked) {
+      if (res.pin_status === 'locked') {
+        const mins = Math.ceil((res.pin_retry_after ?? 900) / 60);
+        setPinError(`Too many wrong tries. Try again in about ${mins} minute${mins === 1 ? '' : 's'}.`);
+      } else {
+        const left = res.pin_attempts_left;
+        setPinError(
+          left != null
+            ? `Wrong PIN. ${left} ${left === 1 ? 'try' : 'tries'} left before a 15-minute lock.`
+            : 'Wrong PIN.',
+        );
+      }
+      setPinInput('');
+    } else {
+      setPinInput('');
+    }
+  };
+
 
   useEffect(() => {
     let cancelled = false;
@@ -307,7 +359,20 @@ const Emergency = () => {
         </div>
       </header>
 
+      {/* DPDP audit notice */}
+      <div className="bg-warning/10 border-b border-warning/30">
+        <div className="container mx-auto px-4 py-2.5 max-w-2xl flex items-start gap-2">
+          <Scale className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+          <p className="text-[11px] leading-relaxed text-foreground/80">
+            <span className="font-semibold">Emergency access logged with network ID.</span>{' '}
+            Unauthorised extraction, copying or misuse of this patient's personal data is
+            prohibited under the Digital Personal Data Protection Act, 2023.
+          </p>
+        </div>
+      </div>
+
       <main className="container mx-auto px-4 py-6 max-w-2xl space-y-5">
+
         {/* Identity */}
         <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -380,43 +445,98 @@ const Emergency = () => {
           </section>
         )}
 
-        {/* Emergency contact */}
+        {/* Emergency contact — masked, tap to call */}
         <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
             Emergency Contact
           </h2>
-          <a
-            href={`tel:${p.emergency_contact}`}
-            className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 hover:bg-primary/10 transition"
-          >
-            <div className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-              <Phone className="w-5 h-5" />
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 border border-border mb-3">
+            <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center">
+              <Lock className="w-5 h-5 text-muted-foreground" />
             </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">Tap to call</p>
-              <p className="font-mono text-lg font-semibold text-foreground">
-                {p.emergency_contact}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground">Number hidden for privacy</p>
+              <p className="font-mono text-lg font-semibold text-foreground tracking-wide">
+                {maskPhone(p.emergency_contact)}
               </p>
             </div>
-          </a>
+          </div>
+          <Button
+            asChild
+            size="lg"
+            className="w-full bg-success text-success-foreground hover:bg-success/90 min-h-[56px] text-base font-semibold"
+          >
+            <a href={`tel:${p.emergency_contact}`}>
+              <Phone className="w-5 h-5 mr-2" />
+              Call Emergency Contact
+            </a>
+          </Button>
         </section>
 
-        {/* Documents — always fresh */}
+        {/* Documents — always fresh, PIN-gated when the patient locked them */}
         <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs uppercase tracking-widest text-muted-foreground">
               Medical Records
             </h2>
             <span className="text-xs text-muted-foreground">
-              {data!.documents.length} file
-              {data!.documents.length === 1 ? '' : 's'} · current
+              {(data!.documents_locked ? (data!.document_count ?? 0) : data!.documents.length)} file
+              {(data!.documents_locked ? (data!.document_count ?? 0) : data!.documents.length) === 1
+                ? ''
+                : 's'}{' '}
+              · current
             </span>
           </div>
-          {data!.documents.length === 0 ? (
+          {data!.documents_locked ? (
+            <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-5 text-center">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <Lock className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-display text-base font-semibold text-foreground">
+                Medical documents protected
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1 mb-4 leading-relaxed">
+                Enter the patient's 4-digit PIN to open lab reports and scans. The patient or
+                their family can share it with you.
+              </p>
+              <div className="max-w-[220px] mx-auto space-y-3">
+                <Input
+                  inputMode="numeric"
+                  autoComplete="off"
+                  maxLength={4}
+                  value={pinInput}
+                  onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') submitPin();
+                  }}
+                  placeholder="••••"
+                  aria-label="4-digit document PIN"
+                  disabled={pinBusy || data!.pin_status === 'locked'}
+                  className="text-center font-mono text-2xl tracking-[0.5em] min-h-[56px]"
+                />
+                <Button
+                  onClick={submitPin}
+                  disabled={pinBusy || data!.pin_status === 'locked'}
+                  className="w-full min-h-[56px] text-base font-semibold"
+                >
+                  {pinBusy ? (
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  ) : (
+                    <Unlock className="w-5 h-5 mr-2" />
+                  )}
+                  Unlock documents
+                </Button>
+              </div>
+              {pinError && (
+                <p className="text-sm text-destructive mt-3 font-medium">{pinError}</p>
+              )}
+            </div>
+          ) : data!.documents.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No documents uploaded by the patient.
             </p>
           ) : (
+
             <ul className="space-y-2">
               {data!.documents.map((d) => (
                 <li
