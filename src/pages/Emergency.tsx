@@ -359,7 +359,20 @@ const Emergency = () => {
         </div>
       </header>
 
+      {/* DPDP audit notice */}
+      <div className="bg-warning/10 border-b border-warning/30">
+        <div className="container mx-auto px-4 py-2.5 max-w-2xl flex items-start gap-2">
+          <Scale className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+          <p className="text-[11px] leading-relaxed text-foreground/80">
+            <span className="font-semibold">Emergency access logged with network ID.</span>{' '}
+            Unauthorised extraction, copying or misuse of this patient's personal data is
+            prohibited under the Digital Personal Data Protection Act, 2023.
+          </p>
+        </div>
+      </div>
+
       <main className="container mx-auto px-4 py-6 max-w-2xl space-y-5">
+
         {/* Identity */}
         <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
