@@ -445,43 +445,98 @@ const Emergency = () => {
           </section>
         )}
 
-        {/* Emergency contact */}
+        {/* Emergency contact — masked, tap to call */}
         <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
             Emergency Contact
           </h2>
-          <a
-            href={`tel:${p.emergency_contact}`}
-            className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 hover:bg-primary/10 transition"
-          >
-            <div className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-              <Phone className="w-5 h-5" />
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 border border-border mb-3">
+            <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center">
+              <Lock className="w-5 h-5 text-muted-foreground" />
             </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">Tap to call</p>
-              <p className="font-mono text-lg font-semibold text-foreground">
-                {p.emergency_contact}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground">Number hidden for privacy</p>
+              <p className="font-mono text-lg font-semibold text-foreground tracking-wide">
+                {maskPhone(p.emergency_contact)}
               </p>
             </div>
-          </a>
+          </div>
+          <Button
+            asChild
+            size="lg"
+            className="w-full bg-success text-success-foreground hover:bg-success/90 min-h-[56px] text-base font-semibold"
+          >
+            <a href={`tel:${p.emergency_contact}`}>
+              <Phone className="w-5 h-5 mr-2" />
+              Call Emergency Contact
+            </a>
+          </Button>
         </section>
 
-        {/* Documents — always fresh */}
+        {/* Documents — always fresh, PIN-gated when the patient locked them */}
         <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs uppercase tracking-widest text-muted-foreground">
               Medical Records
             </h2>
             <span className="text-xs text-muted-foreground">
-              {data!.documents.length} file
-              {data!.documents.length === 1 ? '' : 's'} · current
+              {(data!.documents_locked ? (data!.document_count ?? 0) : data!.documents.length)} file
+              {(data!.documents_locked ? (data!.document_count ?? 0) : data!.documents.length) === 1
+                ? ''
+                : 's'}{' '}
+              · current
             </span>
           </div>
-          {data!.documents.length === 0 ? (
+          {data!.documents_locked ? (
+            <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-5 text-center">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <Lock className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-display text-base font-semibold text-foreground">
+                Medical documents protected
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1 mb-4 leading-relaxed">
+                Enter the patient's 4-digit PIN to open lab reports and scans. The patient or
+                their family can share it with you.
+              </p>
+              <div className="max-w-[220px] mx-auto space-y-3">
+                <Input
+                  inputMode="numeric"
+                  autoComplete="off"
+                  maxLength={4}
+                  value={pinInput}
+                  onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') submitPin();
+                  }}
+                  placeholder="••••"
+                  aria-label="4-digit document PIN"
+                  disabled={pinBusy || data!.pin_status === 'locked'}
+                  className="text-center font-mono text-2xl tracking-[0.5em] min-h-[56px]"
+                />
+                <Button
+                  onClick={submitPin}
+                  disabled={pinBusy || data!.pin_status === 'locked'}
+                  className="w-full min-h-[56px] text-base font-semibold"
+                >
+                  {pinBusy ? (
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  ) : (
+                    <Unlock className="w-5 h-5 mr-2" />
+                  )}
+                  Unlock documents
+                </Button>
+              </div>
+              {pinError && (
+                <p className="text-sm text-destructive mt-3 font-medium">{pinError}</p>
+              )}
+            </div>
+          ) : data!.documents.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No documents uploaded by the patient.
             </p>
           ) : (
+
             <ul className="space-y-2">
               {data!.documents.map((d) => (
                 <li
