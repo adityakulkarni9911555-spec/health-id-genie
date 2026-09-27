@@ -9,9 +9,13 @@ import {
   ExternalLink,
   Loader2,
   ShieldAlert,
+  Lock,
+  Unlock,
+  Scale,
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface EmergencyDoc {
   name: string;
@@ -34,7 +38,22 @@ interface EmergencyPayload {
     emergency_contact: string;
   };
   documents: EmergencyDoc[];
+  documents_locked?: boolean;
+  document_count?: number;
+  pin_status?: string | null;
+  pin_retry_after?: number | null;
+  pin_attempts_left?: number | null;
 }
+
+/** Show only the first 2 and last 3 digits: +91 98••• ••214 */
+const maskPhone = (raw: string) => {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length < 6) return '•'.repeat(Math.max(digits.length, 4));
+  const cc = digits.length > 10 ? `+${digits.slice(0, digits.length - 10)} ` : '';
+  const local = digits.slice(-10);
+  return `${cc}${local.slice(0, 2)}••• ••${local.slice(-3)}`;
+};
+
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
