@@ -138,14 +138,14 @@ const Emergency = () => {
   }, []);
 
 
-  const runLookup = async (turnstileToken?: string) => {
+  const runLookup = async (turnstileToken?: string, pin?: string) => {
     if (!token) {
       setState('notfound');
       return;
     }
     try {
       const { data: res, error } = await supabase.functions.invoke('emergency-lookup', {
-        body: { token, turnstile_token: turnstileToken },
+        body: { token, turnstile_token: turnstileToken, pin },
       });
       if (error || !res || (res as any).error) {
         const errBody = (res as any)?.error;
@@ -158,10 +158,40 @@ const Emergency = () => {
       }
       setData(res as EmergencyPayload);
       setState('ready');
+      return res as EmergencyPayload;
     } catch {
       setState('error');
     }
   };
+
+  const submitPin = async () => {
+    if (!/^[0-9]{4}$/.test(pinInput)) {
+      setPinError('Enter the 4-digit PIN.');
+      return;
+    }
+    setPinBusy(true);
+    setPinError(null);
+    const res = await runLookup(undefined, pinInput);
+    setPinBusy(false);
+    if (!res) return;
+    if (res.documents_locked) {
+      if (res.pin_status === 'locked') {
+        const mins = Math.ceil((res.pin_retry_after ?? 900) / 60);
+        setPinError(`Too many wrong tries. Try again in about ${mins} minute${mins === 1 ? '' : 's'}.`);
+      } else {
+        const left = res.pin_attempts_left;
+        setPinError(
+          left != null
+            ? `Wrong PIN. ${left} ${left === 1 ? 'try' : 'tries'} left before a 15-minute lock.`
+            : 'Wrong PIN.',
+        );
+      }
+      setPinInput('');
+    } else {
+      setPinInput('');
+    }
+  };
+
 
   useEffect(() => {
     let cancelled = false;
