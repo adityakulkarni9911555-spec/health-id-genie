@@ -82,6 +82,9 @@ const Emergency = () => {
     'loading' | 'ready' | 'notfound' | 'error' | 'ratelimited' | 'wiped'
   >('loading');
   const [reloadKey, setReloadKey] = useState(0);
+  const [pinInput, setPinInput] = useState('');
+  const [pinBusy, setPinBusy] = useState(false);
+  const [pinError, setPinError] = useState<string | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
