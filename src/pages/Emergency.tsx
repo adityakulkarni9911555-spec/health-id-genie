@@ -171,24 +171,45 @@ const Emergency = () => {
     }
     setPinBusy(true);
     setPinError(null);
-    const res = await runLookup(undefined, pinInput);
-    setPinBusy(false);
-    if (!res) return;
-    if (res.documents_locked) {
-      if (res.pin_status === 'locked') {
-        const mins = Math.ceil((res.pin_retry_after ?? 900) / 60);
-        setPinError(`Too many wrong tries. Try again in about ${mins} minute${mins === 1 ? '' : 's'}.`);
-      } else {
-        const left = res.pin_attempts_left;
+    try {
+      // Dedicated PIN lookup: never touches the page-level state, so a
+      // refused request (rate limit / challenge) can never wipe the
+      // life-critical info already on screen.
+      const { data: res, error } = await supabase.functions.invoke('emergency-lookup', {
+        body: { token, pin: pinInput },
+      });
+      const errBody = (res as any)?.error;
+      if (error || !res || errBody) {
         setPinError(
-          left != null
-            ? `Wrong PIN. ${left} ${left === 1 ? 'try' : 'tries'} left before a 15-minute lock.`
-            : 'Wrong PIN.',
+          errBody === 'rate_limited'
+            ? 'Too many requests right now. Wait a minute and try the PIN again.'
+            : 'Could not check the PIN just now. Please try again.',
         );
+        return;
       }
-      setPinInput('');
-    } else {
-      setPinInput('');
+      const payload = res as EmergencyPayload;
+      if (payload.documents_locked) {
+        if (payload.pin_status === 'locked') {
+          const mins = Math.ceil((payload.pin_retry_after ?? 900) / 60);
+          setPinError(`Too many wrong tries. Try again in about ${mins} minute${mins === 1 ? '' : 's'}.`);
+        } else {
+          const left = payload.pin_attempts_left;
+          setPinError(
+            left != null
+              ? `Wrong PIN. ${left} ${left === 1 ? 'try' : 'tries'} left before a 15-minute lock.`
+              : 'Wrong PIN.',
+          );
+        }
+        setPinInput('');
+      } else {
+        // Unlocked — merge the fresh payload into the existing view.
+        setData(payload);
+        setPinInput('');
+      }
+    } catch {
+      setPinError('Network problem. The info above is still valid — try the PIN again.');
+    } finally {
+      setPinBusy(false);
     }
   };
 
