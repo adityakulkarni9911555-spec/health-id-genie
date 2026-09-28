@@ -387,6 +387,11 @@ Generated: ${new Date().toLocaleString()}
         </div>
       )}
 
+      {/* Document PIN lock */}
+      <div className="mt-6 no-print">
+        <DocumentPinSettings patientId={patient.id} />
+      </div>
+
       {/* Patient Details */}
       <div className="mt-8 form-section no-print">
         <h3 className="font-display text-lg font-semibold text-foreground mb-4">
