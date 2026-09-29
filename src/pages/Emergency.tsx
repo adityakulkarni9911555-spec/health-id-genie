@@ -16,6 +16,7 @@ import {
 import { Logo } from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SecureDocumentViewer } from '@/components/SecureDocumentViewer';
 
 interface EmergencyDoc {
   name: string;
@@ -85,6 +86,13 @@ const Emergency = () => {
   const [pinInput, setPinInput] = useState('');
   const [pinBusy, setPinBusy] = useState(false);
   const [pinError, setPinError] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<EmergencyDoc | null>(null);
+  const [sessionId] = useState(() =>
+    Array.from(crypto.getRandomValues(new Uint8Array(4)))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+      .toUpperCase(),
+  );
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
@@ -107,6 +115,7 @@ const Emergency = () => {
 
     // Wipe everything the moment the tab is hidden, closed, or navigated away.
     const wipe = () => {
+      setViewing(null);
       setData(null);
       setState('wiped');
 
@@ -578,11 +587,9 @@ const Emergency = () => {
                         : ''}
                     </p>
                   </div>
-                  <Button asChild size="sm" variant="outline">
-                    <a href={d.url} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="w-4 h-4 mr-1" />
-                      Open
-                    </a>
+                  <Button size="sm" variant="outline" onClick={() => setViewing(d)}>
+                    <ExternalLink className="w-4 h-4 mr-1" />
+                    View
                   </Button>
                 </li>
               ))}
@@ -618,6 +625,15 @@ const Emergency = () => {
           </Button>
         </section>
       </main>
+      {viewing && (
+        <SecureDocumentViewer
+          name={viewing.name}
+          url={viewing.url}
+          type={viewing.type}
+          sessionId={sessionId}
+          onClose={() => setViewing(null)}
+        />
+      )}
     </div>
   );
 };
