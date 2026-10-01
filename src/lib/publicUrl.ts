@@ -11,5 +11,5 @@ export function publicOrigin(): string {
 }
 
 export function publicEmergencyUrl(token: string): string {
-  return `${publicOrigin()}/e/${token}`;
+  return `${publicOrigin()}/e/${token}?view=report`;
 }

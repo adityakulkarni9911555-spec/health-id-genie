@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import {
   AlertTriangle,
@@ -78,6 +78,8 @@ declare global {
 
 const Emergency = () => {
   const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams();
+  const shouldOpenProtectedReport = searchParams.get('view') === 'report';
   const [data, setData] = useState<EmergencyPayload | null>(null);
   const [state, setState] = useState<
     'loading' | 'ready' | 'notfound' | 'error' | 'ratelimited' | 'wiped'
@@ -95,6 +97,7 @@ const Emergency = () => {
   );
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
+  const pinInputRef = useRef<HTMLInputElement>(null);
 
 
   useEffect(() => {
@@ -165,9 +168,17 @@ const Emergency = () => {
         }
         return;
       }
-      setData(res as EmergencyPayload);
+      const payload = res as EmergencyPayload;
+      setData(payload);
       setState('ready');
-      return res as EmergencyPayload;
+      if (shouldOpenProtectedReport) {
+        if (payload.documents_locked) {
+          window.setTimeout(() => pinInputRef.current?.focus(), 0);
+        } else if (payload.documents.length > 0) {
+          setViewing(payload.documents[0]);
+        }
+      }
+      return payload;
     } catch {
       setState('error');
     }
@@ -214,6 +225,9 @@ const Emergency = () => {
         // Unlocked — merge the fresh payload into the existing view.
         setData(payload);
         setPinInput('');
+        if (shouldOpenProtectedReport && payload.documents.length > 0) {
+          setViewing(payload.documents[0]);
+        }
       }
     } catch {
       setPinError('Network problem. The info above is still valid — try the PIN again.');
@@ -531,6 +545,7 @@ const Emergency = () => {
               </p>
               <div className="max-w-[220px] mx-auto space-y-3">
                 <Input
+                  ref={pinInputRef}
                   inputMode="numeric"
                   autoComplete="off"
                   maxLength={4}
