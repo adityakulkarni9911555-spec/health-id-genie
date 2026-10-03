@@ -191,6 +191,45 @@ const Emergency = () => {
     }
   };
 
+  const submitOverride = async () => {
+    if (!/^[6-9][0-9]{9}$/.test(clinicianPhone)) {
+      setOverrideError('Enter a valid 10-digit Indian mobile number.');
+      return;
+    }
+    setOverrideBusy(true);
+    setOverrideError(null);
+    try {
+      const { data: res, error } = await supabase.functions.invoke('emergency-lookup', {
+        body: {
+          token,
+          override: { clinician_phone: clinicianPhone, reason: overrideReason.trim() || undefined },
+        },
+      });
+      const errBody = (res as any)?.error;
+      if (error || !res || errBody) {
+        setOverrideError('Could not unlock just now. Please try again.');
+        return;
+      }
+      const payload = res as EmergencyPayload;
+      if (payload.override_status === 'limit') {
+        setOverrideError('Emergency override limit reached for this hour. Use the PIN or contact family.');
+        return;
+      }
+      if (payload.documents_locked) {
+        setOverrideError('Could not unlock just now. Please try again.');
+        return;
+      }
+      setOverridePhone(clinicianPhone);
+      setData(payload);
+      setShowOverride(false);
+      if (payload.documents.length > 0) setViewing(payload.documents[0]);
+    } catch {
+      setOverrideError('Network problem. Please try again.');
+    } finally {
+      setOverrideBusy(false);
+    }
+  };
+
   const submitPin = async () => {
     if (!/^[0-9]{4}$/.test(pinInput)) {
       setPinError('Enter the 4-digit PIN.');
