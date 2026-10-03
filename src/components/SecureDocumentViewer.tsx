@@ -59,7 +59,7 @@ const PdfPage = ({ document, pageNumber, width, revealHeader }: PdfPageProps) =>
   return (
     <div className="relative w-full bg-card shadow-sm" aria-label={`Page ${pageNumber}`}>
       <canvas ref={canvasRef} className="block w-full h-auto pointer-events-none" />
-      {!revealHeader && (
+      {!revealHeader && pageNumber === 1 && (
         <IdentityShield />
       )}
     </div>
