@@ -12,6 +12,8 @@ interface SecureDocumentViewerProps {
   type: string | null;
   /** Short session identifier burned into the watermark */
   sessionId: string;
+  /** Set when opened via break-glass override; stamped into the watermark */
+  clinicianPhone?: string | null;
   onClose: () => void;
 }
 
@@ -154,6 +156,7 @@ export const SecureDocumentViewer = ({
   url,
   type,
   sessionId,
+  clinicianPhone,
   onClose,
 }: SecureDocumentViewerProps) => {
   const [revealHeader, setRevealHeader] = useState(false);
@@ -167,8 +170,11 @@ export const SecureDocumentViewer = ({
       hour: '2-digit',
       minute: '2-digit',
     });
+    if (clinicianPhone) {
+      return `EMERGENCY BREAK-GLASS · CLINICIAN +91 ${clinicianPhone} · ${time} · SESSION ${sessionId} · DPDP AUDIT LOGGED`;
+    }
     return `MEDORA CLINICAL ACCESS · ${time} · SESSION ${sessionId} · DPDP ACT PROTECTED`;
-  }, [sessionId]);
+  }, [sessionId, clinicianPhone]);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
