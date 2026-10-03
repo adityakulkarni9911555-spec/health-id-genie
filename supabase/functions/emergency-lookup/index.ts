@@ -6,6 +6,12 @@ const InputSchema = z.object({
   token: z.string().uuid(),
   turnstile_token: z.string().min(10).max(4096).optional(),
   pin: z.string().regex(/^[0-9]{4}$/).optional(),
+  override: z
+    .object({
+      clinician_phone: z.string().regex(/^[6-9][0-9]{9}$/),
+      reason: z.string().trim().max(200).optional(),
+    })
+    .optional(),
 });
 
 const jsonResponse = (body: unknown, status: number, extraHeaders: Record<string, string> = {}) =>
@@ -152,7 +158,35 @@ Deno.serve(async (req) => {
       retry_after?: number;
       attempts_left?: number;
     };
-    const docsUnlocked = pinResult.ok;
+    let docsUnlocked = pinResult.ok;
+    let overrideStatus: string | null = null;
+
+    // 5b) Break-glass: clinician override, audited and rate-limited per patient.
+    if (!docsUnlocked && parsed.data.override) {
+      const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { count } = await admin
+        .from('emergency_override_logs')
+        .select('id', { count: 'exact', head: true })
+        .eq('patient_id', patient.id)
+        .gte('created_at', since);
+      if ((count ?? 0) >= 3) {
+        overrideStatus = 'limit';
+      } else {
+        const { error: logErr } = await admin.from('emergency_override_logs').insert({
+          patient_id: patient.id,
+          clinician_phone: parsed.data.override.clinician_phone,
+          reason: parsed.data.override.reason ?? null,
+          ip_hash: rawIp ? ip_hash : null,
+          user_agent: ua?.slice(0, 500) ?? null,
+        });
+        if (logErr) {
+          console.error('override log failed', logErr);
+          return jsonResponse({ error: 'server_error' }, 500);
+        }
+        docsUnlocked = true;
+        overrideStatus = 'granted';
+      }
+    }
 
     const signed = docsUnlocked
       ? await Promise.all(
@@ -202,6 +236,7 @@ Deno.serve(async (req) => {
         pin_status: pinResult.reason ?? null,
         pin_retry_after: pinResult.retry_after ?? null,
         pin_attempts_left: pinResult.attempts_left ?? null,
+        override_status: overrideStatus,
       },
       200,
     );
