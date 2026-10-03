@@ -161,6 +161,44 @@ export type Database = {
           },
         ]
       }
+      emergency_override_logs: {
+        Row: {
+          clinician_phone: string
+          created_at: string
+          id: string
+          ip_hash: string | null
+          patient_id: string
+          reason: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          clinician_phone: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          patient_id: string
+          reason?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          clinician_phone?: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          patient_id?: string
+          reason?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_override_logs_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       emergency_rate_limits: {
         Row: {
           bucket_key: string
