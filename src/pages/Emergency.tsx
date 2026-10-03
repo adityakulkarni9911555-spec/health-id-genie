@@ -44,6 +44,7 @@ interface EmergencyPayload {
   pin_status?: string | null;
   pin_retry_after?: number | null;
   pin_attempts_left?: number | null;
+  override_status?: string | null;
 }
 
 /** Show only the first 2 and last 3 digits: +91 98••• ••214 */
@@ -88,6 +89,12 @@ const Emergency = () => {
   const [pinInput, setPinInput] = useState('');
   const [pinBusy, setPinBusy] = useState(false);
   const [pinError, setPinError] = useState<string | null>(null);
+  const [showOverride, setShowOverride] = useState(false);
+  const [clinicianPhone, setClinicianPhone] = useState('');
+  const [overrideReason, setOverrideReason] = useState('');
+  const [overrideBusy, setOverrideBusy] = useState(false);
+  const [overrideError, setOverrideError] = useState<string | null>(null);
+  const [overridePhone, setOverridePhone] = useState<string | null>(null);
   const [viewing, setViewing] = useState<EmergencyDoc | null>(null);
   const [sessionId] = useState(() =>
     Array.from(crypto.getRandomValues(new Uint8Array(4)))
@@ -575,6 +582,56 @@ const Emergency = () => {
               {pinError && (
                 <p className="text-sm text-destructive mt-3 font-medium">{pinError}</p>
               )}
+              <div className="mt-5 pt-5 border-t border-border text-left">
+                {!showOverride ? (
+                  <Button
+                    variant="destructive"
+                    className="w-full min-h-[56px] text-base font-semibold"
+                    onClick={() => setShowOverride(true)}
+                  >
+                    Break glass: emergency clinician access
+                  </Button>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-foreground">
+                      Patient unconscious or can't give the PIN?
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Emergency access without a PIN is permanently logged under the DPDP Act
+                      2023. Your number is stamped on every page and the patient can see this
+                      access in their Medora app.
+                    </p>
+                    <Input
+                      inputMode="numeric"
+                      autoComplete="tel"
+                      value={clinicianPhone}
+                      onChange={(e) => setClinicianPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      placeholder="Your mobile number (10 digits)"
+                      aria-label="Clinician mobile number"
+                      className="min-h-[56px] text-base"
+                    />
+                    <Input
+                      value={overrideReason}
+                      onChange={(e) => setOverrideReason(e.target.value.slice(0, 200))}
+                      placeholder="Hospital / reason (optional)"
+                      aria-label="Hospital or reason"
+                      className="min-h-[56px] text-base"
+                    />
+                    <Button
+                      variant="destructive"
+                      onClick={submitOverride}
+                      disabled={overrideBusy}
+                      className="w-full min-h-[56px] text-base font-semibold"
+                    >
+                      {overrideBusy && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
+                      Unlock reports for immediate care
+                    </Button>
+                    {overrideError && (
+                      <p className="text-sm text-destructive font-medium">{overrideError}</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           ) : data!.documents.length === 0 ? (
             <p className="text-sm text-muted-foreground">
@@ -646,6 +703,7 @@ const Emergency = () => {
           url={viewing.url}
           type={viewing.type}
           sessionId={sessionId}
+          clinicianPhone={overridePhone}
           onClose={() => setViewing(null)}
         />
       )}
