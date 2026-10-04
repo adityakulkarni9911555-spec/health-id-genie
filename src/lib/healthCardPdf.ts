@@ -1,5 +1,6 @@
 import type { Patient } from '@/types/patient';
 import { publicEmergencyUrl } from '@/lib/publicUrl';
+import { fetchPhotoDataUrl } from '@/lib/patientPhoto';
 
 // ID-card style PDF (CR80 card size, front + back on A4 with cut guides).
 // Helvetica only supports ASCII well, so all text is kept ASCII.
@@ -33,6 +34,8 @@ export async function downloadHealthCardPdf(patient: Patient) {
 
   const qrValue = patient.shareToken ? publicEmergencyUrl(patient.shareToken) : patient.id;
   const qr = await QRCode.toDataURL(qrValue, { margin: 1, width: 600, errorCorrectionLevel: 'M' });
+
+  const photo = patient.photoPath ? await fetchPhotoDataUrl(patient.photoPath) : null;
 
   // ---- Document header ----
   doc.setFillColor(...PRIMARY);
@@ -113,10 +116,17 @@ export async function downloadHealthCardPdf(patient: Patient) {
     .slice(0, 2)
     .map((p) => p[0].toUpperCase())
     .join('');
-  doc.setTextColor(...PRIMARY);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text(initials || 'M', px + 9, py + 13.5, { align: 'center' });
+  if (photo) {
+    doc.addImage(photo, 'JPEG', px, py, 18, 22);
+    doc.setDrawColor(...PRIMARY);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(px, py, 18, 22, 1.5, 1.5, 'S');
+  } else {
+    doc.setTextColor(...PRIMARY);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text(initials || 'M', px + 9, py + 13.5, { align: 'center' });
+  }
 
   // Fields
   const fx = px + 22;
