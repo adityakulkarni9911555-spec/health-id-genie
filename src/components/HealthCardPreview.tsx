@@ -173,30 +173,18 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
     window.print();
   };
 
-  const handleDownload = () => {
-    // Create a simple text-based card info for now
-    const cardData = `
-SMART HEALTH CARD
-==================
-Patient ID: ${patient.id.slice(0, 8).toUpperCase()}
-Name: ${patient.fullName}
-DOB: ${patient.dateOfBirth}
-Blood Group: ${patient.bloodGroup || 'Not specified'}
-Emergency Contact: ${patient.emergencyContact}
-${patient.allergies.length > 0 ? `Allergies: ${patient.allergies.join(', ')}` : ''}
-==================
-Generated: ${new Date().toLocaleString()}
-    `.trim();
-
-    const blob = new Blob([cardData], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `health-card-${patient.id.slice(0, 8)}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const [downloading, setDownloading] = useState(false);
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const { downloadHealthCardPdf } = await import('@/lib/healthCardPdf');
+      await downloadHealthCardPdf(patient);
+      toast({ title: 'Health card PDF downloaded' });
+    } catch (e) {
+      toast({ title: 'Could not create PDF', description: (e as Error).message, variant: 'destructive' });
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
