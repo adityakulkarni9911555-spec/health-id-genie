@@ -38,6 +38,7 @@ import { RecordSearch } from '@/components/RecordSearch';
 import { PrintedCardOrder } from '@/components/PrintedCardOrder';
 import { DocumentReminder } from '@/components/DocumentReminder';
 import { DocumentPinSettings } from '@/components/DocumentPinSettings';
+import { ProfilePhotoUploader } from '@/components/ProfilePhotoUploader';
 
 
 import { publicEmergencyUrl } from '@/lib/publicUrl';
@@ -208,6 +209,16 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
           <UpgradeBanner variant="compact" reason="documents" remaining={Math.max(0, documentLimit - patient.documents.length)} />
         </div>
       )}
+
+      {/* Profile photo */}
+      <div className="mb-6">
+        <ProfilePhotoUploader
+          patientId={patient.id}
+          fullName={patient.fullName}
+          photoPath={patient.photoPath}
+          onChange={(photoPath) => setPatient((prev) => ({ ...prev, photoPath }))}
+        />
+      </div>
 
       {/* Card Preview */}
       <div ref={cardRef} className="mb-8 print:shadow-none">

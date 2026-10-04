@@ -3,6 +3,7 @@ import { Patient } from '@/types/patient';
 import { Phone, Droplets, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { publicEmergencyUrl, publicOrigin } from '@/lib/publicUrl';
+import { usePatientPhotoUrl } from '@/lib/patientPhoto';
 
 interface HealthCardProps {
   patient: Patient;
@@ -20,6 +21,13 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
   };
 
   const shortId = patient.id.slice(0, 8).toUpperCase();
+  const photoUrl = usePatientPhotoUrl(patient.photoPath);
+  const initials = patient.fullName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join('');
 
   return (
     <div className="health-card relative w-full max-w-md mx-auto overflow-hidden animate-scale-in print:shadow-none">
@@ -60,16 +68,25 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
       <div className="relative flex gap-6">
         {/* Details */}
         <div className="flex-1 space-y-4 min-w-0">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-1">
-              Patient
-            </p>
-            <p className="font-display font-bold text-foreground text-xl leading-tight tracking-tight truncate">
-              {patient.fullName}
-            </p>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              DOB · {formatDate(patient.dateOfBirth)}
-            </p>
+          <div className="flex items-start gap-3">
+            <div className="w-14 h-[68px] rounded-lg overflow-hidden border border-border bg-primary/10 flex items-center justify-center flex-shrink-0">
+              {photoUrl ? (
+                <img src={photoUrl} alt={`${patient.fullName} photo`} className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-display font-bold text-primary text-lg">{initials || 'M'}</span>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-1">
+                Patient
+              </p>
+              <p className="font-display font-bold text-foreground text-xl leading-tight tracking-tight truncate">
+                {patient.fullName}
+              </p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                DOB · {formatDate(patient.dateOfBirth)}
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
