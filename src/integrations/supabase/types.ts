@@ -344,6 +344,7 @@ export type Database = {
           insurance_provider: string | null
           owner_id: string
           phone_number: string
+          photo_path: string | null
           policy_number: string | null
           share_revoked: boolean
           share_token: string
@@ -366,6 +367,7 @@ export type Database = {
           insurance_provider?: string | null
           owner_id: string
           phone_number: string
+          photo_path?: string | null
           policy_number?: string | null
           share_revoked?: boolean
           share_token?: string
@@ -388,6 +390,7 @@ export type Database = {
           insurance_provider?: string | null
           owner_id?: string
           phone_number?: string
+          photo_path?: string | null
           policy_number?: string | null
           share_revoked?: boolean
           share_token?: string
