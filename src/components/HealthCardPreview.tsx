@@ -273,10 +273,11 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
         <Button
           variant="outline"
           onClick={handleDownload}
+          disabled={downloading}
           className="btn-touch w-full"
         >
           <Download className="w-5 h-5 mr-2" />
-          Download Card
+          {downloading ? "Creating PDF..." : "Download PDF"}
         </Button>
 
         <Button
