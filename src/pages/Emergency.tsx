@@ -664,7 +664,7 @@ const Emergency = () => {
                       className="w-full min-h-[56px] text-base font-semibold"
                     >
                       {overrideBusy && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
-                      Unlock reports for immediate care
+                      Log access request
                     </Button>
                     {overrideError && (
                       <p className="text-sm text-destructive font-medium">{overrideError}</p>
