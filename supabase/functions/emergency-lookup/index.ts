@@ -234,8 +234,7 @@ Deno.serve(async (req) => {
         ip_hash: rawIp ? ip_hash : null,
         user_agent: ua?.slice(0, 500) ?? null,
       })
-      .then(() => {})
-      .catch(() => {});
+      .then(() => {}, () => {});
 
     return jsonResponse(
       {
