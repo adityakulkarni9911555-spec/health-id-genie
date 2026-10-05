@@ -95,24 +95,28 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   };
 
   const rotateToken = async () => {
-    if (!confirm('Generate a new emergency link? Any previously printed QR codes will stop working.')) return;
+    if (
+      !confirm(
+        'Rotating your Emergency QR will immediately invalidate your current QR code and any previously printed or shared copies. Continue?',
+      )
+    )
+      return;
     setBusy('rotate');
-    const newToken = crypto.randomUUID();
-    const { data, error } = await supabase
-      .from('patients')
-      .update({ share_token: newToken, share_revoked: false })
-      .eq('id', patient.id)
-      .select('share_token, share_revoked')
-      .maybeSingle();
+    const { data, error } = await supabase.rpc('rotate_share_token', { _patient_id: patient.id });
     setBusy(null);
-    if (error || !data) {
-      toast({ title: 'Could not rotate link', description: error?.message, variant: 'destructive' });
+    const result = data as { share_token?: string } | null;
+    if (error || !result?.share_token) {
+      toast({
+        title: 'Could not rotate QR',
+        description: "We couldn't complete that request. Please try again.",
+        variant: 'destructive',
+      });
       return;
     }
-    setPatient({ ...patient, shareToken: data.share_token, shareRevoked: !!data.share_revoked });
+    setPatient({ ...patient, shareToken: result.share_token, shareRevoked: false });
     toast({
-      title: 'New emergency link generated',
-      description: 'Print a fresh QR to share it.',
+      title: 'Emergency QR rotated',
+      description: 'Old QR codes stopped working. Download or print your new card.',
     });
   };
 
