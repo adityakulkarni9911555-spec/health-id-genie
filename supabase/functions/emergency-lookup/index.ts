@@ -161,7 +161,9 @@ Deno.serve(async (req) => {
     let docsUnlocked = pinResult.ok;
     let overrideStatus: string | null = null;
 
-    // 5b) Break-glass: clinician override, audited and rate-limited per patient.
+    // 5b) Break-glass request. A typed phone number is NOT proof of clinician
+    // identity, so it never unlocks documents. The request is logged (rate-limited)
+    // and the caller is told verified clinician access is required.
     if (!docsUnlocked && parsed.data.override) {
       const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
       const { count } = await admin
@@ -172,20 +174,38 @@ Deno.serve(async (req) => {
       if ((count ?? 0) >= 3) {
         overrideStatus = 'limit';
       } else {
-        const { error: logErr } = await admin.from('emergency_override_logs').insert({
+        await admin.from('emergency_override_logs').insert({
           patient_id: patient.id,
           clinician_phone: parsed.data.override.clinician_phone,
           reason: parsed.data.override.reason ?? null,
           ip_hash: rawIp ? ip_hash : null,
           user_agent: ua?.slice(0, 500) ?? null,
+          granted: false,
+          verification: 'unverified_phone',
         });
-        if (logErr) {
-          console.error('override log failed', logErr);
-          return jsonResponse({ error: 'server_error' }, 500);
-        }
-        docsUnlocked = true;
-        overrideStatus = 'granted';
+        await admin.from('audit_events').insert({
+          patient_id: patient.id,
+          actor_role: 'unverified_clinician',
+          action: 'BREAK_GLASS_REQUESTED',
+          access_method: 'unverified_phone',
+          reason: parsed.data.override.reason ?? null,
+          ip_hash: rawIp ? ip_hash : null,
+          user_agent: ua?.slice(0, 500) ?? null,
+          metadata: { granted: false },
+        });
+        overrideStatus = 'verification_required';
       }
+    }
+
+    if (parsed.data.pin) {
+      await admin.from('audit_events').insert({
+        patient_id: patient.id,
+        actor_role: 'anonymous',
+        action: pinResult.ok ? 'PIN_SUCCESS' : 'PIN_FAILURE',
+        access_method: 'pin',
+        ip_hash: rawIp ? ip_hash : null,
+        user_agent: ua?.slice(0, 500) ?? null,
+      });
     }
 
     const signed = docsUnlocked
@@ -214,8 +234,7 @@ Deno.serve(async (req) => {
         ip_hash: rawIp ? ip_hash : null,
         user_agent: ua?.slice(0, 500) ?? null,
       })
-      .then(() => {})
-      .catch(() => {});
+      .then(() => {}, () => {});
 
     return jsonResponse(
       {

@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_events: {
+        Row: {
+          access_method: string | null
+          action: string
+          actor_role: string
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          ip_hash: string | null
+          metadata: Json
+          patient_id: string | null
+          reason: string | null
+          resource_id: string | null
+          resource_type: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_method?: string | null
+          action: string
+          actor_role?: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          metadata?: Json
+          patient_id?: string | null
+          reason?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_method?: string | null
+          action?: string
+          actor_role?: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          metadata?: Json
+          patient_id?: string | null
+          reason?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_orders: {
         Row: {
           address_line1: string
@@ -91,6 +147,42 @@ export type Database = {
           },
         ]
       }
+      clinician_profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          organization_name: string | null
+          registration_number: string | null
+          updated_at: string
+          user_id: string
+          verification_status: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          organization_name?: string | null
+          registration_number?: string | null
+          updated_at?: string
+          user_id: string
+          verification_status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          organization_name?: string | null
+          registration_number?: string | null
+          updated_at?: string
+          user_id?: string
+          verification_status?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       document_chunks: {
         Row: {
           content: string
@@ -165,29 +257,35 @@ export type Database = {
         Row: {
           clinician_phone: string
           created_at: string
+          granted: boolean
           id: string
           ip_hash: string | null
           patient_id: string
           reason: string | null
           user_agent: string | null
+          verification: string
         }
         Insert: {
           clinician_phone: string
           created_at?: string
+          granted?: boolean
           id?: string
           ip_hash?: string | null
           patient_id: string
           reason?: string | null
           user_agent?: string | null
+          verification?: string
         }
         Update: {
           clinician_phone?: string
           created_at?: string
+          granted?: boolean
           id?: string
           ip_hash?: string | null
           patient_id?: string
           reason?: string | null
           user_agent?: string | null
+          verification?: string
         }
         Relationships: [
           {
@@ -346,6 +444,7 @@ export type Database = {
           phone_number: string
           photo_path: string | null
           policy_number: string | null
+          qr_rotated_at: string | null
           share_revoked: boolean
           share_token: string
           tpa_contact: string | null
@@ -369,6 +468,7 @@ export type Database = {
           phone_number: string
           photo_path?: string | null
           policy_number?: string | null
+          qr_rotated_at?: string | null
           share_revoked?: boolean
           share_token?: string
           tpa_contact?: string | null
@@ -392,6 +492,7 @@ export type Database = {
           phone_number?: string
           photo_path?: string | null
           policy_number?: string | null
+          qr_rotated_at?: string | null
           share_revoked?: boolean
           share_token?: string
           tpa_contact?: string | null
@@ -449,6 +550,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "subscription_plans"
             referencedColumns: ["slug"]
+          },
+        ]
+      }
+      qr_rotation_logs: {
+        Row: {
+          created_at: string
+          id: string
+          old_token_hash: string
+          patient_id: string
+          reason: string | null
+          rotated_by: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          old_token_hash: string
+          patient_id: string
+          reason?: string | null
+          rotated_by: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          old_token_hash?: string
+          patient_id?: string
+          reason?: string | null
+          rotated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qr_rotation_logs_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -598,6 +734,7 @@ export type Database = {
         Args: { _patient_id: string }
         Returns: number
       }
+      rotate_share_token: { Args: { _patient_id: string }; Returns: Json }
       set_document_pin: {
         Args: { _patient_id: string; _pin: string }
         Returns: boolean

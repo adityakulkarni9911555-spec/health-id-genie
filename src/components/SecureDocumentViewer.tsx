@@ -171,9 +171,9 @@ export const SecureDocumentViewer = ({
       minute: '2-digit',
     });
     if (clinicianPhone) {
-      return `EMERGENCY BREAK-GLASS · CLINICIAN +91 ${clinicianPhone} · ${time} · SESSION ${sessionId} · DPDP AUDIT LOGGED`;
+      return `EMERGENCY BREAK-GLASS · CLINICIAN +91 ${clinicianPhone} · ${time} · SESSION ${sessionId} · ACCESS LOGGED`;
     }
-    return `MEDORA CLINICAL ACCESS · ${time} · SESSION ${sessionId} · DPDP ACT PROTECTED`;
+    return `CONFIDENTIAL MEDICAL RECORD · ${time} · SESSION ${sessionId} · ACCESS LOGGED`;
   }, [sessionId, clinicianPhone]);
 
   useEffect(() => {
