@@ -212,11 +212,13 @@ const Emergency = () => {
       }
       const payload = res as EmergencyPayload;
       if (payload.override_status === 'limit') {
-        setOverrideError('Emergency override limit reached for this hour. Use the PIN or contact family.');
+        setOverrideError('Too many access requests this hour. Call the emergency contact above for the PIN.');
         return;
       }
       if (payload.documents_locked) {
-        setOverrideError('Could not unlock just now. Please try again.');
+        setOverrideError(
+          'Request logged. Reports stay locked until verified clinician access is available. Call the emergency contact above for the PIN — the life-saving details on this page are always visible.',
+        );
         return;
       }
       setOverridePhone(clinicianPhone);
@@ -449,14 +451,13 @@ const Emergency = () => {
         </div>
       </header>
 
-      {/* DPDP audit notice */}
+      {/* Access notice */}
       <div className="bg-warning/10 border-b border-warning/30">
         <div className="container mx-auto px-4 py-2.5 max-w-2xl flex items-start gap-2">
           <Scale className="w-4 h-4 text-warning mt-0.5 shrink-0" />
           <p className="text-[11px] leading-relaxed text-foreground/80">
-            <span className="font-semibold">Emergency access logged with network ID.</span>{' '}
-            Unauthorised extraction, copying or misuse of this patient's personal data is
-            prohibited under the Digital Personal Data Protection Act, 2023.
+            <span className="font-semibold">Emergency information only · access logged.</span>{' '}
+            Medical documents are protected. Please use this information only to provide care.
           </p>
         </div>
       </div>
@@ -628,7 +629,7 @@ const Emergency = () => {
                     className="w-full min-h-[56px] text-base font-semibold"
                     onClick={() => setShowOverride(true)}
                   >
-                    Break glass: emergency clinician access
+                    Request clinical access
                   </Button>
                 ) : (
                   <div className="space-y-3">
@@ -636,9 +637,9 @@ const Emergency = () => {
                       Patient unconscious or can't give the PIN?
                     </p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Emergency access without a PIN is permanently logged under the DPDP Act
-                      2023. Your number is stamped on every page and the patient can see this
-                      access in their Medora app.
+                      A typed phone number can't verify who you are, so it won't unlock reports.
+                      Your request is logged and the patient can see it. Call the emergency
+                      contact for the PIN; verified clinician access is coming soon.
                     </p>
                     <Input
                       inputMode="numeric"
