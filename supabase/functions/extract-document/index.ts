@@ -113,25 +113,45 @@ Deno.serve(async (req) => {
     });
   }
 
+  const json = (b: unknown, status: number) =>
+    new Response(JSON.stringify(b), {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
+
+  // 1) Authenticate caller before anything else.
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
+  const userClient = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } }, auth: { persistSession: false } },
+  );
+  const { data: userData, error: userErr } = await userClient.auth.getUser();
+  const userId = userData?.user?.id;
+  if (userErr || !userId) return json({ error: "Unauthorized" }, 401);
+
+  // 2) Validate input.
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ error: "Invalid request" }, 400);
   }
-
   const parsed = RequestSchema.safeParse(body);
-  if (!parsed.success) {
-    return new Response(JSON.stringify({ error: "Invalid request", details: parsed.error.flatten() }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
+  if (!parsed.success) return json({ error: "Invalid request" }, 400);
   const { patient_id, document_path } = parsed.data;
+
+  // 3) Path boundary: must live under <uid>/<patient_id>/ with no traversal.
+  const prefix = `${userId}/${patient_id}/`;
+  if (
+    !document_path.startsWith(prefix) ||
+    document_path.length <= prefix.length ||
+    document_path.includes("..") ||
+    document_path.includes("\\")
+  ) {
+    return json({ error: "Not found" }, 404);
+  }
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -139,27 +159,29 @@ Deno.serve(async (req) => {
     { auth: { persistSession: false, autoRefreshToken: false } }
   );
 
+  // 4) Database ownership check — independent of the path check.
   const { data: patient, error: patientError } = await supabase
     .from("patients")
     .select("documents")
     .eq("id", patient_id)
+    .eq("owner_id", userId)
     .maybeSingle();
+  if (patientError || !patient) return json({ error: "Not found" }, 404);
 
-  if (patientError || !patient) {
-    return new Response(JSON.stringify({ error: "Patient not found" }), {
-      status: 404,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
+  // 5) Document must be registered on this patient record.
   const docs = Array.isArray(patient.documents) ? patient.documents as Record<string, unknown>[] : [];
   const doc = docs.find((d) => d.path === document_path);
-  if (!doc) {
-    return new Response(JSON.stringify({ error: "Document not found on patient record" }), {
-      status: 404,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+  if (!doc) return json({ error: "Not found" }, 404);
+
+  await supabase.from("audit_events").insert({
+    patient_id,
+    actor_user_id: userId,
+    actor_role: "owner",
+    action: "AI_EXTRACTION",
+    resource_type: "document",
+    resource_id: document_path.split("/").pop() ?? null,
+    access_method: "owner_session",
+  });
 
   const { data: signed, error: signedError } = await supabase.storage
     .from(BUCKET)
