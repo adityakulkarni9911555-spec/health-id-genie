@@ -359,6 +359,8 @@ export type Database = {
           group_id: string
           id: string
           invited_email: string | null
+          permissions: Json
+          relationship: string
           status: string
           updated_at: string
           user_id: string | null
@@ -368,6 +370,8 @@ export type Database = {
           group_id: string
           id?: string
           invited_email?: string | null
+          permissions?: Json
+          relationship?: string
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -377,6 +381,8 @@ export type Database = {
           group_id?: string
           id?: string
           invited_email?: string | null
+          permissions?: Json
+          relationship?: string
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -387,6 +393,63 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "family_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_clinician_access: {
+        Row: {
+          access_scope: string
+          clinician_id: string
+          created_at: string
+          expires_at: string | null
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          patient_id: string
+          reason: string | null
+          revoked_at: string | null
+          status: string
+        }
+        Insert: {
+          access_scope?: string
+          clinician_id: string
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          patient_id: string
+          reason?: string | null
+          revoked_at?: string | null
+          status?: string
+        }
+        Update: {
+          access_scope?: string
+          clinician_id?: string
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          patient_id?: string
+          reason?: string | null
+          revoked_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_clinician_access_clinician_id_fkey"
+            columns: ["clinician_id"]
+            isOneToOne: false
+            referencedRelation: "clinician_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_clinician_access_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
             referencedColumns: ["id"]
           },
         ]
@@ -708,6 +771,10 @@ export type Database = {
       }
       clear_document_pin: { Args: { _patient_id: string }; Returns: boolean }
       effective_plan: { Args: { _user_id: string }; Returns: string }
+      family_can_access: {
+        Args: { _patient_id: string; _scope: string }
+        Returns: boolean
+      }
       has_document_pin: { Args: { _patient_id: string }; Returns: boolean }
       has_role: {
         Args: {
@@ -733,6 +800,10 @@ export type Database = {
       remaining_document_slots: {
         Args: { _patient_id: string }
         Returns: number
+      }
+      revoke_clinician_access: {
+        Args: { _access_id: string }
+        Returns: boolean
       }
       rotate_share_token: { Args: { _patient_id: string }; Returns: Json }
       set_document_pin: {
