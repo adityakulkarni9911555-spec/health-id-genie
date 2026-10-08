@@ -11,6 +11,7 @@ const RequestSchema = z.object({
 
 const ExtractionSchema = z.object({
   provider_name: z.string().nullable().optional().default(null),
+  blood_group: z.string().nullable().optional().default(null),
   document_date: z.string().nullable().optional().default(null),
   diagnoses: z.array(z.string()).nullable().optional().default([]),
   medications: z.array(
@@ -162,7 +163,7 @@ Deno.serve(async (req) => {
   // 4) Database ownership check — independent of the path check.
   const { data: patient, error: patientError } = await supabase
     .from("patients")
-    .select("documents")
+    .select("documents, blood_group, allergies")
     .eq("id", patient_id)
     .eq("owner_id", userId)
     .maybeSingle();
@@ -221,6 +222,7 @@ Deno.serve(async (req) => {
 
 Fields:
 - provider_name: name of the hospital/clinic/lab, or null
+- blood_group: patient's blood group exactly as printed (e.g. "B+"), or null if not printed
 - document_date: date on the document in YYYY-MM-DD format, or null
 - diagnoses: array of diagnoses found
 - medications: array of objects with name, dosage, and frequency
@@ -330,6 +332,19 @@ Return only the JSON object, with no markdown fences.`;
   }
 
   const extractedAt = new Date().toISOString();
+
+  // Conflicts: AI never overwrites the patient's own values — it only flags differences.
+  const norm = (v: string) => v.toUpperCase().replace(/\s+/g, "").replace("POSITIVE", "+").replace("NEGATIVE", "-").replace("VE", "");
+  const conflicts: { field: string; profile_value: string | null; document_value: string }[] = [];
+  if (extraction.blood_group && patient.blood_group && norm(extraction.blood_group) !== norm(patient.blood_group)) {
+    conflicts.push({ field: "blood_group", profile_value: patient.blood_group, document_value: extraction.blood_group });
+  }
+  const known = new Set(((patient.allergies as string[] | null) ?? []).map((a) => a.trim().toLowerCase()));
+  for (const a of extraction.allergies ?? []) {
+    if (a && !known.has(a.trim().toLowerCase())) {
+      conflicts.push({ field: "allergy", profile_value: null, document_value: a.slice(0, 120) });
+    }
+  }
   const updatedDocs = docs.map((d) =>
     d.path === document_path
       ? {
@@ -337,6 +352,12 @@ Return only the JSON object, with no markdown fences.`;
           extractedData: extraction,
           status: "processed",
           extractedAt,
+          provenance: {
+            extraction_model: chatBody.model,
+            extracted_at: extractedAt,
+            verification_status: "AI_EXTRACTED",
+          },
+          conflicts,
         }
       : d
   );
@@ -354,7 +375,7 @@ Return only the JSON object, with no markdown fences.`;
     JSON.stringify({
       success: true,
       extracted: extraction,
-      document_path,
+      conflicts: conflicts.length,
     }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );
