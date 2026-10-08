@@ -17,6 +17,9 @@
 - [x] Expiring clinician access grants + owner revoke
 - [ ] Clinician identity verification (blocked: needs external ID/OTP provider)
 - [ ] Payments to activate paid plans (blocked: payments were removed; need a provider)
-- [ ] AI provenance + conflict review, search citations UI
+## Phase 3 — AI safety (done)
+- [x] Extraction records model, time and AI_EXTRACTED / USER_VERIFIED status
+- [x] Blood group / allergy mismatches flagged for review, never auto-overwritten
+- [x] Search answers show sources, dates, View original, and "not found" message
 - [ ] Documents/medications/lab tables + health timeline
 - [ ] Privacy & Security Center, access history view, emergency screen polish
