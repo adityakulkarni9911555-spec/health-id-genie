@@ -7,3 +7,5 @@
 - Security-sensitive actions are written to the append-only audit_events table by server code only; why: clients must not edit access history.
 - Emergency QR rotation goes through the rotate_share_token RPC (logs a hash of the old token); why: rotation must be atomic and audited.
 - AI prompts wrap document text in <untrusted_document_data> and forbid following instructions inside it; why: uploaded documents are untrusted input.
+- Plan, subscription, family-seat and card-order price/status fields are changed only by server code (guard triggers + revoked grants); why: clients must never grant themselves entitlements.
+- Family membership grants nothing by itself; access to another member's data must go through family_can_access(patient_id, scope); why: permissions are explicit per scope.
