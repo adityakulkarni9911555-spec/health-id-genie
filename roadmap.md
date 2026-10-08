@@ -10,7 +10,13 @@
 - [ ] Remove duplicate storage access rules (blocked: storage rules can't be edited from here; they are identical and harmless)
 
 ## Phase 2–5 (next)
-- [ ] Family permission scopes, clinician verification flow (needs external ID/OTP provider)
+## Phase 2 — data security (done)
+- [x] Plans, subscriptions and family seats can only be changed server-side
+- [x] Card order price/status/payment fields locked for customers
+- [x] Family permission scopes + relationship, audited, owner-controlled
+- [x] Expiring clinician access grants + owner revoke
+- [ ] Clinician identity verification (blocked: needs external ID/OTP provider)
+- [ ] Payments to activate paid plans (blocked: payments were removed; need a provider)
 - [ ] AI provenance + conflict review, search citations UI
 - [ ] Documents/medications/lab tables + health timeline
 - [ ] Privacy & Security Center, access history view, emergency screen polish
