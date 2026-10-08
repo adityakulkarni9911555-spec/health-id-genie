@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
   // Explicit ownership check before any vector search (defence in depth on top of RLS).
   const { data: owned } = await supabase
     .from("patients")
-    .select("id")
+    .select("id, documents")
     .eq("id", body.patient_id)
     .eq("owner_id", userData.user.id)
     .maybeSingle();
@@ -144,7 +144,22 @@ Deno.serve(async (req) => {
     }
   }
 
-  return new Response(JSON.stringify({ answer, results }), {
+  // Attach human-readable source details for citations.
+  const docs = Array.isArray(owned.documents) ? (owned.documents as Record<string, any>[]) : [];
+  const enriched = results.map((r, i) => {
+    const d = docs.find((x) => x.path === r.document_path);
+    return {
+      ...r,
+      ref: i + 1,
+      document_name: (d?.name as string) ?? r.document_path.split("/").pop(),
+      document_date: (d?.extractedData?.document_date as string | null) ?? null,
+      uploaded_at: (d?.uploadedAt as string | null) ?? null,
+      provider_name: (d?.extractedData?.provider_name as string | null) ?? null,
+    };
+  });
+  const notFound = !answer || /information not found/i.test(answer);
+
+  return new Response(JSON.stringify({ answer: notFound ? null : answer, not_found: notFound, results: enriched }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 });

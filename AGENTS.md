@@ -9,3 +9,4 @@
 - AI prompts wrap document text in <untrusted_document_data> and forbid following instructions inside it; why: uploaded documents are untrusted input.
 - Plan, subscription, family-seat and card-order price/status fields are changed only by server code (guard triggers + revoked grants); why: clients must never grant themselves entitlements.
 - Family membership grants nothing by itself; access to another member's data must go through family_can_access(patient_id, scope); why: permissions are explicit per scope.
+- AI extraction stores provenance and a conflicts list on each document and never writes patient profile fields; only the patient's explicit choice in the conflict review changes them; why: verified data must not be silently overwritten.

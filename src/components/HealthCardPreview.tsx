@@ -38,6 +38,7 @@ import { RecordSearch } from '@/components/RecordSearch';
 import { PrintedCardOrder } from '@/components/PrintedCardOrder';
 import { DocumentReminder } from '@/components/DocumentReminder';
 import { DocumentPinSettings } from '@/components/DocumentPinSettings';
+import { ConflictReview } from '@/components/ConflictReview';
 import { ProfilePhotoUploader } from '@/components/ProfilePhotoUploader';
 
 
@@ -510,6 +511,10 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
                     {doc.extractedData && (
                       <div className="mt-3 pt-3 border-t border-dashed border-border">
                         <ExtractionSummary data={doc.extractedData} />
+                        <p className="mt-2 text-[11px] text-muted-foreground">
+                          {doc.provenance?.verification_status === 'USER_VERIFIED' ? 'Reviewed by you' : 'AI-extracted'} · the original document is the source of truth
+                        </p>
+                        <ConflictReview patient={patient} doc={doc} onUpdated={setPatient} />
                       </div>
                     )}
                   </li>
