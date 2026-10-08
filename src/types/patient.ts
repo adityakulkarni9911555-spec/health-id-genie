@@ -7,6 +7,16 @@ export interface PatientDocumentRef {
   status?: 'pending' | 'processing' | 'processed' | 'failed';
   extractedData?: Record<string, unknown>;
   extractedAt?: string;
+  provenance?: { extraction_model?: string; extracted_at?: string; verification_status?: string };
+  conflicts?: DocumentConflict[];
+}
+
+export interface DocumentConflict {
+  field: 'blood_group' | 'allergy';
+  profile_value: string | null;
+  document_value: string;
+  resolution?: 'kept_profile' | 'accepted_document';
+  resolved_at?: string;
 }
 
 export interface Patient {
