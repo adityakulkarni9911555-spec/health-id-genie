@@ -30,11 +30,11 @@ const ExtractionSchema = z.object({
   lab_results: z.array(
     z.object({
       test_name: z.string().nullable().optional().default(null),
-      value: z.string().nullable().optional().default(null),
+      value: z.union([z.string(), z.number()]).transform(String).nullable().optional().default(null),
       unit: z.string().nullable().optional().default(null),
       reference_range: z.string().nullable().optional().default(null),
       flag: z.string().nullable().optional().default(null),
-      page: z.number().nullable().optional().default(null),
+      page: z.coerce.number().int().nullable().optional().catch(null),
     })
   ).nullable().optional().default([]),
 });
