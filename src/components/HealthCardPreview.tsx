@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { HealthCard } from '@/components/HealthCard';
 import { FamilyManager } from '@/components/FamilyManager';
+import { HealthTimeline } from '@/components/HealthTimeline';
 import { UpgradeBanner } from '@/components/UpgradeBanner';
 import { Patient } from '@/types/patient';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -269,6 +270,10 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
       {/* Natural-language search across analysed documents */}
       <div className="mb-6 no-print">
         <RecordSearch patientId={patient.id} />
+      </div>
+
+      <div className="mb-6 no-print">
+        <HealthTimeline patientId={patient.id} refreshKey={JSON.stringify(patient.documents?.map((d) => [d.path, d.extractedAt]))} />
       </div>
 
 
