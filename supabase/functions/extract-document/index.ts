@@ -26,6 +26,17 @@ const ExtractionSchema = z.object({
   lab_results_summary: z.string().nullable().optional().default(null),
   follow_up_instructions: z.string().nullable().optional().default(null),
   summary: z.string().nullable().optional().default(null),
+  document_type: z.string().nullable().optional().default(null),
+  lab_results: z.array(
+    z.object({
+      test_name: z.string().nullable().optional().default(null),
+      value: z.union([z.string(), z.number()]).transform(String).nullable().optional().default(null),
+      unit: z.string().nullable().optional().default(null),
+      reference_range: z.string().nullable().optional().default(null),
+      flag: z.string().nullable().optional().default(null),
+      page: z.coerce.number().int().nullable().optional().catch(null),
+    })
+  ).nullable().optional().default([]),
 });
 
 function base64FromBytes(bytes: Uint8Array): string {
@@ -231,6 +242,8 @@ Fields:
 - lab_results_summary: short text summary of lab results, or null
 - follow_up_instructions: short text summary of follow-up instructions, or null
 - summary: one-sentence summary of the document, or null
+- document_type: one of prescription, lab_report, imaging, discharge_summary, consultation, insurance, vaccination, other
+- lab_results: array of objects with test_name, value, unit, reference_range, flag, page. flag is "abnormal" or "normal" ONLY if the report itself prints that flag/marking, otherwise null. Never judge results yourself.
 
 Return only the JSON object, with no markdown fences.`;
 
@@ -369,6 +382,39 @@ Return only the JSON object, with no markdown fences.`;
 
   if (updateError) {
     console.error("Failed to update patient documents:", updateError);
+  }
+
+  // Structured records (Phase 4). The documents row is created by the DB sync trigger.
+  try {
+    const isoDate = (s: string | null | undefined) => (s && /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null);
+    const docDate = isoDate(extraction.document_date);
+    const { data: docRow } = await supabase
+      .from("documents").select("id").eq("storage_path", document_path).eq("patient_id", patient_id).maybeSingle();
+    if (docRow?.id) {
+      const allowedTypes = ["prescription","lab_report","imaging","discharge_summary","consultation","insurance","vaccination","other"];
+      const dt = allowedTypes.includes(extraction.document_type ?? "") ? extraction.document_type : "other";
+      await supabase.from("documents").update({ document_type: dt }).eq("id", docRow.id);
+      // Re-analysis replaces only AI rows from this document; user-verified rows are kept.
+      await supabase.from("patient_medications").delete().eq("source_document_id", docRow.id).eq("verification_status", "AI_EXTRACTED");
+      await supabase.from("patient_lab_results").delete().eq("source_document_id", docRow.id).eq("verification_status", "AI_EXTRACTED");
+      const meds = (extraction.medications ?? []).filter((m) => m.name).slice(0, 50).map((m) => ({
+        patient_id, source_document_id: docRow.id, medication_name: m.name!.slice(0, 200),
+        dosage: m.dosage?.slice(0, 120) ?? null, frequency: m.frequency?.slice(0, 120) ?? null,
+        start_date: docDate, status: "unknown", verification_status: "AI_EXTRACTED",
+      }));
+      if (meds.length) await supabase.from("patient_medications").insert(meds);
+      const labs = (extraction.lab_results ?? []).filter((l) => l.test_name).slice(0, 100).map((l) => ({
+        patient_id, source_document_id: docRow.id, test_name: l.test_name!.slice(0, 200),
+        result_value: l.value?.slice(0, 80) ?? null, unit: l.unit?.slice(0, 40) ?? null,
+        reference_range: l.reference_range?.slice(0, 80) ?? null,
+        status: l.flag === "abnormal" || l.flag === "normal" ? l.flag : "unknown",
+        test_date: docDate, source_page: typeof l.page === "number" ? l.page : null,
+        verification_status: "AI_EXTRACTED",
+      }));
+      if (labs.length) await supabase.from("patient_lab_results").insert(labs);
+    }
+  } catch (e) {
+    console.error("Structured record write failed");
   }
 
   return new Response(
