@@ -10,3 +10,4 @@
 - Plan, subscription, family-seat and card-order price/status fields are changed only by server code (guard triggers + revoked grants); why: clients must never grant themselves entitlements.
 - Family membership grants nothing by itself; access to another member's data must go through family_can_access(patient_id, scope); why: permissions are explicit per scope.
 - AI extraction stores provenance and a conflicts list on each document and never writes patient profile fields; only the patient's explicit choice in the conflict review changes them; why: verified data must not be silently overwritten.
+- Documents table is the canonical document record; it is filled one-way from the legacy patients.documents list by a DB trigger, and medicines/lab rows are written only by server code; why: one source of truth without breaking older app versions.

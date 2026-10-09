@@ -9,7 +9,8 @@
 - [x] Removed unverified "DPDP" claims from emergency page and watermark
 - [ ] Remove duplicate storage access rules (blocked: storage rules can't be edited from here; they are identical and harmless)
 
-## Phase 2–5 (next)
+## Phase 4 — structured records & timeline (done)
+## Phase 5 — privacy center, access history, emergency screen polish (next)
 ## Phase 2 — data security (done)
 - [x] Plans, subscriptions and family seats can only be changed server-side
 - [x] Card order price/status/payment fields locked for customers
