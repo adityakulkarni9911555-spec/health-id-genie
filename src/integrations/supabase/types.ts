@@ -221,6 +221,68 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          created_at: string
+          document_date: string | null
+          document_type: string
+          id: string
+          mime_type: string | null
+          patient_id: string
+          provider_name: string | null
+          size_bytes: number | null
+          status: string
+          storage_path: string
+          summary: string | null
+          title: string
+          updated_at: string
+          uploaded_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_date?: string | null
+          document_type?: string
+          id?: string
+          mime_type?: string | null
+          patient_id: string
+          provider_name?: string | null
+          size_bytes?: number | null
+          status?: string
+          storage_path: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_date?: string | null
+          document_type?: string
+          id?: string
+          mime_type?: string | null
+          patient_id?: string
+          provider_name?: string | null
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       emergency_access_logs: {
         Row: {
           accessed_at: string
@@ -485,6 +547,129 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: true
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_lab_results: {
+        Row: {
+          created_at: string
+          id: string
+          patient_id: string
+          reference_range: string | null
+          result_value: string | null
+          source_document_id: string | null
+          source_page: number | null
+          status: string
+          test_date: string | null
+          test_name: string
+          unit: string | null
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          patient_id: string
+          reference_range?: string | null
+          result_value?: string | null
+          source_document_id?: string | null
+          source_page?: number | null
+          status?: string
+          test_date?: string | null
+          test_name: string
+          unit?: string | null
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          patient_id?: string
+          reference_range?: string | null
+          result_value?: string | null
+          source_document_id?: string | null
+          source_page?: number | null
+          status?: string
+          test_date?: string | null
+          test_name?: string
+          unit?: string | null
+          verification_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_lab_results_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_lab_results_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_medications: {
+        Row: {
+          created_at: string
+          dosage: string | null
+          end_date: string | null
+          frequency: string | null
+          id: string
+          medication_name: string
+          patient_id: string
+          route: string | null
+          source_document_id: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          dosage?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          medication_name: string
+          patient_id: string
+          route?: string | null
+          source_document_id?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          dosage?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          medication_name?: string
+          patient_id?: string
+          route?: string | null
+          source_document_id?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          verification_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_medications_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_medications_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
             referencedColumns: ["id"]
           },
         ]
