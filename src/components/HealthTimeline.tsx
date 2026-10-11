@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getSignedDocumentUrl } from '@/lib/patientDocuments';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CalendarClock, FileText, FlaskConical, Pill, Loader2 } from 'lucide-react';
 
-type Doc = { id: string; title: string; document_type: string; document_date: string | null; uploaded_at: string; provider_name: string | null; summary: string | null };
+type Doc = { id: string; storage_path: string; title: string; document_type: string; document_date: string | null; uploaded_at: string; provider_name: string | null; summary: string | null };
 type Med = { id: string; medication_name: string; dosage: string | null; frequency: string | null; status: string; verification_status: string; source_document_id: string | null };
-type Lab = { id: string; test_name: string; result_value: string | null; unit: string | null; reference_range: string | null; status: string; test_date: string | null; source_document_id: string | null };
+type Lab = { id: string; test_name: string; result_value: string | null; unit: string | null; reference_range: string | null; status: string; test_date: string | null; source_page: number | null; source_document_id: string | null };
 
 const TYPE_LABEL: Record<string, string> = {
   prescription: 'Prescription', lab_report: 'Lab report', imaging: 'Imaging', discharge_summary: 'Discharge summary',
@@ -20,20 +21,32 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
   const [meds, setMeds] = useState<Med[]>([]);
   const [labs, setLabs] = useState<Lab[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   const load = async () => {
-    setLoading(true);
+    setLoading(true); setFailed(false);
     const [d, m, l] = await Promise.all([
-      supabase.from('documents').select('id,title,document_type,document_date,uploaded_at,provider_name,summary').eq('patient_id', patientId).eq('status', 'active'),
+      supabase.from('documents').select('id,storage_path,title,document_type,document_date,uploaded_at,provider_name,summary').eq('patient_id', patientId).eq('status', 'active'),
       supabase.from('patient_medications').select('id,medication_name,dosage,frequency,status,verification_status,source_document_id').eq('patient_id', patientId).order('created_at', { ascending: false }),
-      supabase.from('patient_lab_results').select('id,test_name,result_value,unit,reference_range,status,test_date,source_document_id').eq('patient_id', patientId).order('test_date', { ascending: false, nullsFirst: false }),
+      supabase.from('patient_lab_results').select('id,test_name,result_value,unit,reference_range,status,test_date,source_page,source_document_id').eq('patient_id', patientId).order('test_date', { ascending: false, nullsFirst: false }),
     ]);
+    if (d.error || m.error || l.error) { setFailed(true); setLoading(false); return; }
     const sorted = ((d.data as Doc[]) ?? []).sort((a, b) =>
       new Date(b.document_date ?? b.uploaded_at).getTime() - new Date(a.document_date ?? a.uploaded_at).getTime());
     setDocs(sorted); setMeds((m.data as Med[]) ?? []); setLabs((l.data as Lab[]) ?? []);
     setLoading(false);
   };
   useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [patientId, refreshKey]);
+
+  const openOriginal = async (id: string | null) => {
+    const doc = docs.find((d) => d.id === id);
+    if (!doc) return;
+    const w = window.open('', '_blank', 'noopener');
+    const url = await getSignedDocumentUrl(doc.storage_path, 300);
+    if (url && w) w.location.href = url; else { w?.close(); alert('This document could not be opened. It may have been removed.'); }
+  };
+  const ViewBtn = ({ id }: { id: string | null }) =>
+    id && docs.some((d) => d.id === id) ? <Button size="sm" variant="link" className="h-auto p-0" onClick={() => openOriginal(id)}>View original</Button> : null;
 
   const docName = (id: string | null) => docs.find((d) => d.id === id)?.title ?? 'Unknown document';
 
@@ -60,7 +73,7 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
         ))}
       </div>
 
-      {loading ? <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> : (
+      {failed ? <div className="text-center py-6"><p className="text-sm text-destructive mb-2">Couldn't load your records.</p><Button variant="outline" onClick={load}>Try again</Button></div> : loading ? <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> : (
         <>
           {tab === 'timeline' && (docs.length === 0 ? <Empty text="No documents yet." /> : (
             <ol className="relative border-l-2 border-border ml-2 space-y-5">
@@ -74,6 +87,7 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
                   </div>
                   <p className="text-sm text-foreground mt-1 flex items-center gap-1.5"><FileText className="h-3.5 w-3.5" />{d.title}{d.provider_name && <span className="text-muted-foreground"> · {d.provider_name}</span>}</p>
                   {d.summary && <p className="text-sm text-muted-foreground mt-0.5">{d.summary}</p>}
+                  <ViewBtn id={d.id} />
                 </li>
               ))}
             </ol>
@@ -87,7 +101,7 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
                     <span className="font-medium text-foreground">{m.medication_name}</span>
                     <Badge variant={m.verification_status === 'AI_EXTRACTED' ? 'outline' : 'secondary'} className="text-xs">{m.verification_status === 'AI_EXTRACTED' ? 'AI-extracted' : 'Confirmed by you'}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{[m.dosage, m.frequency].filter(Boolean).join(' · ') || 'Dose not stated'} · From: {docName(m.source_document_id)}</p>
+                  <p className="text-sm text-muted-foreground">{[m.dosage, m.frequency].filter(Boolean).join(' · ') || 'Dose not stated'} · From: {docName(m.source_document_id)} <ViewBtn id={m.source_document_id} /></p>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {(['active', 'completed', 'stopped'] as const).map((s) => (
                       <Button key={s} size="sm" variant={m.status === s ? 'default' : 'outline'} onClick={() => setMedStatus(m.id, s)}>
@@ -106,7 +120,7 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
                 <li key={l.id} className="rounded-xl border border-border p-3 flex flex-wrap items-baseline justify-between gap-2">
                   <div>
                     <p className="font-medium text-foreground">{l.test_name}</p>
-                    <p className="text-xs text-muted-foreground">{l.test_date ? fmt(l.test_date) : 'Date not printed'} · From: {docName(l.source_document_id)} · AI-extracted</p>
+                    <p className="text-xs text-muted-foreground">{l.test_date ? fmt(l.test_date) : 'Date not printed'}{l.source_page ? ` · page ${l.source_page}` : ''} · From: {docName(l.source_document_id)} · AI-extracted <ViewBtn id={l.source_document_id} /></p>
                   </div>
                   <div className="text-right">
                     <p className="text-foreground">{l.result_value ?? '—'} {l.unit}</p>
@@ -115,7 +129,7 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
                   </div>
                 </li>
               ))}
-              <p className="text-xs text-muted-foreground pt-2">Values are copied from your reports. Please discuss results with your doctor.</p>
+              <p className="text-xs text-muted-foreground pt-2">Values are copied by AI from your reports and may contain errors. Reference ranges vary by lab and need a doctor's interpretation — this is not a diagnosis.</p>
             </ul>
           ))}
         </>
