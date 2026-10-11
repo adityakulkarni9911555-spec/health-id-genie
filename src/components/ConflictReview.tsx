@@ -53,6 +53,10 @@ export const ConflictReview = ({ patient, doc, onUpdated }: Props) => {
       update.documents = documents;
       const { error } = await supabase.from('patients').update(update as never).eq('id', patient.id);
       if (error) throw error;
+      await supabase.rpc('log_conflict_decision', {
+        _patient_id: patient.id, _document_path: doc.path, _field: conflict.field,
+        _decision: accept ? 'accepted_document' : 'kept_profile',
+      });
       next = { ...next, documents };
       onUpdated(next);
       toast({ title: accept ? 'Profile updated from document' : 'Kept your saved value' });
