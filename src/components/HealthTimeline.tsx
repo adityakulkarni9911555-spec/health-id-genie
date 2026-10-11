@@ -41,7 +41,7 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
   const openOriginal = async (id: string | null) => {
     const doc = docs.find((d) => d.id === id);
     if (!doc) return;
-    const w = window.open('', '_blank', 'noopener');
+    const w = window.open('', '_blank'); if (w) w.opener = null;
     const url = await getSignedDocumentUrl(doc.storage_path, 300);
     if (url && w) w.location.href = url; else { w?.close(); alert('This document could not be opened. It may have been removed.'); }
   };
