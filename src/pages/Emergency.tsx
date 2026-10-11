@@ -556,7 +556,15 @@ const Emergency = () => {
               · current
             </span>
           </div>
-          {data!.documents_locked ? (
+          {data!.documents_locked && data!.pin_status === 'no_pin' ? (
+            <div className="rounded-xl border-2 border-dashed border-border bg-muted/40 p-5 text-center">
+              <Lock className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+              <h3 className="font-display text-base font-semibold text-foreground">Documents not shared</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                The patient has not set a document PIN, so reports stay private. Use the emergency information above.
+              </p>
+            </div>
+          ) : data!.documents_locked ? (
             <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-5 text-center">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
                 <Lock className="w-6 h-6 text-primary" />

@@ -158,7 +158,8 @@ Deno.serve(async (req) => {
       retry_after?: number;
       attempts_left?: number;
     };
-    let docsUnlocked = pinResult.ok;
+    // Documents are never public: they open only with a patient-set PIN entered correctly.
+    let docsUnlocked = pinResult.ok && pinResult.reason !== 'no_pin';
     let overrideStatus: string | null = null;
 
     // 5b) Break-glass request. A typed phone number is NOT proof of clinician
