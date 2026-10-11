@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
     const { data: patient, error } = await admin
       .from('patients')
       .select(
-        'id, full_name, date_of_birth, gender, blood_group, height, weight, allergies, chronic_conditions, emergency_contact, documents, share_revoked',
+        'id, full_name, blood_group, allergies, chronic_conditions, emergency_contact, documents, share_revoked',
       )
       .eq('share_token', parsed.data.token)
       .maybeSingle();
@@ -240,11 +240,7 @@ Deno.serve(async (req) => {
       {
         patient: {
           full_name: patient.full_name,
-          date_of_birth: patient.date_of_birth,
-          gender: patient.gender,
           blood_group: patient.blood_group,
-          height: patient.height,
-          weight: patient.weight,
           allergies: patient.allergies ?? [],
           chronic_conditions: patient.chronic_conditions ?? [],
           emergency_contact: patient.emergency_contact,

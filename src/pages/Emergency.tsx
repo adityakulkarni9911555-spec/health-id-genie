@@ -29,11 +29,7 @@ interface EmergencyDoc {
 interface EmergencyPayload {
   patient: {
     full_name: string;
-    date_of_birth: string;
-    gender: string;
     blood_group: string | null;
-    height: string | null;
-    weight: string | null;
     allergies: string[];
     chronic_conditions: string[];
     emergency_contact: string;
@@ -427,11 +423,6 @@ const Emergency = () => {
   }
 
   const p = data!.patient;
-  const dob = new Date(p.date_of_birth).toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -473,24 +464,11 @@ const Emergency = () => {
             {p.full_name}
           </h1>
           <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-            <Field label="Date of Birth" value={dob} />
-            <Field
-              label="Gender"
-              value={p.gender.charAt(0).toUpperCase() + p.gender.slice(1)}
-            />
             <Field
               label="Blood Group"
               value={p.blood_group || 'Not specified'}
               icon={<Droplets className="w-4 h-4 text-destructive" />}
               highlight
-            />
-            <Field
-              label="Height / Weight"
-              value={
-                [p.height ? `${p.height} cm` : null, p.weight ? `${p.weight} kg` : null]
-                  .filter(Boolean)
-                  .join(' · ') || 'Not specified'
-              }
             />
           </div>
         </section>
