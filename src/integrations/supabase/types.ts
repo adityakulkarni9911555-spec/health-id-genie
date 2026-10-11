@@ -968,6 +968,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      log_conflict_decision: {
+        Args: {
+          _decision: string
+          _document_path: string
+          _field: string
+          _patient_id: string
+        }
+        Returns: boolean
+      }
       match_documents: {
         Args: {
           _patient_id: string

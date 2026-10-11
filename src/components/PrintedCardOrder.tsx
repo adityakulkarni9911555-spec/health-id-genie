@@ -53,7 +53,7 @@ export const PrintedCardOrder = ({ patient }: Props) => {
     refresh();
   }, []);
 
-  const shareUrl = patient.shareToken ? publicEmergencyUrl(patient.shareToken) : patient.id;
+  const shareUrl = patient.shareToken ? publicEmergencyUrl(patient.shareToken) : 'https://medorahealthwallet.lovable.app';
   const selected = CARD_PACKS[pack];
 
   const toggle = (list: string[], setList: (v: string[]) => void, value: string) => {

@@ -60,7 +60,7 @@ export const DocumentPinSettings = ({ patientId }: DocumentPinSettingsProps) => 
   };
 
   const removePin = async () => {
-    if (!confirm('Remove the PIN? Anyone who scans your QR will be able to open your reports.')) return;
+    if (!confirm('Remove the PIN? Doctors scanning your QR will no longer be able to open your reports.')) return;
     setBusy(true);
     const { error } = await supabase.rpc('clear_document_pin', { _patient_id: patientId });
     setBusy(false);
@@ -93,8 +93,8 @@ export const DocumentPinSettings = ({ patientId }: DocumentPinSettingsProps) => 
           </h3>
           <p className="text-sm text-muted-foreground mt-0.5">
             Blood group, allergies, conditions and your emergency contact always stay visible so
-            anyone can help in an emergency. A PIN keeps your reports and scans hidden until you
-            or your family share the 4 digits with the doctor.
+            anyone can help in an emergency. Your reports are never shown to someone scanning your QR
+            unless you set a PIN here and you or your family share the 4 digits with the doctor.
           </p>
         </div>
       </div>

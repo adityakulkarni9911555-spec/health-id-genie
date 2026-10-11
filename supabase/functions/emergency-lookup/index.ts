@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
     const { data: patient, error } = await admin
       .from('patients')
       .select(
-        'id, full_name, date_of_birth, gender, blood_group, height, weight, allergies, chronic_conditions, emergency_contact, documents, share_revoked',
+        'id, full_name, blood_group, allergies, chronic_conditions, emergency_contact, documents, share_revoked',
       )
       .eq('share_token', parsed.data.token)
       .maybeSingle();
@@ -158,7 +158,8 @@ Deno.serve(async (req) => {
       retry_after?: number;
       attempts_left?: number;
     };
-    let docsUnlocked = pinResult.ok;
+    // Documents are never public: they open only with a patient-set PIN entered correctly.
+    let docsUnlocked = pinResult.ok && pinResult.reason !== 'no_pin';
     let overrideStatus: string | null = null;
 
     // 5b) Break-glass request. A typed phone number is NOT proof of clinician
@@ -240,11 +241,7 @@ Deno.serve(async (req) => {
       {
         patient: {
           full_name: patient.full_name,
-          date_of_birth: patient.date_of_birth,
-          gender: patient.gender,
           blood_group: patient.blood_group,
-          height: patient.height,
-          weight: patient.weight,
           allergies: patient.allergies ?? [],
           chronic_conditions: patient.chronic_conditions ?? [],
           emergency_contact: patient.emergency_contact,

@@ -29,11 +29,7 @@ interface EmergencyDoc {
 interface EmergencyPayload {
   patient: {
     full_name: string;
-    date_of_birth: string;
-    gender: string;
     blood_group: string | null;
-    height: string | null;
-    weight: string | null;
     allergies: string[];
     chronic_conditions: string[];
     emergency_contact: string;
@@ -427,11 +423,6 @@ const Emergency = () => {
   }
 
   const p = data!.patient;
-  const dob = new Date(p.date_of_birth).toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -473,24 +464,11 @@ const Emergency = () => {
             {p.full_name}
           </h1>
           <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-            <Field label="Date of Birth" value={dob} />
-            <Field
-              label="Gender"
-              value={p.gender.charAt(0).toUpperCase() + p.gender.slice(1)}
-            />
             <Field
               label="Blood Group"
               value={p.blood_group || 'Not specified'}
               icon={<Droplets className="w-4 h-4 text-destructive" />}
               highlight
-            />
-            <Field
-              label="Height / Weight"
-              value={
-                [p.height ? `${p.height} cm` : null, p.weight ? `${p.weight} kg` : null]
-                  .filter(Boolean)
-                  .join(' · ') || 'Not specified'
-              }
             />
           </div>
         </section>
@@ -578,7 +556,15 @@ const Emergency = () => {
               · current
             </span>
           </div>
-          {data!.documents_locked ? (
+          {data!.documents_locked && data!.pin_status === 'no_pin' ? (
+            <div className="rounded-xl border-2 border-dashed border-border bg-muted/40 p-5 text-center">
+              <Lock className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+              <h3 className="font-display text-base font-semibold text-foreground">Documents not shared</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                The patient has not set a document PIN, so reports stay private. Use the emergency information above.
+              </p>
+            </div>
+          ) : data!.documents_locked ? (
             <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-5 text-center">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
                 <Lock className="w-6 h-6 text-primary" />
