@@ -50,6 +50,13 @@
       "when": 1791698552055,
       "tag": "0006_dedupe_storage_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791782134584,
+      "tag": "0007_cleanup_ai_rows_on_document_removal",
+      "breakpoints": true
     }
   ]
 }
