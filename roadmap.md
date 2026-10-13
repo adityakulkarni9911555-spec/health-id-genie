@@ -1,26 +1,30 @@
-# Medora security upgrade roadmap
+# Medora security upgrade roadmap (verified 2026-10-13)
 
-## Phase 1 — critical security (verified 2026-10-11)
-- [x] Edge functions: login + owner check + folder boundary; generic errors
-- [x] Emergency page shows only name, blood group, allergies, conditions, emergency contact
-- [x] Reports never public: open only with a patient-set PIN; typed phone never unlocks
-- [x] No patient.id fallback in any QR
-- [x] Audit/log tables: client write grants revoked
-- [x] Duplicate storage rules removed
-- [ ] Old-QR-after-rotation live test (not run: would break the owner's printed QR)
+## Phase 1 — critical security
+- [x] Edge functions: login + owner check + folder boundary; generic errors (live negative tests)
+- [x] Public emergency data limited to name, blood group, allergies, conditions, emergency contact
+- [x] Reports never public: only with a patient-set PIN; typed phone never unlocks
+- [x] QR only ever encodes a share token (card, PDF, printed preview); no patient.id fallback
+- [x] Rotation invalidates old token, logs + audits (rollback-safe test)
+- [x] Audit/log tables append-only for clients; duplicate storage rules removed
+- [ ] Verified clinician identity (blocked: needs external registry/OTP provider)
 
-## Phase 2 — data security (verified)
-- [x] Server-only plans/subscriptions/seats/card price fields
-- [ ] Clinician identity verification (blocked: needs external ID/OTP provider)
-- [ ] Payments for paid plans (blocked: no payment provider)
-- [ ] Family member view of another member's records (not built; must use family_can_access)
+## Phase 2 — data security & entitlements
+- [x] Plan/subscription/seat/card price fields server-only; free 5-document limit enforced in DB
+- [x] Family access grants nothing without explicit scope (family_can_access tested)
+- [ ] Paid plans / paid card orders (blocked: no payment provider; orders stay free "coming soon")
+- [ ] Clinician request/approval flow (blocked on identity provider; no endpoint grants clinician access)
 
-## Phase 3 — AI safety
-- [x] Provenance, conflicts, sources, "not found" message, conflict decisions audited
-- [ ] Adversarial prompt-injection document test (not run)
+## Phase 3 — AI safety & provenance
+- [x] Prompt-injection test with synthetic document: injected medicine, blood group and prompt leak all ignored
+- [x] Conflicts flagged, never overwritten; decisions audited (rollback-safe test)
+- [x] Search cites sources, returns "not found" without guessing; removed documents never cited
 
-## Phase 4 — structured records & timeline (verified)
-- [x] documents / medications / lab tables, backfill, path-checked one-way sync
-- [x] Timeline with View original, error/empty states, lab disclaimer
+## Phase 4 — structured records & timeline
+- [x] Migrations 0004–0008 applied in live database (9 recorded)
+- [x] Backfill complete: 0 missing, 0 orphaned document rows
+- [x] Medicines and lab results populate with source, dates, page, verification status
+- [x] Document removal deletes only AI_EXTRACTED rows + search snippets; verified rows kept
+- [x] Timeline reads real records, View original, loading/empty/error states, mobile checked
 
 ## Phase 5 — privacy center, access history, emergency screen polish (not started)
