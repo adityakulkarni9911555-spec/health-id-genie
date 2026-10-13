@@ -122,19 +122,20 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
               className="absolute inset-0 rounded-2xl opacity-60 -z-10 blur-md print:hidden"
               style={{ background: 'var(--gradient-primary)' }}
             />
-            <QRCodeSVG
-              value={
-                patient.shareToken
-                  ? publicEmergencyUrl(patient.shareToken)
-                  : patient.id
-              }
-
-              size={160}
-              level="M"
-              includeMargin={false}
-              bgColor="#ffffff"
-              fgColor="#000000"
-            />
+            {patient.shareToken ? (
+              <QRCodeSVG
+                value={publicEmergencyUrl(patient.shareToken)}
+                size={160}
+                level="M"
+                includeMargin={false}
+                bgColor="#ffffff"
+                fgColor="#000000"
+              />
+            ) : (
+              <div className="w-[160px] h-[160px] flex items-center justify-center text-center text-xs text-muted-foreground">
+                Emergency QR not available yet
+              </div>
+            )}
           </div>
           <p className="text-[10px] text-muted-foreground text-center mt-2 font-mono tracking-widest">
             {shortId}
