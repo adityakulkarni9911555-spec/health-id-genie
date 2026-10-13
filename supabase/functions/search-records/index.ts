@@ -106,13 +106,17 @@ Deno.serve(async (req) => {
     });
   }
 
-  const results = (matches ?? []) as {
+  // Only cite documents that still exist on the patient's record (removed files are never sources).
+  const currentPaths = new Set(
+    (Array.isArray(owned.documents) ? (owned.documents as { path?: string }[]) : []).map((d) => d?.path).filter(Boolean),
+  );
+  const results = ((matches ?? []) as {
     id: string;
     document_path: string;
     content: string;
     metadata: Record<string, unknown>;
     similarity: number;
-  }[];
+  }[]).filter((r) => currentPaths.has(r.document_path));
 
   let answer: string | null = null;
   if (results.length > 0) {
