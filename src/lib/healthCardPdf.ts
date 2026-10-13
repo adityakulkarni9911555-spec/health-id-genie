@@ -32,7 +32,9 @@ export async function downloadHealthCardPdf(patient: Patient) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageW = 210;
 
-  const qrValue = patient.shareToken ? publicEmergencyUrl(patient.shareToken) : 'https://medorahealthwallet.lovable.app';
+  // Only a valid, revocable share token may be encoded; never the patient id.
+  if (!patient.shareToken) throw new Error('Emergency QR is not available yet. Please reload and try again.');
+  const qrValue = publicEmergencyUrl(patient.shareToken);
   const qr = await QRCode.toDataURL(qrValue, { margin: 1, width: 600, errorCorrectionLevel: 'M' });
 
   const photo = patient.photoPath ? await fetchPhotoDataUrl(patient.photoPath) : null;

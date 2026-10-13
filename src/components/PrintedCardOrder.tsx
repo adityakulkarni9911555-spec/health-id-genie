@@ -53,7 +53,7 @@ export const PrintedCardOrder = ({ patient }: Props) => {
     refresh();
   }, []);
 
-  const shareUrl = patient.shareToken ? publicEmergencyUrl(patient.shareToken) : 'https://medorahealthwallet.lovable.app';
+  const shareUrl = patient.shareToken ? publicEmergencyUrl(patient.shareToken) : null;
   const selected = CARD_PACKS[pack];
 
   const toggle = (list: string[], setList: (v: string[]) => void, value: string) => {
@@ -176,7 +176,7 @@ export const PrintedCardOrder = ({ patient }: Props) => {
                 )}
               </div>
               <div className="bg-white p-1 rounded">
-                <QRCodeSVG value={shareUrl} size={44} level="M" includeMargin={false} />
+                {shareUrl && <QRCodeSVG value={shareUrl} size={44} level="M" includeMargin={false} />}
               </div>
             </div>
           </div>

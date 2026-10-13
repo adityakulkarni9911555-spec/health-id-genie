@@ -57,6 +57,13 @@
       "when": 1791782134584,
       "tag": "0007_cleanup_ai_rows_on_document_removal",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791885595603,
+      "tag": "0008_cleanup_chunks_on_document_removal",
+      "breakpoints": true
     }
   ]
 }
