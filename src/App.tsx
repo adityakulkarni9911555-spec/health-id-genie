@@ -17,6 +17,7 @@ const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const Emergency = lazy(() => import("./pages/Emergency"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const AdminCardOrders = lazy(() => import("./pages/AdminCardOrders"));
+const PrivacyCenter = lazy(() => import("./pages/PrivacyCenter"));
 
 const BlogBenefitsPHR = lazy(() => import("./pages/BlogBenefitsPHR"));
 const BlogDigitalIdVsBracelets = lazy(() => import("./pages/BlogDigitalIdVsBracelets"));
@@ -94,6 +95,7 @@ const AnimatedRoutes = () => {
         <Route path="/blog/smartphone-emergency-medical-id-guide" element={<BlogSmartphoneEmergencyId />} />
         <Route path="/medical-id-card" element={<MedicalIdCard />} />
         <Route path="/e/:token" element={<Emergency />} />
+        <Route path="/privacy" element={<PrivacyCenter />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -605,9 +605,11 @@ const Emergency = () => {
                   Unlock documents
                 </Button>
               </div>
-              {pinError && (
-                <p className="text-sm text-destructive mt-3 font-medium">{pinError}</p>
-              )}
+              <div aria-live="assertive" role="status">
+                {pinError && (
+                  <p className="text-sm text-destructive mt-3 font-medium">{pinError}</p>
+                )}
+              </div>
               <div className="mt-5 pt-5 border-t border-border text-left">
                 {!showOverride ? (
                   <Button

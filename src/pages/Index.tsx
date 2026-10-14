@@ -121,6 +121,12 @@ const Index = () => {
               )}
               {/* Plan chip hidden until paid plans launch */}
 
+              {user && (
+                <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => navigate('/privacy')} title="Privacy & Security">
+                  <ShieldCheck className="w-4 h-4" />
+                  <span className="hidden sm:inline">Privacy</span>
+                </Button>
+              )}
               <ThemeToggle compact />
               {user && (
                 <Button
