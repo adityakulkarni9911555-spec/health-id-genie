@@ -19,6 +19,9 @@ import {
 } from '@/lib/cardOrders';
 import { CreditCard, Loader2, Truck, ShieldCheck, Droplets, AlertTriangle, Sparkles } from 'lucide-react';
 
+// Printed-card ordering stays hidden until it launches.
+const ORDERING_ENABLED = false as boolean;
+
 interface Props {
   patient: Patient;
 }
@@ -223,7 +226,7 @@ export const PrintedCardOrder = ({ patient }: Props) => {
         </Button>
       </div>
 
-      {false && (open || !open) && (
+      {ORDERING_ENABLED && (
         <div className="space-y-5">
           {/* Pack */}
           <div className="grid gap-3 sm:grid-cols-2">
