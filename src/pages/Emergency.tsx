@@ -130,7 +130,7 @@ const Emergency = () => {
         Object.keys(sessionStorage)
           .filter((k) => k.startsWith('emergency:'))
           .forEach((k) => sessionStorage.removeItem(k));
-      } catch {}
+      } catch { /* storage unavailable */ }
     };
     const onVisibility = () => {
       if (document.visibilityState === 'hidden') wipe();
@@ -162,7 +162,7 @@ const Emergency = () => {
       const { data: res, error } = await supabase.functions.invoke('emergency-lookup', {
         body: { token, turnstile_token: turnstileToken, pin },
       });
-      if (error || !res || (res as { error?: string } | null).error) {
+      if (error || !res || (res as { error?: string }).error) {
         const errBody = (res as { error?: string } | null)?.error;
         if (errBody === 'rate_limited') {
           setState('ratelimited');
