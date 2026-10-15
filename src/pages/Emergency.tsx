@@ -162,8 +162,8 @@ const Emergency = () => {
       const { data: res, error } = await supabase.functions.invoke('emergency-lookup', {
         body: { token, turnstile_token: turnstileToken, pin },
       });
-      if (error || !res || (res as any).error) {
-        const errBody = (res as any)?.error;
+      if (error || !res || (res as { error?: string } | null).error) {
+        const errBody = (res as { error?: string } | null)?.error;
         if (errBody === 'rate_limited') {
           setState('ratelimited');
         } else {
@@ -201,7 +201,7 @@ const Emergency = () => {
           override: { clinician_phone: clinicianPhone, reason: overrideReason.trim() || undefined },
         },
       });
-      const errBody = (res as any)?.error;
+      const errBody = (res as { error?: string } | null)?.error;
       if (error || !res || errBody) {
         setOverrideError('Could not unlock just now. Please try again.');
         return;
@@ -242,7 +242,7 @@ const Emergency = () => {
       const { data: res, error } = await supabase.functions.invoke('emergency-lookup', {
         body: { token, pin: pinInput },
       });
-      const errBody = (res as any)?.error;
+      const errBody = (res as { error?: string } | null)?.error;
       if (error || !res || errBody) {
         setPinError(
           errBody === 'rate_limited'
