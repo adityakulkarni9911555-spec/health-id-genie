@@ -28,3 +28,6 @@
 - [x] Timeline reads real records, View original, loading/empty/error states, mobile checked
 
 ## Phase 5 — privacy center, access history, emergency screen polish (not started)
+- [x] (2026-10-15) Typecheck, ESLint (changed files) and production build exit 0; Emergency.tsx lint errors fixed (types only)
+- [x] (2026-10-15) Signed out, desktop + phone: /privacy redirects to sign-in, Privacy button hidden, invalid QR shows "link not available"; only console errors are dev-only ref warnings and the expected 400 for the invalid code
+- [ ] Signed-in browser check of /privacy access history (not run this session)
