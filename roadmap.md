@@ -27,7 +27,8 @@
 - [x] Document removal deletes only AI_EXTRACTED rows + search snippets; verified rows kept
 - [x] Timeline reads real records, View original, loading/empty/error states, mobile checked
 
-## Phase 5 — privacy center, access history, emergency screen polish (not started)
+## Phase 5 — privacy center, access history, emergency screen polish (verified)
 - [x] (2026-10-15) Typecheck, ESLint (changed files) and production build exit 0; Emergency.tsx lint errors fixed (types only)
 - [x] (2026-10-15) Signed out, desktop + phone: /privacy redirects to sign-in, Privacy button hidden, invalid QR shows "link not available"; only console errors are dev-only ref warnings and the expected 400 for the invalid code
 - [x] (2026-10-15) Signed in as the owner (preview session), desktop + phone: /privacy shows QR active + PIN set from live data and 34 real access-history entries (AI analyses, scans, wrong PIN, clinical request); no data writes sent; only console errors are dev-only ref warnings
+- [x] (2026-10-16) Signed in as the owner, desktop: printed-card section shows "Coming soon" and the "Order a printed card" button is disabled; only request sent was the read-only PIN-status check (no writes)
