@@ -32,3 +32,9 @@
 - [x] (2026-10-15) Signed out, desktop + phone: /privacy redirects to sign-in, Privacy button hidden, invalid QR shows "link not available"; only console errors are dev-only ref warnings and the expected 400 for the invalid code
 - [x] (2026-10-15) Signed in as the owner (preview session), desktop + phone: /privacy shows QR active + PIN set from live data and 34 real access-history entries (AI analyses, scans, wrong PIN, clinical request); no data writes sent; only console errors are dev-only ref warnings
 - [x] (2026-10-16) Signed in as the owner, desktop: printed-card section shows "Coming soon" and the "Order a printed card" button is disabled; only request sent was the read-only PIN-status check (no writes)
+
+## Timeline clarity (2026-10-17)
+- [x] Monthly document grouping, document-type icons, clearer date/source labels, accessible tabs, 56px controls, and loading placeholders in HealthTimeline.tsx; existing queries and write actions preserved.
+- [x] ESLint for HealthTimeline.tsx exit 0 with no warnings; automatic preview build reports build OK.
+- [x] Existing owner session: read-only desktop/mobile navigation verified real timeline and all three tabs; no page runtime errors or mobile horizontal overflow. No forms submitted, records modified, or documents opened. Empty/error states not exercised.
+- [ ] Phase 2 remains blocked on real payment and clinician identity providers.
