@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getSignedDocumentUrl } from '@/lib/patientDocuments';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +35,7 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true); setFailed(false);
     const [d, m, l] = await Promise.all([
       supabase.from('documents').select('id,storage_path,title,document_type,document_date,uploaded_at,provider_name,summary').eq('patient_id', patientId).eq('status', 'active'),
@@ -47,8 +47,8 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
       (parseDate(b.document_date ?? b.uploaded_at).getTime() || 0) - (parseDate(a.document_date ?? a.uploaded_at).getTime() || 0));
     setDocs(sorted); setMeds((m.data as Med[]) ?? []); setLabs((l.data as Lab[]) ?? []);
     setLoading(false);
-  };
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [patientId, refreshKey]);
+  }, [patientId]);
+  useEffect(() => { void load(); }, [load, refreshKey]);
 
   const openOriginal = async (id: string | null) => {
     const doc = docs.find((d) => d.id === id);
