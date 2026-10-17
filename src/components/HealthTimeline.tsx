@@ -97,7 +97,7 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
               <t.icon aria-hidden="true" className="h-4 w-4 shrink-0" />
               <span className="flex items-center gap-1 text-xs sm:text-sm">{t.label}<span className="text-muted-foreground tabular-nums">{loading ? '—' : t.n}</span></span>
             </TabsTrigger>
-          ))}</TabsContent>
+          ))}
         </TabsList>
         {failed ? <div role="alert" className="flex flex-col items-center py-8 gap-3 text-center"><AlertCircle aria-hidden="true" className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Couldn't load your records.</p><Button variant="outline" className="min-h-[56px]" onClick={load}><RefreshCw aria-hidden="true" />Try again</Button></div> : loading ? <div role="status" className="space-y-4 py-2"><span className="sr-only">Loading health records</span>{[0, 1, 2].map((i) => <div key={i} aria-hidden="true" className="flex gap-4 motion-safe:animate-pulse"><div className="h-10 w-10 rounded-md bg-muted shrink-0" /><div className="flex-1 space-y-2"><div className="h-4 w-1/3 rounded bg-muted" /><div className="h-5 w-3/4 rounded bg-muted" /><div className="h-3 w-1/2 rounded bg-muted" /></div></div>)}</div> : (
           <>
@@ -132,7 +132,7 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
                         })}
                       </ol>
                     </div>
-                  ))}</TabsContent>
+                  ))}
                 </div>
               )}
             </TabsContent>
@@ -151,10 +151,10 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
                       <Button key={s} size="sm" variant={m.status === s ? 'default' : 'outline'} className="min-h-[56px]" onClick={() => setMedStatus(m.id, s)}>
                         {s === 'active' ? 'Still taking' : s === 'completed' ? 'Finished' : 'Stopped'}
                       </Button>
-                    ))}</TabsContent>
+                    ))}
                   </div>
                 </li>
-              ))}</TabsContent>
+              ))}
             </ul>
           ))}</TabsContent>
 
@@ -172,7 +172,7 @@ export function HealthTimeline({ patientId, refreshKey }: { patientId: string; r
                     {l.status === 'abnormal' && <Badge variant="destructive" className="text-xs">Flagged on report</Badge>}
                   </div>
                 </li>
-              ))}</TabsContent>
+              ))}
               <p className="text-xs text-muted-foreground pt-2">Values are copied by AI from your reports and may contain errors. Reference ranges vary by lab and need a doctor's interpretation — this is not a diagnosis.</p>
             </ul>
           ))}</TabsContent>
