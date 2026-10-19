@@ -724,6 +724,21 @@ const Emergency = () => {
           >
             Close & wipe from this device
           </Button>
+
+          {/* Gentle referral — someone who saw this page can make their own card */}
+          <div className="mt-8 pt-6 border-t border-border/60 max-w-sm mx-auto">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Medora keeps medical records behind a private link like this one —
+              available in an emergency, locked from everyone else.
+            </p>
+            <Link
+              to="/"
+              className="inline-flex items-center justify-center gap-1.5 min-h-[56px] px-3 text-sm font-semibold text-primary hover:underline"
+            >
+              Create your own free Medora card
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </section>
       </main>
       {viewing && (
