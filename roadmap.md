@@ -43,3 +43,9 @@
 - [x] Added a tasteful "Create your own free Medora card" link (plus one line explaining what Medora is) in the privacy footer of src/pages/Emergency.tsx, below "Close & wipe from this device"; links to "/"; no other behavior changed.
 - [x] Typecheck (bunx tsgo), ESLint on Emergency.tsx, and production build all exit 0.
 - [x] Read-only browser check on a real emergency page, desktop + phone: link visible, href "/", 56px touch target, no page errors. No forms submitted, records modified, or documents opened.
+
+## SEO fixes (2026-10-20)
+- [x] Public homepage at "/" for signed-out visitors (src/pages/PublicHome.tsx) with visible h1 "Your personal health wallet", product copy, CTA buttons, and links to existing guides; Index.tsx renders it instead of redirecting to /auth. Signed-in visitors still see the app unchanged.
+- [x] Verified all Article datePublished values are in the past (2026-07-28 x4, 2026-09-13); the metadata scanner's future-date finding was stale.
+- [x] Typecheck, ESLint (Index.tsx, PublicHome.tsx) and production build exit 0; browser check desktop + mobile signed out shows the h1, signed-in still shows the health card, no page errors.
+- [ ] Change reaches the live site on the next publish.
