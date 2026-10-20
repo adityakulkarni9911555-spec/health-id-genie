@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { PatientRegistrationForm } from '@/components/PatientRegistrationForm';
+import PublicHome from '@/pages/PublicHome';
 import { HealthCardPreview } from '@/components/HealthCardPreview';
 import { Logo } from '@/components/Logo';
 import { SyncStatusBanner } from '@/components/SyncStatusBanner';
@@ -58,7 +59,7 @@ const Index = () => {
       window.location.search.includes("code="));
 
   if (!authLoading && !user && !hasPendingAuthCallback) {
-    return <Navigate to="/auth" replace />;
+    return <PublicHome />;
   }
 
   const handlePatientRegistered = (patient: Patient) => {
