@@ -38,3 +38,8 @@
 - [x] ESLint for HealthTimeline.tsx exit 0 with no warnings; automatic preview build reports build OK.
 - [x] Existing owner session: read-only desktop/mobile navigation verified real timeline and all three tabs; no page runtime errors or mobile horizontal overflow. No forms submitted, records modified, or documents opened. Empty/error states not exercised.
 - [ ] Phase 2 remains blocked on real payment and clinician identity providers.
+
+## Referral link on the public emergency page (2026-10-19)
+- [x] Added a tasteful "Create your own free Medora card" link (plus one line explaining what Medora is) in the privacy footer of src/pages/Emergency.tsx, below "Close & wipe from this device"; links to "/"; no other behavior changed.
+- [x] Typecheck (bunx tsgo), ESLint on Emergency.tsx, and production build all exit 0.
+- [x] Read-only browser check on a real emergency page, desktop + phone: link visible, href "/", 56px touch target, no page errors. No forms submitted, records modified, or documents opened.
