@@ -703,27 +703,13 @@ const Emergency = () => {
           </p>
         </section>
 
-        {/* Privacy footer + explicit wipe */}
+        {/* Privacy footer — wiping is automatic on tab close/hide */}
         <section className="text-center pt-2 pb-8">
           <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
-            Nothing on this page is saved to this device. Closing the tab
-            clears the record instantly. Document links expire in 5 minutes.
+            Nothing on this page is saved to this device. The record is wiped
+            automatically when this tab is closed or left. Document links expire
+            in 5 minutes.
           </p>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setData(null);
-              setState('wiped');
-
-              window.close();
-              // If the tab can't be closed by script, send them away.
-              setTimeout(() => {
-                window.location.replace('about:blank');
-              }, 150);
-            }}
-          >
-            Close & wipe from this device
-          </Button>
 
           {/* Gentle referral — someone who saw this page can make their own card */}
           <div className="mt-8 pt-6 border-t border-border/60 max-w-sm mx-auto">
