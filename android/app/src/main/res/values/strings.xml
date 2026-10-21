@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Medora</string>
+    <string name="title_activity_main">Medora</string>
+    <string name="package_name">app.lovable.p0392aa24616c429abf3db6add5225e03</string>
+    <string name="custom_url_scheme">app.lovable.p0392aa24616c429abf3db6add5225e03</string>
+</resources>

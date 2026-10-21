@@ -12,3 +12,5 @@
 - Family membership grants nothing by itself; access to another member's data must go through family_can_access(patient_id, scope); why: permissions are explicit per scope.
 - AI extraction stores provenance and a conflicts list on each document and never writes patient profile fields; only the patient's explicit choice in the conflict review changes them; why: verified data must not be silently overwritten.
 - Uploads write to the legacy patients.documents list (the single write path); the documents table is a derived read model synced one-way by a DB trigger that only accepts `<owner>/<patient>/` paths, and removing a document deletes only its AI_EXTRACTED medicine/lab rows and search snippets; why: one source of truth with no two-way sync, without breaking older app versions.
+
+- Android app is a Capacitor shell (`android/`, `capacitor.config.ts`) loading the published site via server.url; why: one codebase, web updates reach the app without rebuilding.
