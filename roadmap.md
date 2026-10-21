@@ -49,3 +49,6 @@
 - [x] Verified all Article datePublished values are in the past (2026-07-28 x4, 2026-09-13); the metadata scanner's future-date finding was stale.
 - [x] Typecheck, ESLint (Index.tsx, PublicHome.tsx) and production build exit 0; browser check desktop + mobile signed out shows the h1, signed-in still shows the health card, no page errors.
 - [ ] Change reaches the live site on the next publish.
+
+- [x] Test Android APK (debug, Capacitor shell of published site) built and saved to Files as medora-debug.apk (2026-10-21)
+- [ ] Play Store release: needs a user-owned signing key
