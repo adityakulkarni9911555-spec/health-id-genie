@@ -53,7 +53,8 @@ const formatUntil = (iso?: string) =>
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { resolved: theme, setMode } = useTheme();
+  const toggleTheme = () => setMode(theme === 'dark' ? 'light' : 'dark');
   const { planSlug } = useSubscription();
   const { toast } = useToast();
   const navigate = useNavigate();

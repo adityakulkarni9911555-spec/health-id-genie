@@ -11,7 +11,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Patient } from '@/types/patient';
-import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Loader2, Crown } from 'lucide-react';
+import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Loader2, Crown, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SiteFooter } from '@/components/SiteFooter';
@@ -126,6 +126,12 @@ const Index = () => {
                 <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => navigate('/privacy')} title="Privacy & Security">
                   <ShieldCheck className="w-4 h-4" />
                   <span className="hidden sm:inline">Privacy</span>
+                </Button>
+              )}
+              {user && (
+                <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => navigate('/profile')} title="Profile & settings">
+                  <UserRound className="w-4 h-4" />
+                  <span className="hidden sm:inline">Profile</span>
                 </Button>
               )}
               <ThemeToggle compact />
