@@ -52,3 +52,5 @@
 
 - [x] Test Android APK (debug, Capacitor shell of published site) built and saved to Files as medora-debug.apk (2026-10-21)
 - [ ] Play Store release: needs a user-owned signing key
+
+- [x] Profile & Settings page (/profile) with PIN-gated password change, 3 tries / 24h lock — verified on phone size while signed in (read-only)
