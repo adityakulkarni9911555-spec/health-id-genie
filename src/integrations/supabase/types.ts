@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_pin_attempts: {
+        Row: {
+          failed_attempts: number
+          locked_until: string | null
+          patient_id: string
+          updated_at: string
+        }
+        Insert: {
+          failed_attempts?: number
+          locked_until?: string | null
+          patient_id: string
+          updated_at?: string
+        }
+        Update: {
+          failed_attempts?: number
+          locked_until?: string | null
+          patient_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_events: {
         Row: {
           access_method: string | null
@@ -948,6 +969,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      account_pin_status: { Args: { _patient_id: string }; Returns: Json }
       can_add_document: { Args: { _patient_id: string }; Returns: boolean }
       can_add_family_member: { Args: { _group_id: string }; Returns: boolean }
       check_emergency_rate_limit: {
@@ -1003,6 +1025,10 @@ export type Database = {
       set_document_pin: {
         Args: { _patient_id: string; _pin: string }
         Returns: boolean
+      }
+      verify_account_pin: {
+        Args: { _patient_id: string; _pin: string }
+        Returns: Json
       }
       verify_document_pin: {
         Args: { _patient_id: string; _pin: string }
