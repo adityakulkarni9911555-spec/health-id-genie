@@ -27,6 +27,11 @@ import {
   Stethoscope,
   Calendar,
   ClipboardList,
+  CreditCard,
+  FolderOpen,
+  History,
+  Settings2,
+  UserRound,
 } from 'lucide-react';
 import {
   getSignedDocumentUrl,
@@ -40,12 +45,20 @@ import { PrintedCardOrder } from '@/components/PrintedCardOrder';
 import { DocumentReminder } from '@/components/DocumentReminder';
 import { DocumentPinSettings } from '@/components/DocumentPinSettings';
 import { ConflictReview } from '@/components/ConflictReview';
-import { ProfilePhotoUploader } from '@/components/ProfilePhotoUploader';
 
 
 import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+type TabId = 'card' | 'records' | 'timeline' | 'manage' | 'profile';
+const TABS: { id: TabId; label: string; Icon: typeof CreditCard }[] = [
+  { id: 'card', label: 'Card', Icon: CreditCard },
+  { id: 'records', label: 'Records', Icon: FolderOpen },
+  { id: 'timeline', label: 'Timeline', Icon: History },
+  { id: 'manage', label: 'Manage', Icon: Settings2 },
+  { id: 'profile', label: 'Profile', Icon: UserRound },
+];
 
 interface HealthCardPreviewProps {
   patient: Patient;
@@ -56,6 +69,7 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   const cardRef = useRef<HTMLDivElement>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [patient, setPatient] = useState<Patient>(initialPatient);
+  const [tab, setTab] = useState<TabId>('card');
   const [openingPath, setOpeningPath] = useState<string | null>(null);
   const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
@@ -195,121 +209,92 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto animate-slide-up">
-      {/* Success Message */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10 mb-4">
-          <CheckCircle2 className="w-10 h-10 text-success" />
-        </div>
-        <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-          Your Medora wallet is ready
-        </h1>
+    <div className="w-full max-w-2xl mx-auto animate-slide-up flex flex-col pb-24 md:pb-0">
+      {tab === 'card' && (
+        <>
+          <div className="mb-5">
+            <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">Your health card</h1>
+            <p className="text-sm text-muted-foreground mt-1">Show this to a doctor or paramedic in an emergency.</p>
+          </div>
 
-        <p className="text-muted-foreground">
-          Your Medora Card is saved and stays with you on every device you sign in from.
-        </p>
-      </div>
+          <div ref={cardRef} className="mb-5 print:shadow-none">
+            <HealthCard patient={patient} />
+          </div>
 
-      {!subLoading && !isPaid && (
-        <div className="mb-6 no-print">
-          <UpgradeBanner variant="compact" reason="documents" remaining={Math.max(0, documentLimit - patient.documents.length)} />
-        </div>
+          <div className="grid grid-cols-3 gap-2 md:gap-3 no-print mb-5">
+            <Button variant="outline" onClick={handleDownload} disabled={downloading} className="btn-touch w-full flex-col h-auto py-3 gap-1 text-xs">
+              {downloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
+              {downloading ? 'Creating…' : 'Download'}
+            </Button>
+            <Button variant="outline" onClick={handlePrint} className="btn-touch w-full flex-col h-auto py-3 gap-1 text-xs">
+              <Printer className="w-5 h-5" />
+              Print
+            </Button>
+            <Button variant="outline" onClick={onBack} className="btn-touch w-full flex-col h-auto py-3 gap-1 text-xs">
+              <ArrowLeft className="w-5 h-5" />
+              Edit details
+            </Button>
+          </div>
+
+          <div className="no-print">
+            <DocumentReminder
+              documents={patient.documents as PatientDocument[]}
+              onUploadClick={() => setTab('records')}
+            />
+          </div>
+        </>
       )}
 
-      {/* Profile photo */}
-      <div className="mb-6">
-        <ProfilePhotoUploader
-          patientId={patient.id}
-          fullName={patient.fullName}
-          photoPath={patient.photoPath}
-          onChange={(photoPath) => setPatient((prev) => ({ ...prev, photoPath }))}
-        />
-      </div>
+      {tab === 'records' && (
+        <>
+          <h1 className="font-display text-xl md:text-2xl font-bold text-foreground mb-4">Records</h1>
+          {!subLoading && !isPaid && (
+            <div className="mb-4 no-print">
+              <UpgradeBanner variant="compact" reason="documents" remaining={Math.max(0, documentLimit - patient.documents.length)} />
+            </div>
+          )}
+          <div ref={uploadSectionRef} className="mb-6 form-section no-print">
+            <DocumentUpload
+              documents={patient.documents as PatientDocument[]}
+              maxFiles={documentLimit || undefined}
+              uploadImmediately={{
+                upload: (file) => uploadPatientDocument(patient.id, file),
+              }}
+              onChange={async (docs) => {
+                setPatient((prev) => ({ ...prev, documents: docs }));
+                try {
+                  await persistPatientDocuments(patient.id, docs);
+                } catch (err) {
+                  console.error(err);
+                  toast({
+                    title: 'Could not save documents',
+                    description: err instanceof Error ? err.message : 'Please try again.',
+                    variant: 'destructive',
+                  });
+                }
+              }}
+            />
+          </div>
+          <div className="mb-6 no-print">
+            <RecordSearch patientId={patient.id} />
+          </div>
+        </>
+      )}
 
-      {/* Card Preview */}
-      <div ref={cardRef} className="mb-8 print:shadow-none">
-        <HealthCard patient={patient} />
-      </div>
-
-      {/* Plan chip hidden until paid plans launch */}
-
-      {/* Reminder to keep documents up to date */}
-      <div className="mb-6">
-        <DocumentReminder
-          documents={patient.documents as PatientDocument[]}
-          onUploadClick={() =>
-            uploadSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          }
-        />
-      </div>
-
-      {/* Quick add documents (upload or scan without leaving this page) */}
-      <div ref={uploadSectionRef} className="mb-6 form-section no-print">
-        <DocumentUpload
-          documents={patient.documents as PatientDocument[]}
-          maxFiles={documentLimit || undefined}
-          uploadImmediately={{
-            upload: (file) => uploadPatientDocument(patient.id, file),
-          }}
-          onChange={async (docs) => {
-            setPatient((prev) => ({ ...prev, documents: docs }));
-            try {
-              await persistPatientDocuments(patient.id, docs);
-            } catch (err) {
-              console.error(err);
-              toast({
-                title: 'Could not save documents',
-                description: err instanceof Error ? err.message : 'Please try again.',
-                variant: 'destructive',
-              });
-            }
-          }}
-        />
-      </div>
-
-      {/* Natural-language search across analysed documents */}
-      <div className="mb-6 no-print">
-        <RecordSearch patientId={patient.id} />
-      </div>
-
-      <div className="mb-6 no-print">
-        <HealthTimeline patientId={patient.id} refreshKey={JSON.stringify(patient.documents?.map((d) => [d.path, d.extractedAt]))} />
-      </div>
+      {tab === 'timeline' && (
+        <>
+          <h1 className="font-display text-xl md:text-2xl font-bold text-foreground mb-4">Timeline</h1>
+          <div className="mb-6 no-print">
+            <HealthTimeline patientId={patient.id} refreshKey={JSON.stringify(patient.documents?.map((d) => [d.path, d.extractedAt]))} />
+          </div>
+        </>
+      )}
 
 
 
-
-
-      {/* Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 no-print">
-        <Button
-          variant="outline"
-          onClick={onBack}
-          className="btn-touch w-full"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Update details
-        </Button>
-
-        <Button
-          variant="outline"
-          onClick={handleDownload}
-          disabled={downloading}
-          className="btn-touch w-full"
-        >
-          <Download className="w-5 h-5 mr-2" />
-          {downloading ? "Creating PDF..." : "Download PDF"}
-        </Button>
-
-        <Button
-          onClick={handlePrint}
-          className="btn-touch w-full"
-        >
-          <Printer className="w-5 h-5 mr-2" />
-          Print Card
-        </Button>
-      </div>
-
+      {tab === 'manage' && (
+      <>
+      <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">Manage</h1>
       {/* Order a physical card */}
       <div className="mt-6 no-print">
         <PrintedCardOrder patient={patient} />
@@ -529,7 +514,39 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
           </div>
         )}
       </div>
+      </>
+      )}
 
+      {/* Bottom navigation (phones) / top tab bar (larger screens) */}
+      <nav
+        aria-label="Health card sections"
+        className="no-print fixed bottom-0 inset-x-0 z-40 border-t border-border/60 glass-nav pb-[env(safe-area-inset-bottom)] md:static md:order-first md:mb-6 md:border md:rounded-2xl md:pb-0"
+      >
+        <ul className="grid grid-cols-5 max-w-2xl mx-auto">
+          {TABS.map(({ id, label, Icon }) => {
+            const active = tab === id;
+            return (
+              <li key={id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (id === 'profile') { navigate('/profile'); return; }
+                    setTab(id);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  aria-current={active ? 'page' : undefined}
+                  className={`w-full min-h-[60px] flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  <span className={`flex items-center justify-center w-12 h-7 rounded-full transition-colors ${active ? 'bg-primary/15' : ''}`}>
+                    <Icon className="w-5 h-5" />
+                  </span>
+                  {label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </div>
   );
 };

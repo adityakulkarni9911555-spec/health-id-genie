@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { loadPatientForCurrentUser } from '@/lib/patientProfile';
 import type { Patient } from '@/types/patient';
+import { ProfilePhotoUploader } from '@/components/ProfilePhotoUploader';
 
 type PinStatus = { locked: boolean; locked_until?: string; attempts_left: number };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -182,6 +183,15 @@ const Profile = () => {
                 </div>
               )}
             </Glass>
+
+            {patient && (
+              <ProfilePhotoUploader
+                patientId={patient.id}
+                fullName={patient.fullName}
+                photoPath={patient.photoPath}
+                onChange={(photoPath) => setPatient((prev) => (prev ? { ...prev, photoPath } : prev))}
+              />
+            )}
 
             {patient && (
               <Glass className="overflow-hidden">
