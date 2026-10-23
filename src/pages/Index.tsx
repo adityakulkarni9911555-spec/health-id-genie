@@ -89,22 +89,22 @@ const Index = () => {
       <header className="sticky top-0 z-50 glass-nav border-b border-border/60 no-print">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <Logo size={40} className="drop-shadow-sm" />
-              <div>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Logo size={36} className="drop-shadow-sm shrink-0" />
+              <div className="min-w-0">
                 <p className="font-display text-lg font-bold text-foreground tracking-tight leading-none">
-                  Medora — Your Digital Health Wallet
+                  Medora
+                  <span className="hidden md:inline"> — Your Digital Health Wallet</span>
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">Private by design</p>
+                <p className="hidden sm:block text-xs text-muted-foreground mt-0.5">Private by design</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 shrink-0">
               <div className="hidden md:flex items-center gap-2">
                 {isOnline ? (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-success/10 text-success text-sm">
                     <Wifi className="w-3.5 h-3.5" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-soft" />
                     <span className="font-medium">Secure & Online</span>
                   </div>
                 ) : (
@@ -120,31 +120,29 @@ const Index = () => {
                   <span className="font-medium">Offline</span>
                 </div>
               )}
-              {/* Plan chip hidden until paid plans launch */}
 
               {user && (
-                <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => navigate('/privacy')} title="Privacy & Security">
+                <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-1.5" onClick={() => navigate('/privacy')} title="Privacy & Security">
                   <ShieldCheck className="w-4 h-4" />
-                  <span className="hidden sm:inline">Privacy</span>
+                  Privacy
+                </Button>
+              )}
+              {user && !registeredPatient && (
+                <Button variant="ghost" size="icon" className="md:hidden" onClick={() => navigate('/profile')} aria-label="Profile & settings">
+                  <UserRound className="w-5 h-5" />
                 </Button>
               )}
               {user && (
-                <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => navigate('/profile')} title="Profile & settings">
+                <Button variant="ghost" size="sm" className="hidden md:inline-flex gap-1.5" onClick={() => navigate('/profile')} title="Profile & settings">
                   <UserRound className="w-4 h-4" />
-                  <span className="hidden sm:inline">Profile</span>
+                  Profile
                 </Button>
               )}
-              <ThemeToggle compact />
+              <div className="hidden md:block"><ThemeToggle compact /></div>
               {user && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="gap-1.5"
-                  title={user.email ?? 'Sign out'}
-                >
+                <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden md:inline-flex gap-1.5" title={user.email ?? 'Sign out'}>
                   <LogOut className="w-4 h-4" />
-                  <span className="hidden sm:inline">Sign out</span>
+                  Sign out
                 </Button>
               )}
             </div>
@@ -156,12 +154,6 @@ const Index = () => {
         <DeviceConditionBanner />
       </div>
       <SyncStatusBanner />
-
-      {!subLoading && user && !isPaid && (
-        <div className="container mx-auto px-4 pt-3 no-print">
-          <UpgradeBanner variant="compact" reason="generic" />
-        </div>
-      )}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-10 md:py-16">
