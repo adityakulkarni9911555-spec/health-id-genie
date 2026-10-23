@@ -19,6 +19,7 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const AdminCardOrders = lazy(() => import("./pages/AdminCardOrders"));
 const PrivacyCenter = lazy(() => import("./pages/PrivacyCenter"));
 const Profile = lazy(() => import("./pages/Profile"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const BlogBenefitsPHR = lazy(() => import("./pages/BlogBenefitsPHR"));
 const BlogDigitalIdVsBracelets = lazy(() => import("./pages/BlogDigitalIdVsBracelets"));
@@ -98,6 +99,7 @@ const AnimatedRoutes = () => {
         <Route path="/e/:token" element={<Emergency />} />
         <Route path="/privacy" element={<PrivacyCenter />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
