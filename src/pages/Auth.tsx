@@ -139,8 +139,23 @@ export default function Auth() {
 
   const withNextRedirect = (path: string) =>
     `${window.location.origin}${path}`;
-
-
+  async function sendReset() {
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      toast({ title: "Enter your email first", description: "Type the email you signed up with, then tap Forgot password." });
+      emailRef.current?.focus();
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setBusy(false);
+    if (error) {
+      toast({ title: "Could not send reset link", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Check your email", description: "If an account exists, we sent a link. You'll confirm your 4-digit PIN before setting a new password." });
+  }
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
