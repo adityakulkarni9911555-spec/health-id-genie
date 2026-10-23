@@ -27,6 +27,11 @@ import {
   Stethoscope,
   Calendar,
   ClipboardList,
+  CreditCard,
+  FolderOpen,
+  History,
+  Settings2,
+  UserRound,
 } from 'lucide-react';
 import {
   getSignedDocumentUrl,
@@ -40,12 +45,20 @@ import { PrintedCardOrder } from '@/components/PrintedCardOrder';
 import { DocumentReminder } from '@/components/DocumentReminder';
 import { DocumentPinSettings } from '@/components/DocumentPinSettings';
 import { ConflictReview } from '@/components/ConflictReview';
-import { ProfilePhotoUploader } from '@/components/ProfilePhotoUploader';
 
 
 import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+type TabId = 'card' | 'records' | 'timeline' | 'manage' | 'profile';
+const TABS: { id: TabId; label: string; Icon: typeof CreditCard }[] = [
+  { id: 'card', label: 'Card', Icon: CreditCard },
+  { id: 'records', label: 'Records', Icon: FolderOpen },
+  { id: 'timeline', label: 'Timeline', Icon: History },
+  { id: 'manage', label: 'Manage', Icon: Settings2 },
+  { id: 'profile', label: 'Profile', Icon: UserRound },
+];
 
 interface HealthCardPreviewProps {
   patient: Patient;
@@ -56,6 +69,7 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   const cardRef = useRef<HTMLDivElement>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [patient, setPatient] = useState<Patient>(initialPatient);
+  const [tab, setTab] = useState<TabId>('card');
   const [openingPath, setOpeningPath] = useState<string | null>(null);
   const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
@@ -280,6 +294,7 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
 
       {tab === 'manage' && (
       <>
+      <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">Manage</h1>
       {/* Order a physical card */}
       <div className="mt-6 no-print">
         <PrintedCardOrder patient={patient} />
