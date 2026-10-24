@@ -61,7 +61,7 @@ export const ProfilePhotoUploader = ({ patientId, fullName, photoPath, onChange 
 
   return (
     <div className="form-section no-print">
-      <div className="flex items-center gap-4">
+      <div className="flex items-start gap-3 sm:gap-4">
         <div className="relative w-[72px] h-[88px] rounded-xl overflow-hidden bg-primary/10 border border-border flex items-center justify-center flex-shrink-0">
           {url ? (
             <img src={url} alt={`${fullName} profile`} className="w-full h-full object-cover" />
@@ -76,14 +76,12 @@ export const ProfilePhotoUploader = ({ patientId, fullName, photoPath, onChange 
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-display text-base font-semibold text-foreground">Profile photo</h3>
-          <p className="text-sm text-muted-foreground mt-0.5 mb-3">
-            Shown on your profile, health card and downloaded PDF. Only you can see it here.
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mt-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
+              className="min-h-14 justify-start sm:justify-center"
               disabled={busy}
               onClick={() => fileRef.current?.click()}
             >
@@ -94,6 +92,7 @@ export const ProfilePhotoUploader = ({ patientId, fullName, photoPath, onChange 
               type="button"
               variant="outline"
               size="sm"
+              className="min-h-14 justify-start sm:justify-center"
               disabled={busy}
               onClick={() => cameraRef.current?.click()}
             >
@@ -101,7 +100,7 @@ export const ProfilePhotoUploader = ({ patientId, fullName, photoPath, onChange 
               Take selfie
             </Button>
             {photoPath && (
-              <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={handleRemove}>
+              <Button type="button" variant="ghost" size="sm" className="min-h-14 justify-start sm:justify-center" disabled={busy} onClick={handleRemove}>
                 <Trash2 className="w-4 h-4 mr-1.5" />
                 Remove
               </Button>
