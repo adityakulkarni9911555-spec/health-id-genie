@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { recoveryStep } from './passwordRecovery';
+import { recoveryStep } from '../src/lib/passwordRecovery';
 
 describe('Recovery PIN gate', () => {
   it('requires the PIN when one is set', () => {
