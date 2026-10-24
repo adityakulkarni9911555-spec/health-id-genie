@@ -54,3 +54,9 @@
 - [ ] Play Store release: needs a user-owned signing key
 
 - [x] Profile & Settings page (/profile) with PIN-gated password change, 3 tries / 24h lock — verified on phone size while signed in (read-only)
+
+## Phone layout and recovery (2026-10-24)
+- [ ] Compact health card with readable name, medical details and a smaller QR; consistent bottom navigation and smoother loading.
+- [ ] Hide website footer in the signed-in wallet and Android shell; refine Profile photo placement.
+- [ ] Verify phone/desktop screens with current owner session, read-only; check forgot-password validation and expired-link screen.
+- [ ] User completes private email link → PIN → new password → signed-in confirmation (requires their inbox and PIN; do not change their password during read-only checks).
