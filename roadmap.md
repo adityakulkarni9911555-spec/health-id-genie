@@ -54,3 +54,11 @@
 - [ ] Play Store release: needs a user-owned signing key
 
 - [x] Profile & Settings page (/profile) with PIN-gated password change, 3 tries / 24h lock — verified on phone size while signed in (read-only)
+
+## Phone layout and recovery (2026-10-24)
+- [x] Compact health card with full-width wrapping name, medical details and 116px phone QR column; shared query-based navigation, stable loading placeholders, reduced-motion support and no phone wallet blur.
+- [x] Removed SiteFooter from signed-in wallet; native-platform guard on shared website footer (source checked only, Android runtime not tested). Profile displays signed photo or initials and retains upload/selfie/remove controls.
+- [x] Current injected account, read-only browser: 390×844 Card/Records/Timeline/Manage/Profile all open without horizontal overflow; ordering disabled; Change password disabled because current account has no PIN. 1280×1800 Card checked; wallet website footer absent. No page errors. No account data changed.
+- [x] Signed-out browser: Forgot password with empty email shows validation; reset route without session shows Link expired. No email sent, PIN entered, or password changed.
+- [x] Recovery fails closed on failed profile/PIN/status checks; four recovery-gate tests pass (bun test scripts/passwordRecovery.test.ts, exit 0); changed-screen ESLint exit 0; latest automatic typecheck/build reports build OK (2026-10-24T07:46:09Z). No manual production build/typecheck run; no database migrations or publish.
+- [ ] User completes private email link → PIN → new password → signed-in confirmation (requires their inbox and PIN; do not change their password during read-only checks).

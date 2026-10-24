@@ -207,7 +207,7 @@ export default function Auth() {
 
           <div className="grid gap-8 lg:gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,448px)] lg:items-start max-w-6xl mx-auto">
             {/* Hero — A/B test variant */}
-            <section className="space-y-5 sm:space-y-6 order-1 lg:order-1 min-h-[430px] sm:min-h-[400px] lg:min-h-[520px] flex flex-col justify-center">
+            <section className="hidden lg:flex space-y-5 sm:space-y-6 order-1 lg:order-1 min-h-[430px] sm:min-h-[400px] lg:min-h-[520px] flex-col justify-center">
               {abVariant === 'alternate' ? (
                 <>
                   <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight">
@@ -277,7 +277,7 @@ export default function Auth() {
             </section>
 
             {/* Sign-in card */}
-            <div className="order-2 lg:order-2 w-full max-w-md lg:max-w-md lg:justify-self-center min-h-[430px] sm:min-h-[390px]">
+            <div className="order-2 lg:order-2 w-full max-w-md mx-auto lg:max-w-md lg:justify-self-center min-h-[430px] sm:min-h-[390px]">
               <div className="form-section p-7 sm:p-8 space-y-6 min-h-[430px] sm:min-h-[390px]">
                 <div>
                   <h2 className="font-display text-2xl font-semibold leading-tight">
@@ -299,9 +299,9 @@ export default function Auth() {
                     <div className="flex items-center justify-between">
                       <Label htmlFor="password">Password</Label>
                       {mode === "signin" && (
-                        <button type="button" onClick={sendReset} disabled={busy} className="text-sm text-primary font-medium hover:underline min-h-[44px] px-1">
+                        <Button variant="link" type="button" onClick={sendReset} disabled={busy} className="text-sm min-h-[56px] px-1">
                           Forgot password?
-                        </button>
+                        </Button>
                       )}
                     </div>
                     <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "signup" ? "new-password" : "current-password"} />

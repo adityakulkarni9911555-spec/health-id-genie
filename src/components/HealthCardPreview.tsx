@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { WalletNavigation, type WalletSection } from '@/components/WalletNavigation';
 import { Button } from '@/components/ui/button';
 import { HealthCard } from '@/components/HealthCard';
 import { FamilyManager } from '@/components/FamilyManager';
@@ -27,11 +28,6 @@ import {
   Stethoscope,
   Calendar,
   ClipboardList,
-  CreditCard,
-  FolderOpen,
-  History,
-  Settings2,
-  UserRound,
 } from 'lucide-react';
 import {
   getSignedDocumentUrl,
@@ -51,15 +47,6 @@ import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-type TabId = 'card' | 'records' | 'timeline' | 'manage' | 'profile';
-const TABS: { id: TabId; label: string; Icon: typeof CreditCard }[] = [
-  { id: 'card', label: 'Card', Icon: CreditCard },
-  { id: 'records', label: 'Records', Icon: FolderOpen },
-  { id: 'timeline', label: 'Timeline', Icon: History },
-  { id: 'manage', label: 'Manage', Icon: Settings2 },
-  { id: 'profile', label: 'Profile', Icon: UserRound },
-];
-
 interface HealthCardPreviewProps {
   patient: Patient;
   onBack: () => void;
@@ -69,12 +56,14 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   const cardRef = useRef<HTMLDivElement>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [patient, setPatient] = useState<Patient>(initialPatient);
-  const [tab, setTab] = useState<TabId>('card');
+  const [params, setParams] = useSearchParams();
+  const selected = params.get('section');
+  const tab: WalletSection = selected === 'records' || selected === 'timeline' || selected === 'manage' ? selected : 'card';
+  const setTab = (section: WalletSection) => setParams({ section });
   const [openingPath, setOpeningPath] = useState<string | null>(null);
   const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
   const { planSlug, isPaid, isFamily, familyGroupId, documentLimit, loading: subLoading } = useSubscription();
 
   const shareUrl = patient.shareToken ? publicEmergencyUrl(patient.shareToken) : null;
@@ -209,28 +198,30 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto animate-slide-up flex flex-col pb-24 md:pb-0">
+    <div className="w-full max-w-2xl mx-auto flex flex-col pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+      <WalletNavigation active={tab} />
+      <div key={tab} className="animate-fade-in">
       {tab === 'card' && (
         <>
-          <div className="mb-5">
+          <div className="mb-4">
             <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">Your health card</h1>
-            <p className="text-sm text-muted-foreground mt-1">Show this to a doctor or paramedic in an emergency.</p>
+            
           </div>
 
-          <div ref={cardRef} className="mb-5 print:shadow-none">
+          <div ref={cardRef} className="mb-4 print:shadow-none">
             <HealthCard patient={patient} />
           </div>
 
           <div className="grid grid-cols-3 gap-2 md:gap-3 no-print mb-5">
-            <Button variant="outline" onClick={handleDownload} disabled={downloading} className="btn-touch w-full flex-col h-auto py-3 gap-1 text-xs">
+            <Button variant="outline" onClick={handleDownload} disabled={downloading} className="w-full min-h-[64px] flex-col py-2 gap-1 text-xs rounded-lg">
               {downloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
               {downloading ? 'Creating…' : 'Download'}
             </Button>
-            <Button variant="outline" onClick={handlePrint} className="btn-touch w-full flex-col h-auto py-3 gap-1 text-xs">
+            <Button variant="outline" onClick={handlePrint} className="w-full min-h-[64px] flex-col py-2 gap-1 text-xs rounded-lg">
               <Printer className="w-5 h-5" />
               Print
             </Button>
-            <Button variant="outline" onClick={onBack} className="btn-touch w-full flex-col h-auto py-3 gap-1 text-xs">
+            <Button variant="outline" onClick={onBack} className="w-full min-h-[64px] flex-col py-2 gap-1 text-xs rounded-lg">
               <ArrowLeft className="w-5 h-5" />
               Edit details
             </Button>
@@ -407,14 +398,14 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
             <DetailItem
               label="Chronic Conditions"
               value={patient.chronicConditions.join(', ')}
-              className="col-span-2"
+              className="sm:col-span-2"
             />
           )}
           {patient.allergies.length > 0 && (
             <DetailItem
               label="Allergies"
               value={patient.allergies.join(', ')}
-              className="col-span-2 md:col-span-1"
+              className="sm:col-span-2 md:col-span-1"
             />
           )}
           {patient.insuranceProvider && (
@@ -517,36 +508,7 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
       </>
       )}
 
-      {/* Bottom navigation (phones) / top tab bar (larger screens) */}
-      <nav
-        aria-label="Health card sections"
-        className="no-print fixed bottom-0 inset-x-0 z-40 border-t border-border/60 glass-nav pb-[env(safe-area-inset-bottom)] md:static md:order-first md:mb-6 md:border md:rounded-2xl md:pb-0"
-      >
-        <ul className="grid grid-cols-5 max-w-2xl mx-auto">
-          {TABS.map(({ id, label, Icon }) => {
-            const active = tab === id;
-            return (
-              <li key={id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (id === 'profile') { navigate('/profile'); return; }
-                    setTab(id);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  aria-current={active ? 'page' : undefined}
-                  className={`w-full min-h-[60px] flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <span className={`flex items-center justify-center w-12 h-7 rounded-full transition-colors ${active ? 'bg-primary/15' : ''}`}>
-                    <Icon className="w-5 h-5" />
-                  </span>
-                  {label}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+      </div>
     </div>
   );
 };

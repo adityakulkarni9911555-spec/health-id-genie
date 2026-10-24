@@ -20,13 +20,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { loadPatientForCurrentUser } from '@/lib/patientProfile';
 import type { Patient } from '@/types/patient';
 import { ProfilePhotoUploader } from '@/components/ProfilePhotoUploader';
+import { usePatientPhotoUrl } from '@/lib/patientPhoto';
+import { WalletNavigation } from '@/components/WalletNavigation';
 
 type PinStatus = { locked: boolean; locked_until?: string; attempts_left: number };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rpc = (fn: string, args: Record<string, unknown>) => (supabase.rpc as any)(fn, args);
 
 const Glass = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <section className={`rounded-3xl border border-border/60 bg-card/75 backdrop-blur-md shadow-lg ${className}`}>
+  <section className={`profile-section rounded-lg border border-border bg-card ${className}`}>
     {children}
   </section>
 );
@@ -39,14 +41,14 @@ const Row = ({ icon, title, detail, onClick, to, trailing }: {
       <span className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">{icon}</span>
       <span className="flex-1 min-w-0 text-left">
         <span className="block text-sm font-semibold text-foreground">{title}</span>
-        {detail && <span className="block text-xs text-muted-foreground truncate">{detail}</span>}
+        {detail && <span className="block text-xs text-muted-foreground whitespace-normal break-words">{detail}</span>}
       </span>
       {trailing ?? <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />}
     </>
   );
   const cls = 'group w-full flex items-center gap-3 px-4 min-h-[64px] transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:bg-accent/60';
   if (to) return <Link to={to} className={cls}>{inner}</Link>;
-  return <button type="button" onClick={onClick} className={cls}>{inner}</button>;
+  return <Button variant="ghost" type="button" onClick={onClick} disabled={!onClick} className={`${cls} h-auto rounded-none justify-start whitespace-normal`}>{inner}</Button>;
 };
 
 const formatUntil = (iso?: string) =>
@@ -60,6 +62,7 @@ const Profile = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [patient, setPatient] = useState<Patient | null>(null);
+  const photoUrl = usePatientPhotoUrl(patient?.photoPath);
   const [hasPin, setHasPin] = useState<boolean | null>(null);
   const [pinStatus, setPinStatus] = useState<PinStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -140,38 +143,36 @@ const Profile = () => {
   const docCount = patient?.documents?.length ?? 0;
 
   return (
-    <div className="min-h-screen bg-background hero-surface">
+    <div className="min-h-screen bg-background wallet-surface">
       <Helmet>
         <title>Profile & Settings — Medora</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <header className="sticky top-0 z-40 glass-nav border-b border-border/60">
-        <div className="container mx-auto px-4 py-2 max-w-2xl flex items-center justify-between">
-          <Button asChild variant="ghost" size="sm" className="min-h-[48px]">
-            <Link to="/"><ArrowLeft className="w-4 h-4 mr-1" /> My health card</Link>
+        <div className="container mx-auto px-4 py-2 max-w-2xl grid grid-cols-[56px_1fr_56px] items-center">
+          <Button asChild variant="ghost" size="icon" className="h-14 w-14">
+            <Link to="/" aria-label="Back to health card"><ArrowLeft className="w-5 h-5" /></Link>
           </Button>
-          <h1 className="font-display text-base font-bold text-foreground">Profile</h1>
-          <span className="w-24" />
+          <h1 className="font-display text-base font-bold text-foreground text-center">Profile</h1>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 max-w-2xl space-y-5 animate-fade-in">
+      <main className="container mx-auto px-4 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8 max-w-2xl space-y-4">
+        <WalletNavigation active="profile" />
         {authLoading || loading ? (
           <div className="flex items-center justify-center gap-2 py-24 text-muted-foreground" role="status">
             <Loader2 className="w-5 h-5 animate-spin" /> Loading…
           </div>
         ) : (
           <>
-            <Glass className="p-6 relative overflow-hidden">
-              <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-primary/15 blur-3xl" aria-hidden />
-              <div className="absolute -bottom-20 -left-10 w-48 h-48 rounded-full bg-success/10 blur-3xl" aria-hidden />
+            <Glass className="p-4 sm:p-6">
               <div className="relative flex items-center gap-4">
-                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center text-2xl font-bold shadow-lg">
-                  {initials}
+                <div className="w-14 h-16 sm:w-16 sm:h-20 shrink-0 rounded-lg overflow-hidden bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">
+                  {photoUrl ? <img src={photoUrl} alt="Your profile" className="w-full h-full object-cover" /> : initials}
                 </div>
-                <div className="min-w-0">
-                  <p className="font-display text-xl font-bold text-foreground truncate">{patient?.fullName || 'Your account'}</p>
-                  <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-xl font-bold text-foreground break-words [overflow-wrap:anywhere]">{patient?.fullName || 'Your account'}</p>
+                  <p className="text-xs text-muted-foreground break-all mt-1">{user?.email}</p>
                   <Badge variant="secondary" className="mt-2 capitalize">{planSlug || 'free'} plan</Badge>
                 </div>
               </div>
@@ -198,7 +199,7 @@ const Profile = () => {
                 <h2 className="px-4 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Health details</h2>
                 <div className="divide-y divide-border/60">
                   <Row icon={<UserRound className="w-5 h-5" />} title="Personal & emergency info"
-                    detail={patient.emergencyContact ? `Emergency contact: ${patient.emergencyContact}` : 'Name, allergies, conditions'} to="/" />
+                    detail={patient.emergencyContact ? `Emergency contact: ${patient.emergencyContact}` : 'Name, allergies, conditions'} to="/?section=manage" />
                 </div>
               </Glass>
             )}
@@ -211,7 +212,7 @@ const Profile = () => {
                   onClick={patient && hasPin && !locked ? openPasswordDialog : undefined}
                   trailing={locked ? <Lock className="w-4 h-4 text-warning" /> : undefined} />
                 <Row icon={<ShieldCheck className="w-5 h-5" />} title="Report PIN"
-                  detail={hasPin ? 'Set — reports stay locked without it' : 'Not set'} to="/" />
+                  detail={hasPin ? 'Set — reports stay locked without it' : 'Not set'} to="/?section=manage" />
                 <Row icon={<History className="w-5 h-5" />} title="Privacy & access history" detail="Who opened your card, and when" to="/privacy" />
               </div>
             </Glass>
@@ -292,7 +293,7 @@ const Profile = () => {
 };
 
 const Stat = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
-  <div className="rounded-2xl bg-background/60 border border-border/50 px-3 py-2.5">
+  <div className="min-w-0 border-t border-border px-1 pt-3">
     <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">{icon}{label}</div>
     <p className="text-sm font-bold text-foreground mt-0.5">{value}</p>
   </div>

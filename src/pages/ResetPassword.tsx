@@ -8,14 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/Logo';
 import { useToast } from '@/hooks/use-toast';
-import { loadPatientForCurrentUser } from '@/lib/patientProfile';
+import { recoveryStep } from '@/lib/passwordRecovery';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rpc = (fn: string, args: Record<string, unknown>) => (supabase.rpc as any)(fn, args);
 const formatUntil = (iso?: string) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '';
 
-type Step = 'loading' | 'invalid' | 'pin' | 'locked' | 'password';
+type Step = 'loading' | 'invalid' | 'error' | 'pin' | 'locked' | 'password';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -32,24 +32,32 @@ export default function ResetPassword() {
 
   useEffect(() => {
     let done = false;
+    let disposed = false;
     const decide = async () => {
       if (done) return;
       const { data } = await supabase.auth.getSession();
-      if (!data.session) return;
+      if (!data.session || done || disposed) return;
       done = true;
-      const p = await loadPatientForCurrentUser().catch(() => null);
-      if (!p) { setStep('password'); return; }
-      setPatientId(p.id);
-      const { data: hasPin } = await supabase.rpc('has_document_pin', { _patient_id: p.id });
-      if (!hasPin) { setStep('password'); return; }
-      const { data: st } = await rpc('account_pin_status', { _patient_id: p.id });
-      if (st?.locked) { setLockedUntil(st.locked_until); setStep('locked'); return; }
-      setStep('pin');
+      try {
+        const { data: profile, error: profileError } = await supabase.from('profiles').select('patient_id').eq('id', data.session.user.id).maybeSingle();
+        if (profileError || disposed) { if (!disposed) setStep('error'); return; }
+        if (!profile?.patient_id) { setStep('password'); return; }
+        setPatientId(profile.patient_id);
+        const { data: hasPin, error: pinCheckError } = await supabase.rpc('has_document_pin', { _patient_id: profile.patient_id });
+        if (pinCheckError || typeof hasPin !== 'boolean') { setStep('error'); return; }
+        const { data: st, error: statusError } = hasPin ? await rpc('account_pin_status', { _patient_id: profile.patient_id }) : { data: null, error: null };
+        if (disposed) return;
+        if (st?.locked) setLockedUntil(st.locked_until);
+        setStep(recoveryStep(hasPin, st, Boolean(statusError)));
+      } catch {
+        if (!disposed) setStep('error');
+      }
     };
-    const { data: sub } = supabase.auth.onAuthStateChange(() => { decide(); });
+    // Defer database requests until the auth callback releases its session lock.
+    const { data: sub } = supabase.auth.onAuthStateChange(() => { window.setTimeout(decide, 0); });
     decide();
     const t = window.setTimeout(() => { if (!done) setStep('invalid'); }, 6000);
-    return () => { sub.subscription.unsubscribe(); window.clearTimeout(t); };
+    return () => { disposed = true; sub.subscription.unsubscribe(); window.clearTimeout(t); };
   }, []);
 
   const submitPin = async (e: React.FormEvent) => {
@@ -59,7 +67,7 @@ export default function ResetPassword() {
     const { data, error } = await rpc('verify_account_pin', { _patient_id: patientId, _pin: pin });
     setBusy(false);
     setPin('');
-    if (error) { setPinError('Could not check your PIN. Try again.'); return; }
+    if (error || !data) { setPinError('Could not check your PIN. Try again.'); return; }
     if (data.ok) { setPinError(''); setStep('password'); return; }
     if (data.reason === 'locked') { setLockedUntil(data.locked_until); setStep('locked'); return; }
     setPinError(`Wrong PIN. ${data.attempts_left} ${data.attempts_left === 1 ? 'attempt' : 'attempts'} left before a 24-hour lock.`);
@@ -95,6 +103,13 @@ export default function ResetPassword() {
               <Button asChild className="btn-touch w-full"><Link to="/auth">Back to sign in</Link></Button>
             </>
           )}
+          {step === 'error' && (
+            <>
+              <h1 className="font-display text-2xl font-semibold">Could not check security</h1>
+              <p className="text-sm text-muted-foreground" role="alert">Your PIN protection could not be checked. Password changes stay unavailable. Please try again.</p>
+              <Button className="min-h-14 w-full" onClick={() => window.location.reload()}>Try again</Button>
+            </>
+          )}
           {step === 'pin' && (
             <form onSubmit={submitPin} className="space-y-4">
               <h1 className="font-display text-2xl font-semibold flex items-center gap-2"><Lock className="w-5 h-5 text-primary" /> Enter your PIN</h1>
@@ -124,10 +139,10 @@ export default function ResetPassword() {
                 <Label htmlFor="new-pw">New password</Label>
                 <div className="relative">
                   <Input id="new-pw" type={show ? 'text' : 'password'} value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="new-password" className="h-12 pr-12" />
-                  <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Hide password' : 'Show password'}
+                  <Button variant="ghost" size="icon" type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Hide password' : 'Show password'}
                     className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-muted-foreground">
                     {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                  </Button>
                 </div>
               </div>
               <div className="space-y-2">

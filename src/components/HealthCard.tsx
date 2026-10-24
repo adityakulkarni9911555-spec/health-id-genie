@@ -2,7 +2,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Patient } from '@/types/patient';
 import { Phone, Droplets, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Logo } from '@/components/Logo';
-import { publicEmergencyUrl, publicOrigin } from '@/lib/publicUrl';
+import { publicEmergencyUrl } from '@/lib/publicUrl';
 import { usePatientPhotoUrl } from '@/lib/patientPhoto';
 
 interface HealthCardProps {
@@ -30,154 +30,73 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
     .join('');
 
   return (
-    <div className="health-card relative w-full max-w-md mx-auto overflow-hidden animate-scale-in print:shadow-none">
-      {/* Decorative gradient orb */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full opacity-40 blur-3xl print:hidden"
-        style={{ background: 'var(--gradient-primary)' }}
-      />
-
-      {/* Header */}
-      <div
-        className="relative -mx-6 -mt-6 mb-6 px-6 py-5 text-primary-foreground"
-        style={{ background: 'var(--gradient-primary)' }}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
-              <Logo size={26} />
-            </div>
-            <div>
-              <h3 className="font-display font-bold text-lg leading-tight tracking-tight">
-                Medora Card
-              </h3>
-              <p className="text-primary-foreground/80 text-xs uppercase tracking-[0.15em] mt-0.5">
-                Digital Health ID
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/15 text-[10px] uppercase tracking-wider font-semibold">
-            <ShieldCheck className="w-3 h-3" />
-            <span>Verified</span>
+    <article className="health-card w-full max-w-md mx-auto overflow-hidden print:shadow-none" aria-label="Medora health card">
+      <header className="flex items-center justify-between gap-3 border-b border-border pb-4 mb-4">
+        <div className="flex items-center gap-2.5">
+          <Logo size={28} />
+          <div>
+            <h2 className="font-display font-bold text-base text-foreground">Medora Card</h2>
+            <p className="text-xs text-muted-foreground">Digital Health ID</p>
           </div>
         </div>
-      </div>
+        <span className={`flex items-center gap-1 text-xs font-medium ${patient.shareToken && !patient.shareRevoked ? 'text-success' : 'text-muted-foreground'}`}>
+          <ShieldCheck className="w-3.5 h-3.5" />
+          {patient.shareToken && !patient.shareRevoked ? 'Active' : 'Inactive'}
+        </span>
+      </header>
 
-      {/* Patient Info & QR */}
-      <div className="relative flex gap-6">
-        {/* Details */}
-        <div className="flex-1 space-y-4 min-w-0">
-          <div className="flex items-start gap-3">
-            <div className="w-14 h-[68px] rounded-lg overflow-hidden border border-border bg-primary/10 flex items-center justify-center flex-shrink-0">
-              {photoUrl ? (
-                <img src={photoUrl} alt={`${patient.fullName} photo`} className="w-full h-full object-cover" />
-              ) : (
-                <span className="font-display font-bold text-primary text-lg">{initials || 'M'}</span>
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-1">
-                Patient
-              </p>
-              <p className="font-display font-bold text-foreground text-xl leading-tight tracking-tight truncate">
-                {patient.fullName}
-              </p>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                DOB · {formatDate(patient.dateOfBirth)}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {patient.bloodGroup && (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-destructive/10 text-destructive text-xs font-semibold">
-                <Droplets className="w-3.5 h-3.5" />
-                {patient.bloodGroup}
-              </div>
-            )}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent text-accent-foreground text-xs font-semibold capitalize">
-              {patient.gender}
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2">
-            <Phone className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold">
-                Emergency
-              </p>
-              <p className="font-medium text-foreground text-sm truncate">
-                {patient.emergencyContact}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* QR Code */}
-        <div className="flex-shrink-0 flex flex-col items-center w-[180px]">
-          <div className="relative p-3 rounded-2xl bg-white border border-border shadow-sm">
-            <div
-              aria-hidden
-              className="absolute inset-0 rounded-2xl opacity-60 -z-10 blur-md print:hidden"
-              style={{ background: 'var(--gradient-primary)' }}
-            />
-            {patient.shareToken ? (
-              <QRCodeSVG
-                value={publicEmergencyUrl(patient.shareToken)}
-                size={160}
-                level="M"
-                includeMargin={false}
-                bgColor="#ffffff"
-                fgColor="#000000"
-              />
-            ) : (
-              <div className="w-[160px] h-[160px] flex items-center justify-center text-center text-xs text-muted-foreground">
-                Emergency QR not available yet
-              </div>
-            )}
-          </div>
-          <p className="text-[10px] text-muted-foreground text-center mt-2 font-mono tracking-widest">
-            {shortId}
-          </p>
-          {patient.shareToken && (
-            <p className="text-[9px] text-muted-foreground/80 text-center mt-0.5 font-mono">
-              /e/{patient.shareToken.slice(0, 8)}
-            </p>
+      <div className="flex items-start gap-3 mb-5">
+        <div className="w-12 h-14 sm:w-14 sm:h-16 rounded-lg overflow-hidden border border-border bg-primary/10 flex items-center justify-center shrink-0">
+          {photoUrl ? (
+            <img src={photoUrl} alt={`${patient.fullName} photo`} className="w-full h-full object-cover" />
+          ) : (
+            <span className="font-bold text-primary text-lg">{initials || 'M'}</span>
           )}
         </div>
-
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-muted-foreground mb-1">Cardholder</p>
+          <p className="font-display font-bold text-foreground text-xl leading-snug break-words [overflow-wrap:anywhere]">{patient.fullName}</p>
+          <p className="text-xs text-muted-foreground mt-1">Born {formatDate(patient.dateOfBirth)}</p>
+        </div>
       </div>
 
-      {/* Allergies Warning */}
+      <div className="grid grid-cols-[minmax(0,1fr)_116px] sm:grid-cols-[minmax(0,1fr)_140px] gap-4 items-start">
+        <div className="min-w-0 space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {patient.bloodGroup && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-destructive/10 text-destructive px-2 py-1 text-sm font-bold">
+                <Droplets className="w-3.5 h-3.5" />{patient.bloodGroup}
+              </span>
+            )}
+            <span className="inline-flex items-center rounded-md bg-accent text-accent-foreground px-2 py-1 text-xs font-medium capitalize">{patient.gender}</span>
+          </div>
+          <div>
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1"><Phone className="w-3.5 h-3.5 text-primary" />Emergency contact</p>
+            <p className="text-sm font-semibold text-foreground break-words [overflow-wrap:anywhere]">{patient.emergencyContact || 'Not provided'}</p>
+          </div>
+        </div>
+        <div className="min-w-0 text-center">
+          <div className="health-qr rounded-lg border border-border p-1.5 aspect-square flex items-center justify-center">
+            {patient.shareToken ? (
+              <QRCodeSVG value={publicEmergencyUrl(patient.shareToken)} size={128} level="M" marginSize={4} bgColor="#ffffff" fgColor="#000000" className="w-full h-full" />
+            ) : (
+              <p className="text-xs text-muted-foreground">QR not available</p>
+            )}
+          </div>
+          <p className="text-[10px] font-mono text-muted-foreground mt-2">ID · {shortId}</p>
+        </div>
+      </div>
+
       {patient.allergies.length > 0 && (
-        <div className="relative mt-5 pt-4 border-t border-border">
-          <div className="flex items-start gap-2 bg-warning/10 border border-warning/25 rounded-xl px-3.5 py-3">
-            <AlertTriangle className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-warning font-bold">
-                Allergies
-              </p>
-              <p className="text-sm text-foreground font-medium mt-0.5">
-                {patient.allergies.join(', ')}
-              </p>
-            </div>
+        <div className="mt-4 pt-4 border-t border-border flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-muted-foreground">Allergies</p>
+            <p className="text-sm font-medium text-foreground break-words mt-1">{patient.allergies.join(', ')}</p>
           </div>
         </div>
       )}
-
-      {/* Footer */}
-      <div className="relative mt-5 pt-4 border-t border-border flex justify-between items-center">
-        <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold">
-          Issued · {formatDate(patient.createdAt)}
-        </p>
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-soft" />
-          <span className="text-[10px] uppercase tracking-[0.15em] text-success font-bold">
-            Active
-          </span>
-        </div>
-      </div>
-    </div>
+      <footer className="mt-4 pt-3 border-t border-border text-[10px] text-muted-foreground">Issued {formatDate(patient.createdAt)}</footer>
+    </article>
   );
 };

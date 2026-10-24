@@ -186,9 +186,8 @@
 
 @layer components {
   .health-card {
-    @apply bg-card rounded-2xl p-6;
-    background: var(--gradient-card);
-    box-shadow: var(--shadow-card);
+    @apply bg-card rounded-lg p-4 sm:p-6;
+    box-shadow: var(--shadow-md);
     border: 1px solid hsl(var(--border));
   }
 
@@ -304,5 +303,27 @@
       --muted: 215 25% 94%;
       --muted-foreground: 220 10% 42%;
     }
+  }
+}
+/* The QR stays black on white in both themes for reliable scanning. */
+.health-qr { background: hsl(var(--qr-background)); }
+:root { --qr-background: 0 0% 100%; }
+
+@media (max-width: 767px) {
+  .wallet-surface .glass-nav, .wallet-surface .profile-section {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: hsl(var(--card));
+    box-shadow: none;
+  }
+  .wallet-navigation { box-shadow: var(--shadow-sm); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
