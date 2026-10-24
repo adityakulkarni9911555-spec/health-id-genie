@@ -11,10 +11,9 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Patient } from '@/types/patient';
-import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Loader2, Crown, UserRound } from 'lucide-react';
+import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Crown, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { SiteFooter } from '@/components/SiteFooter';
 import { supabase } from '@/integrations/supabase/client';
 import { loadPatientForCurrentUser } from '@/lib/patientProfile';
 import { useToast } from '@/hooks/use-toast';
@@ -76,7 +75,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background hero-surface">
+    <div className="min-h-screen bg-background wallet-surface">
       <Helmet>
         <title>Medora Health — Your Personal Health Wallet</title>
         <meta name="description" content="Medora is a personal health wallet app. The Medora Health app keeps your medical records, allergies, medications, and emergency info private and always with you." />
@@ -86,15 +85,15 @@ const Index = () => {
         <meta property="og:url" content="https://medorahealthwallet.lovable.app/" />
       </Helmet>
       {/* Header */}
-      <header className="sticky top-0 z-50 glass-nav border-b border-border/60 no-print">
-        <div className="container mx-auto px-4 py-3">
+      <header className="sticky top-0 z-50 bg-card border-b border-border no-print">
+        <div className="container mx-auto px-4 py-2.5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <Logo size={36} className="drop-shadow-sm shrink-0" />
               <div className="min-w-0">
                 <p className="font-display text-lg font-bold text-foreground tracking-tight leading-none">
                   Medora
-                  <span className="hidden md:inline"> — Your Digital Health Wallet</span>
+                  
                 </p>
                 <p className="hidden sm:block text-xs text-muted-foreground mt-0.5">Private by design</p>
               </div>
@@ -156,11 +155,16 @@ const Index = () => {
       <SyncStatusBanner />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-10 md:py-16">
+      <main className="container mx-auto px-4 py-4 md:py-8">
         {authLoading || loadingPatient ? (
-          <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
-            <Loader2 className="w-8 h-8 animate-spin mb-3" />
-            <p className="text-sm">Loading your health card…</p>
+          <div className="max-w-md mx-auto space-y-4" role="status" aria-label="Loading your health card">
+            <div className="h-6 w-36 rounded bg-muted" />
+            <div className="rounded-lg border border-border bg-card p-5 space-y-5">
+              <div className="h-8 w-32 rounded bg-muted" />
+              <div className="flex gap-3"><div className="h-14 w-12 rounded bg-muted" /><div className="flex-1 space-y-3"><div className="h-5 w-3/4 rounded bg-muted" /><div className="h-3 w-1/2 rounded bg-muted" /></div></div>
+              <div className="h-32 rounded bg-muted/50" />
+            </div>
+            <span className="sr-only">Loading your health card…</span>
           </div>
         ) : registeredPatient ? (
           <HealthCardPreview patient={registeredPatient} onBack={handleEdit} />
@@ -209,7 +213,7 @@ const Index = () => {
         )}
       </main>
 
-      <SiteFooter />
+
     </div>
   );
 };

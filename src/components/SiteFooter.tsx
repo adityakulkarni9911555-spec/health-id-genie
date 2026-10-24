@@ -1,7 +1,9 @@
+import { Capacitor } from '@capacitor/core';
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 
 export function SiteFooter() {
+  if (Capacitor.isNativePlatform()) return null;
   return (
     <footer className="border-t border-border/60 py-8 mt-12 no-print">
       <div className="container mx-auto px-4 grid gap-6 sm:grid-cols-2 md:grid-cols-4 text-sm">

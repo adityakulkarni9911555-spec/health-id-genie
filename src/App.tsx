@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useState, useCallback } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -36,6 +36,7 @@ function shouldSkipSplash(): boolean {
   const path = window.location.pathname || '';
   // Skip splash on emergency scans, SEO landing routes, and repeat visits
   // in the same session — the splash must never delay LCP on these pages.
+  if (path === '/' || path === '/index' || path === '/profile' || path === '/privacy' || path === '/reset-password') return true;
   if (path.startsWith('/e/')) return true;
   if (path === '/auth' || path.startsWith('/auth/')) return true;
   if (path === '/pricing') return true;
@@ -53,14 +54,14 @@ function shouldSkipSplash(): boolean {
 const App = () => {
   const [splashDone, setSplashDone] = useState(shouldSkipSplash);
 
-  const handleSplashDone = () => {
+  const handleSplashDone = useCallback(() => {
     try {
       sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
     } catch {
       // ignore
     }
     setSplashDone(true);
-  };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -81,7 +82,7 @@ const App = () => {
 const AnimatedRoutes = () => {
   const location = useLocation();
   return (
-    <div key={location.pathname} className="animate-fade-in">
+    <div>
       <Routes location={location}>
         <Route path="/" element={<Index />} />
         <Route path="/index" element={<Navigate to="/" replace />} />
