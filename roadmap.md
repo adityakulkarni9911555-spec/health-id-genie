@@ -67,3 +67,7 @@
 - [x] Fixed floating Medora badge with safe-area clearance, finite 3D refresh/tap motion and reduced-motion/power-saver opt-outs; existing wallet actions retained, no patient-data changes.
 - [x] Existing injected account, read-only: 1280×1800, 390×844 and 320×740 show fixed badge without horizontal overflow; refresh and tap replay finite brand-settle motion; reduced-motion reports no animation; screenshots reviewed, no page errors. No account data changed.
 - [x] ESLint on BrandBadge.tsx and Index.tsx exit 0; automatic preview build reports build OK (2026-10-25T05:31:56Z). No manual build/typecheck, migrations or publish; native Android runtime not tested.
+
+## Opening and switching smoothness (2026-10-25)
+- [ ] Reduce unnecessary screen resets and background frame monitoring; preserve all privacy and PIN behavior.
+- [ ] Verify read-only section changes and browser background/return with the existing account; Android app-switch animation requires a physical phone and is not controlled by the website.
