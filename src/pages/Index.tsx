@@ -6,10 +6,8 @@ import { HealthCardPreview } from '@/components/HealthCardPreview';
 import { BrandBadge } from '@/components/BrandBadge';
 import { SyncStatusBanner } from '@/components/SyncStatusBanner';
 import { DeviceConditionBanner } from '@/components/DeviceConditionBanner';
-import { UpgradeBanner } from '@/components/UpgradeBanner';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAuth } from '@/hooks/useAuth';
-import { useSubscription } from '@/hooks/useSubscription';
 import { Patient } from '@/types/patient';
 import { Heart, ShieldCheck, Smartphone, Sparkles, Wifi, WifiOff, LogOut, Crown, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,11 +24,12 @@ const Index = () => {
   const isOnline = useOnlineStatus();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { planSlug, isPaid, isFamily, loading: subLoading } = useSubscription();
+  const userId = user?.id;
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
+    if (!userId) {
+      setRegisteredPatient(null);
       setLoadingPatient(false);
       return;
     }
@@ -46,7 +45,7 @@ const Index = () => {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, user]);
+  }, [authLoading, userId]);
 
   // While an OAuth callback (hash tokens or ?code=) is still being processed by
   // the Supabase client, defer the redirect so we don't strip the hash and lose
