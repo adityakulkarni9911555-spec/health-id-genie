@@ -11,7 +11,7 @@ export const BrandBadge = () => {
   return (
     <Button
       variant="ghost"
-      className="brand-badge h-14 shrink-0 gap-3 rounded-full px-5 hover:bg-accent/40"
+      className="brand-badge h-14 shrink-0 gap-3 rounded-full px-5 hover:bg-accent/40 [&_svg]:!size-9"
       aria-label="Medora — replay brand animation"
       title="Medora"
       onClick={() => setCycle((value) => value + 1)}
