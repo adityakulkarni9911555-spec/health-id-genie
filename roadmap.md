@@ -65,4 +65,5 @@
 
 ## Floating wallet brand (2026-10-25)
 - [x] Fixed floating Medora badge with safe-area clearance, finite 3D refresh/tap motion and reduced-motion/power-saver opt-outs; existing wallet actions retained, no patient-data changes.
-- [ ] Verify signed-in phone/desktop placement, refresh/tap motion and read-only scrolling.
+- [x] Existing injected account, read-only: 1280×1800, 390×844 and 320×740 show fixed badge without horizontal overflow; refresh and tap replay finite brand-settle motion; reduced-motion reports no animation; screenshots reviewed, no page errors. No account data changed.
+- [x] ESLint on BrandBadge.tsx and Index.tsx exit 0; automatic preview build reports build OK (2026-10-25T05:31:56Z). No manual build/typecheck, migrations or publish; native Android runtime not tested.
