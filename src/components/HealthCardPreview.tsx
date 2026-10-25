@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { WalletNavigation, type WalletSection } from '@/components/WalletNavigation';
 import { Button } from '@/components/ui/button';
@@ -60,6 +60,10 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   const selected = params.get('section');
   const tab: WalletSection = selected === 'records' || selected === 'timeline' || selected === 'manage' ? selected : 'card';
   const setTab = (section: WalletSection) => setParams({ section });
+  const [visited, setVisited] = useState<Set<WalletSection>>(() => new Set([tab]));
+  useEffect(() => {
+    setVisited((previous) => previous.has(tab) ? previous : new Set(previous).add(tab));
+  }, [tab]);
   const [openingPath, setOpeningPath] = useState<string | null>(null);
   const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
@@ -200,9 +204,9 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   return (
     <div className="w-full max-w-2xl mx-auto flex flex-col pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
       <WalletNavigation active={tab} />
-      <div key={tab} className="animate-fade-in">
-      {tab === 'card' && (
-        <>
+      <div>
+      {(tab === 'card' || visited.has('card')) && (
+        <section hidden={tab !== 'card'} className="wallet-panel">
           <div className="mb-4">
             <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">Your health card</h1>
             
@@ -233,11 +237,11 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
               onUploadClick={() => setTab('records')}
             />
           </div>
-        </>
+        </section>
       )}
 
-      {tab === 'records' && (
-        <>
+      {(tab === 'records' || visited.has('records')) && (
+        <section hidden={tab !== 'records'} className="wallet-panel">
           <h1 className="font-display text-xl md:text-2xl font-bold text-foreground mb-4">Records</h1>
           {!subLoading && !isPaid && (
             <div className="mb-4 no-print">
@@ -269,22 +273,22 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
           <div className="mb-6 no-print">
             <RecordSearch patientId={patient.id} />
           </div>
-        </>
+        </section>
       )}
 
-      {tab === 'timeline' && (
-        <>
+      {(tab === 'timeline' || visited.has('timeline')) && (
+        <section hidden={tab !== 'timeline'} className="wallet-panel">
           <h1 className="font-display text-xl md:text-2xl font-bold text-foreground mb-4">Timeline</h1>
           <div className="mb-6 no-print">
             <HealthTimeline patientId={patient.id} refreshKey={JSON.stringify(patient.documents?.map((d) => [d.path, d.extractedAt]))} />
           </div>
-        </>
+        </section>
       )}
 
 
 
       {tab === 'manage' && (
-      <>
+      <section className="wallet-panel">
       <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">Manage</h1>
       {/* Order a physical card */}
       <div className="mt-6 no-print">
@@ -505,7 +509,7 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
           </div>
         )}
       </div>
-      </>
+      </section>
       )}
 
       </div>

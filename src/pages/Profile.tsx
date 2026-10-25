@@ -66,6 +66,7 @@ const Profile = () => {
   const [hasPin, setHasPin] = useState<boolean | null>(null);
   const [pinStatus, setPinStatus] = useState<PinStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const userId = user?.id;
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [step, setStep] = useState<'pin' | 'password'>('pin');
@@ -82,18 +83,25 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    if (authLoading || !user) return;
+    if (authLoading || !userId) return;
+    let cancelled = false;
     loadPatientForCurrentUser()
       .then(async (p) => {
+        if (cancelled) return;
         setPatient(p);
         if (p) {
-          const { data } = await supabase.rpc('has_document_pin', { _patient_id: p.id });
-          setHasPin(Boolean(data));
-          await refreshPinStatus(p.id);
+          const [pinResult, statusResult] = await Promise.all([
+            supabase.rpc('has_document_pin', { _patient_id: p.id }),
+            rpc('account_pin_status', { _patient_id: p.id }),
+          ]);
+          if (cancelled) return;
+          setHasPin(pinResult.error ? null : Boolean(pinResult.data));
+          if (statusResult.data) setPinStatus(statusResult.data as PinStatus);
         }
       })
-      .finally(() => setLoading(false));
-  }, [authLoading, user]);
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [authLoading, userId]);
 
   if (!authLoading && !user) return <Navigate to="/auth" replace />;
 

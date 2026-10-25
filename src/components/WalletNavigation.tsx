@@ -18,7 +18,10 @@ export function WalletNavigation({ active }: { active: WalletSection }) {
         {sections.map(({ id, label, Icon }) => (
           <li key={id}>
             <Button asChild variant="ghost" className={`w-full h-16 rounded-none flex-col gap-1 px-1 text-[11px] ${active === id ? 'text-primary bg-primary/5' : 'text-muted-foreground'}`}>
-              <Link to={id === 'profile' ? '/profile' : `/?section=${id}`} aria-current={active === id ? 'page' : undefined} preventScrollReset onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}>
+              <Link to={id === 'profile' ? '/profile' : `/?section=${id}`} aria-current={active === id ? 'page' : undefined} preventScrollReset onClick={(event) => {
+                if (active === id) { event.preventDefault(); return; }
+                window.scrollTo({ top: 0, behavior: 'instant' });
+              }}>
                 <Icon className="!w-5 !h-5" />
                 {label}
               </Link>
