@@ -17,3 +17,4 @@
 - Wallet section selection uses the section query parameter and shared WalletNavigation on the wallet and Profile; why: section links survive navigation and provide consistent phone navigation without storing patient data.
 - Password changes from the Profile page require the account PIN check (verify_account_pin: 3 wrong tries = 24h lock, separate from the emergency PIN counter); passwords are never readable or shown; why: stored only as one-way hashes.
 - Recovery security lookup failures must stop password entry, never behave as a missing PIN; why: transient errors must not bypass existing PIN protection. Email-only recovery applies only to explicitly confirmed no-patient/no-PIN accounts.
+- Wallet brand motion is isolated in BrandBadge and uses finite CSS transforms with reduced-motion/power-saver opt-outs; why: brand feedback must not block content or require a continuous rendering loop.

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PatientRegistrationForm } from '@/components/PatientRegistrationForm';
 import PublicHome from '@/pages/PublicHome';
 import { HealthCardPreview } from '@/components/HealthCardPreview';
-import { Logo } from '@/components/Logo';
+import { BrandBadge } from '@/components/BrandBadge';
 import { SyncStatusBanner } from '@/components/SyncStatusBanner';
 import { DeviceConditionBanner } from '@/components/DeviceConditionBanner';
 import { UpgradeBanner } from '@/components/UpgradeBanner';
@@ -85,19 +85,10 @@ const Index = () => {
         <meta property="og:url" content="https://medorahealthwallet.lovable.app/" />
       </Helmet>
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-card border-b border-border no-print">
-        <div className="container mx-auto px-4 py-2.5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Logo size={36} className="drop-shadow-sm shrink-0" />
-              <div className="min-w-0">
-                <p className="font-display text-lg font-bold text-foreground tracking-tight leading-none">
-                  Medora
-                  
-                </p>
-                <p className="hidden sm:block text-xs text-muted-foreground mt-0.5">Private by design</p>
-              </div>
-            </div>
+      <header className="wallet-brand-header fixed inset-x-0 z-50 flex justify-center px-3 no-print">
+        <div className="brand-island max-w-full rounded-full border border-border bg-card md:px-2">
+          <div className="flex items-center justify-between gap-1 md:gap-3">
+            <BrandBadge />
 
             <div className="flex items-center gap-1.5 shrink-0">
               <div className="hidden md:flex items-center gap-2">
@@ -149,7 +140,7 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 pt-3 space-y-2">
+      <div className="wallet-header-clearance container mx-auto px-4 space-y-2">
         <DeviceConditionBanner />
       </div>
       <SyncStatusBanner />
