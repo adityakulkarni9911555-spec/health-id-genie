@@ -62,3 +62,7 @@
 - [x] Signed-out browser: Forgot password with empty email shows validation; reset route without session shows Link expired. No email sent, PIN entered, or password changed.
 - [x] Recovery fails closed on failed profile/PIN/status checks; four recovery-gate tests pass (bun test scripts/passwordRecovery.test.ts, exit 0); changed-screen ESLint exit 0; latest automatic typecheck/build reports build OK (2026-10-24T07:46:09Z). No manual production build/typecheck run; no database migrations or publish.
 - [ ] User completes private email link → PIN → new password → signed-in confirmation (requires their inbox and PIN; do not change their password during read-only checks).
+
+## Floating wallet brand (2026-10-25)
+- [x] Fixed floating Medora badge with safe-area clearance, finite 3D refresh/tap motion and reduced-motion/power-saver opt-outs; existing wallet actions retained, no patient-data changes.
+- [ ] Verify signed-in phone/desktop placement, refresh/tap motion and read-only scrolling.
