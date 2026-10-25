@@ -13,17 +13,31 @@ export interface DeviceConditions {
   powerSaver: boolean;
 }
 
+interface ConnectionLike extends EventTarget {
+  saveData?: boolean;
+  effectiveType?: string;
+}
+
+type DeviceNavigator = Navigator & {
+  connection?: ConnectionLike;
+  mozConnection?: ConnectionLike;
+  webkitConnection?: ConnectionLike;
+  deviceMemory?: number;
+  getBattery?: () => Promise<BatteryLike>;
+};
+
 interface BatteryLike extends EventTarget {
   level: number;
   charging: boolean;
 }
 
-const getConnection = (): any => {
+const getConnection = (): ConnectionLike | null => {
   if (typeof navigator === 'undefined') return null;
+  const nav = navigator as DeviceNavigator;
   return (
-    (navigator as any).connection ||
-    (navigator as any).mozConnection ||
-    (navigator as any).webkitConnection ||
+    nav.connection ||
+    nav.mozConnection ||
+    nav.webkitConnection ||
     null
   );
 };
@@ -55,14 +69,26 @@ const startThermalWatch = (onChange: () => void) => {
   let frames = 0;
   let windowStart = performance.now();
   let slowWindows = 0;
+  let frameId: number | null = null;
+  let sampleTimer: number | null = null;
+
+  const stop = () => {
+    if (frameId !== null) cancelAnimationFrame(frameId);
+    if (sampleTimer !== null) window.clearTimeout(sampleTimer);
+    frameId = null;
+    sampleTimer = null;
+    frames = 0;
+    slowWindows = 0;
+  };
 
   const tick = (now: number) => {
+    frameId = null;
+    if (document.hidden) return;
     frames += 1;
     const elapsed = now - windowStart;
     if (elapsed >= 2000) {
       const fps = (frames * 1000) / elapsed;
-      const visible = typeof document === 'undefined' || !document.hidden;
-      if (visible && fps < 20) {
+      if (fps < 20) {
         slowWindows += 1;
       } else if (fps > 40) {
         slowWindows = 0;
@@ -74,11 +100,32 @@ const startThermalWatch = (onChange: () => void) => {
       }
       frames = 0;
       windowStart = now;
+      // Sample briefly every 30 seconds instead of keeping a frame loop alive.
+      sampleTimer = window.setTimeout(start, 30000);
+      return;
     }
-    requestAnimationFrame(tick);
+    frameId = requestAnimationFrame(tick);
   };
 
-  requestAnimationFrame(tick);
+  const start = () => {
+    sampleTimer = null;
+    if (document.hidden || frameId !== null) return;
+    frames = 0;
+    windowStart = performance.now();
+    frameId = requestAnimationFrame(tick);
+  };
+
+  document.addEventListener('visibilitychange', () => {
+    stop();
+    if (!document.hidden) sampleTimer = window.setTimeout(start, 1000);
+  });
+  window.addEventListener('pagehide', stop);
+  window.addEventListener('pageshow', () => {
+    if (!document.hidden && frameId === null && sampleTimer === null) {
+      sampleTimer = window.setTimeout(start, 1000);
+    }
+  });
+  sampleTimer = window.setTimeout(start, 3000);
 };
 
 const compute = (
@@ -90,7 +137,7 @@ const compute = (
   const effectiveType: string | undefined = conn?.effectiveType;
   const slowConnection =
     !!effectiveType && ['slow-2g', '2g', '3g'].includes(effectiveType);
-  const deviceMemory = (navigator as any).deviceMemory as number | undefined;
+  const deviceMemory = (navigator as DeviceNavigator).deviceMemory;
   const lowMemory = typeof deviceMemory === 'number' && deviceMemory <= 2;
 
   const batteryLevel = battery ? battery.level : null;
@@ -124,7 +171,7 @@ const init = async () => {
   initialized = true;
 
   let battery: BatteryLike | null = null;
-  const nav: any = navigator;
+  const nav = navigator as DeviceNavigator;
   if (typeof nav.getBattery === 'function') {
     try {
       battery = await nav.getBattery();
