@@ -1,17 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { BellRing, BellOff, CalendarClock, Upload } from 'lucide-react';
+import { CalendarClock, Upload, Check, Undo2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { PatientDocument } from '@/components/DocumentUpload';
 import {
-  REMINDER_AFTER_DAYS,
+  clearSnooze,
   daysSinceLastUpload,
-  disableReminderNotifications,
   isReminderDue,
   maybeNotify,
-  notificationsEnabled,
-  requestReminderNotifications,
   snoozeReminder,
 } from '@/lib/documentReminder';
 
@@ -24,87 +20,61 @@ interface DocumentReminderProps {
 export const DocumentReminder = ({ documents, onUploadClick }: DocumentReminderProps) => {
   const { toast } = useToast();
   const [dismissed, setDismissed] = useState(false);
-  const [notifyOn, setNotifyOn] = useState(false);
-
-  useEffect(() => {
-    setNotifyOn(notificationsEnabled());
-  }, []);
 
   useEffect(() => {
     maybeNotify(documents);
   }, [documents]);
 
-  const due = isReminderDue(documents) && !dismissed;
-  if (!due) return null;
-
   const days = daysSinceLastUpload(documents);
-
-  const toggleNotify = async () => {
-    if (notifyOn) {
-      disableReminderNotifications();
-      setNotifyOn(false);
-      toast({ title: 'Reminders turned off' });
-      return;
-    }
-    const granted = await requestReminderNotifications();
-    setNotifyOn(granted);
-    toast({
-      title: granted ? 'Reminders turned on' : 'Reminders blocked',
-      description: granted
-        ? 'We will nudge you when your records look out of date.'
-        : 'Allow notifications in your browser settings to get reminders.',
-      variant: granted ? undefined : 'destructive',
-    });
-  };
+  if (dismissed) return (
+    <div className="no-print flex items-center gap-3 border-y border-border py-2" role="status">
+      <Check className="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+      <p className="flex-1 text-sm text-muted-foreground">Snoozed for 14 days on this device</p>
+      <Button variant="ghost" className="min-h-14 shrink-0 gap-1.5 px-2" onClick={() => {
+        clearSnooze(); setDismissed(false);
+      }}><Undo2 className="h-4 w-4" />Undo</Button>
+    </div>
+  );
+  if (!isReminderDue(documents)) return null;
 
   return (
-    <div className="no-print rounded-2xl border border-primary/25 bg-primary/5 p-5 shadow-sm">
+    <section className="no-print border-y border-border py-4" aria-labelledby="record-reminder-title">
       <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <CalendarClock className="h-5 w-5" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+          <CalendarClock className="h-5 w-5" aria-hidden="true" />
         </div>
-        <div className="flex-1">
-          <div className="mb-1 flex flex-wrap items-center gap-2">
-            <h3 className="font-display text-base font-semibold text-foreground">
-              {days === null ? 'Add your first health document' : 'Time to refresh your records'}
+        <div className="flex-1 min-w-0">
+          <div className="mb-1">
+            <p className="text-xs font-medium text-accent-foreground mb-1">Record reminder</p>
+            <h3 id="record-reminder-title" className="font-display text-base font-semibold text-foreground">
+              {days === null ? 'Keep your first report handy' : 'Any new reports to add?'}
             </h3>
-            <Badge variant="secondary" className="text-xs">Reminder</Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             {days === null
-              ? 'Upload a recent prescription, lab report or discharge summary so your emergency card is complete.'
-              : `Your last upload was ${days} days ago. If you have had a test, prescription or hospital visit since, add it now — we check every ${REMINDER_AFTER_DAYS} days.`}
+              ? 'Add a prescription, test result or hospital summary to your private records.'
+              : `Last upload: ${days} days ago. Add a recent report or prescription, if you have one.`}
           </p>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button size="lg" className="min-h-[48px]" onClick={onUploadClick}>
-              <Upload className="mr-2 h-4 w-4" />
-              Upload now
+          <div className="mt-3 grid grid-cols-1 min-[380px]:grid-cols-2 gap-2">
+            <Button className="min-h-14 px-3 whitespace-normal" onClick={onUploadClick} disabled={!onUploadClick}>
+              <Upload className="h-4 w-4" />
+              Add a record
             </Button>
             <Button
-              size="lg"
               variant="outline"
-              className="min-h-[48px]"
-              onClick={toggleNotify}
-            >
-              {notifyOn ? <BellOff className="mr-2 h-4 w-4" /> : <BellRing className="mr-2 h-4 w-4" />}
-              {notifyOn ? 'Turn off reminders' : 'Remind me'}
-            </Button>
-            <Button
-              size="lg"
-              variant="ghost"
-              className="min-h-[48px]"
+              className="min-h-14 px-3 whitespace-normal"
               onClick={() => {
                 snoozeReminder();
                 setDismissed(true);
-                toast({ title: 'Reminder snoozed', description: 'We will check again in two weeks.' });
+                toast({ title: 'Snoozed for 14 days', description: 'This reminder will return when you next open Medora after that date.' });
               }}
             >
-              Later
+              Snooze 14 days
             </Button>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
