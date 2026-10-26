@@ -67,15 +67,12 @@ export const disableReminderNotifications = () => localStorage.setItem(OPTIN_KEY
 
 /** Fires a gentle browser reminder, at most once a week. */
 export const maybeNotify = (documents: PatientDocument[] = []) => {
+  if (typeof document !== 'undefined' && document.hidden) return;
   if (!notificationsEnabled() || !isReminderDue(documents)) return;
   if (Date.now() - readTime(NOTIFIED_KEY) < NOTIFY_GAP_DAYS * DAY_MS) return;
-  const days = daysSinceLastUpload(documents);
   try {
-    new Notification('Medora — keep your health records fresh', {
-      body:
-        days === null
-          ? 'Add your first report or prescription so your emergency card is complete.'
-          : `It has been ${days} days since your last upload. Add any recent reports or prescriptions.`,
+    new Notification('Medora reminder', {
+      body: 'You have a reminder in Medora. Open the app to review it.',
       icon: '/favicon.ico',
       tag: 'medora-doc-reminder',
     });
