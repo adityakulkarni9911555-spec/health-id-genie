@@ -80,3 +80,8 @@
 - [x] Removed Print action; two-column Download/Edit details row. Download prepares PDF in memory, then Save PDF uses a fresh click for browser sharing/download or Android's registered CardFile system document picker. Cancellation does not report success; old APK without plugin shows an update-required error.
 - [x] Existing account browser check: actual 1,133,178-byte PDF downloaded, %PDF header verified, first page rendered with pdftoppm and visually reviewed; card/photo/QR present. Print absent, 390×844 no overflow, no page errors. No patient records changed. Changed-file ESLint exit 0; automatic preview build OK (2026-10-26T05:10:05Z).
 - [ ] Native Android save-picker execution and APK rebuild not verified: this sandbox has no Java/Android SDK or emulator. Native source checked against installed Capacitor API; updated APK must be synced/rebuilt and installed before native saving works. Nothing published, no database changes.
+
+## Background record reminders (2026-10-26)
+- [ ] Connect Firebase Messaging with web push enabled; required for closed-website delivery.
+- [ ] Implement permission-aware website/Android registration, owner-scoped reminder preferences and scheduled generic notifications; keep medical details out of notifications.
+- [ ] Improve reminder controls and verify available checks; native delivery requires Firebase Android configuration and an updated APK.
