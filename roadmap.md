@@ -82,6 +82,6 @@
 - [ ] Native Android save-picker execution and APK rebuild not verified: this sandbox has no Java/Android SDK or emulator. Native source checked against installed Capacitor API; updated APK must be synced/rebuilt and installed before native saving works. Nothing published, no database changes.
 
 ## Background record reminders (2026-10-26)
-- [ ] Connect Firebase Messaging with web push enabled; required for closed-website delivery.
+- [ ] Connect Firebase Messaging with web push enabled; blocked: connection card declined, no service linked. Closed-website delivery cannot run yet.
 - [ ] Implement permission-aware website/Android registration, owner-scoped reminder preferences and scheduled generic notifications; keep medical details out of notifications.
 - [ ] Improve reminder controls and verify available checks; native delivery requires Firebase Android configuration and an updated APK.
