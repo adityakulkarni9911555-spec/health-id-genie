@@ -75,3 +75,8 @@
 - [x] Browser freeze/resume retains card and brand DOM; returning to Timeline preserves selected Lab results tab. Simulated document.hidden sends zero frame requests over 2.5 seconds, visible return resumes sampling. 390×844 and 1280×1800 show no overflow; reduced-motion duration is 0.001ms. No private forms submitted or account data changed.
 - [x] Changed-file ESLint exit 0; automatic preview build reports build OK (2026-10-25T05:35:21Z). No manual build/typecheck, migrations or publish.
 - [ ] Native Android cold-start and switching between installed apps require a physical phone; browser checks cannot verify Android's app-switch animation. Existing APK loads the published site, so these changes are not live there yet.
+
+## Health-card download (2026-10-26)
+- [x] Removed Print action; two-column Download/Edit details row. Download prepares PDF in memory, then Save PDF uses a fresh click for browser sharing/download or Android's registered CardFile system document picker. Cancellation does not report success; old APK without plugin shows an update-required error.
+- [x] Existing account browser check: actual 1,133,178-byte PDF downloaded, %PDF header verified, first page rendered with pdftoppm and visually reviewed; card/photo/QR present. Print absent, 390×844 no overflow, no page errors. No patient records changed. Changed-file ESLint exit 0; automatic preview build OK (2026-10-26T05:10:05Z).
+- [ ] Native Android save-picker execution and APK rebuild not verified: this sandbox has no Java/Android SDK or emulator. Native source checked against installed Capacitor API; updated APK must be synced/rebuilt and installed before native saving works. Nothing published, no database changes.
