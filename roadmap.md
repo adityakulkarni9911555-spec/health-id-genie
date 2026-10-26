@@ -75,3 +75,7 @@
 - [x] Browser freeze/resume retains card and brand DOM; returning to Timeline preserves selected Lab results tab. Simulated document.hidden sends zero frame requests over 2.5 seconds, visible return resumes sampling. 390×844 and 1280×1800 show no overflow; reduced-motion duration is 0.001ms. No private forms submitted or account data changed.
 - [x] Changed-file ESLint exit 0; automatic preview build reports build OK (2026-10-25T05:35:21Z). No manual build/typecheck, migrations or publish.
 - [ ] Native Android cold-start and switching between installed apps require a physical phone; browser checks cannot verify Android's app-switch animation. Existing APK loads the published site, so these changes are not live there yet.
+
+## Health-card download (2026-10-26)
+- [ ] Remove Print action and fix PDF delivery for browser and Android.
+- [ ] Verify actual downloaded PDF and available native checks; do not claim existing APK gains native code through publishing.
