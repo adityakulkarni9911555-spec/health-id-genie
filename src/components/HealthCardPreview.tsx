@@ -7,10 +7,10 @@ import { FamilyManager } from '@/components/FamilyManager';
 import { HealthTimeline } from '@/components/HealthTimeline';
 import { UpgradeBanner } from '@/components/UpgradeBanner';
 import { Patient } from '@/types/patient';
+import { deliverPdf, type PdfFile } from '@/lib/fileDelivery';
 import { useSubscription } from '@/hooks/useSubscription';
 import {
   Download,
-  Printer,
   ArrowLeft,
   CheckCircle2,
   FileText,
@@ -183,19 +183,22 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const [downloading, setDownloading] = useState(false);
+  const [preparedPdf, setPreparedPdf] = useState<PdfFile | null>(null);
+  useEffect(() => { setPreparedPdf(null); }, [patient]);
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const { downloadHealthCardPdf } = await import('@/lib/healthCardPdf');
-      await downloadHealthCardPdf(patient);
-      toast({ title: 'Health card PDF downloaded' });
+      if (!preparedPdf) {
+        const { createHealthCardPdf } = await import('@/lib/healthCardPdf');
+        setPreparedPdf(await createHealthCardPdf(patient));
+        return;
+      }
+      // File is ready before this click, preserving mobile share activation.
+      const result = await deliverPdf(preparedPdf);
+      if (result !== 'cancelled') toast({ title: result === 'shared' ? 'Card opened in file sharing' : 'Health card PDF saved' });
     } catch (e) {
-      toast({ title: 'Could not create PDF', description: (e as Error).message, variant: 'destructive' });
+      toast({ title: 'Could not save your card', description: e instanceof Error ? e.message : 'Please try again.', variant: 'destructive' });
     } finally {
       setDownloading(false);
     }
@@ -216,14 +219,10 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
             <HealthCard patient={patient} />
           </div>
 
-          <div className="grid grid-cols-3 gap-2 md:gap-3 no-print mb-5">
+          <div className="grid grid-cols-2 gap-2 md:gap-3 no-print mb-5">
             <Button variant="outline" onClick={handleDownload} disabled={downloading} className="w-full min-h-[64px] flex-col py-2 gap-1 text-xs rounded-lg">
               {downloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
-              {downloading ? 'Creating…' : 'Download'}
-            </Button>
-            <Button variant="outline" onClick={handlePrint} className="w-full min-h-[64px] flex-col py-2 gap-1 text-xs rounded-lg">
-              <Printer className="w-5 h-5" />
-              Print
+              {downloading ? (preparedPdf ? 'Saving…' : 'Creating…') : preparedPdf ? 'Save PDF' : 'Download'}
             </Button>
             <Button variant="outline" onClick={onBack} className="w-full min-h-[64px] flex-col py-2 gap-1 text-xs rounded-lg">
               <ArrowLeft className="w-5 h-5" />
