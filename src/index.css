@@ -190,6 +190,11 @@
     box-shadow: var(--shadow-md);
     border: 1px solid hsl(var(--border));
   }
+  .wallet-id-card {
+    border-top: 3px solid hsl(var(--primary));
+    background-image: var(--gradient-card);
+    box-shadow: var(--shadow-lg);
+  }
 
   .form-section {
     @apply bg-card rounded-2xl p-6 border border-border;

@@ -11,6 +11,7 @@ import { deliverPdf, type PdfFile } from '@/lib/fileDelivery';
 import { useSubscription } from '@/hooks/useSubscription';
 import {
   Download,
+  Pencil,
   ArrowLeft,
   CheckCircle2,
   FileText,
@@ -210,9 +211,12 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
       <div>
       {(tab === 'card' || visited.has('card')) && (
         <section hidden={tab !== 'card'} className="wallet-panel">
-          <div className="mb-4">
-            <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">Your health card</h1>
-            
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">My wallet</p>
+              <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">Health card</h1>
+            </div>
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-foreground" aria-hidden="true"><ShieldCheck className="h-5 w-5" /></span>
           </div>
 
           <div ref={cardRef} className="mb-4 print:shadow-none">
@@ -220,12 +224,12 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
           </div>
 
           <div className="grid grid-cols-2 gap-2 md:gap-3 no-print mb-5">
-            <Button variant="outline" onClick={handleDownload} disabled={downloading} className="w-full min-h-[64px] flex-col py-2 gap-1 text-xs rounded-lg">
+            <Button onClick={handleDownload} disabled={downloading} className="w-full min-h-14 py-2 gap-2 text-sm rounded-lg">
               {downloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
               {downloading ? (preparedPdf ? 'Saving…' : 'Creating…') : preparedPdf ? 'Save PDF' : 'Download'}
             </Button>
-            <Button variant="outline" onClick={onBack} className="w-full min-h-[64px] flex-col py-2 gap-1 text-xs rounded-lg">
-              <ArrowLeft className="w-5 h-5" />
+            <Button variant="outline" onClick={onBack} className="w-full min-h-14 py-2 gap-2 text-sm rounded-lg">
+              <Pencil className="w-4 h-4" />
               Edit details
             </Button>
           </div>
