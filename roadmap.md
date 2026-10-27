@@ -86,3 +86,7 @@
 - [ ] Implement permission-aware website/Android registration, owner-scoped reminder preferences and scheduled generic notifications; keep medical details out of notifications.
 - [x] In-app reminder redesigned as a compact unframed notice with Add a record, explicit 14-day device snooze and Undo; removed misleading notification opt-in from the notice. Existing 90-day due rule unchanged. Legacy opt-in notifications now use generic content and do not fire while the page is hidden.
 - [x] Isolated empty-record browser check (not a live patient): Add callback, snooze and Undo work, 320/390/1280 widths have no overflow; screenshot reviewed, no page errors. Two notification privacy tests pass, changed-file ESLint exit 0; automatic preview build OK (2026-10-26T05:14:59Z). No database changes, no publish; native runtime and closed-app delivery not tested.
+
+## Phone polish and updated APK (2026-10-27)
+- [ ] Refine health-card hierarchy, identity spacing, compact actions and bottom-navigation selection; check signed-in phone views.
+- [ ] Build Android 1.1 debug APK with CardFile save support; verify APK metadata and deliver a new versioned file. Remote-shell UI still needs publishing; do not publish without permission.

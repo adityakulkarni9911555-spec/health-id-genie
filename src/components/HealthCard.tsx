@@ -30,13 +30,13 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
     .join('');
 
   return (
-    <article className="health-card w-full max-w-md mx-auto overflow-hidden print:shadow-none" aria-label="Medora health card">
-      <header className="flex items-center justify-between gap-3 border-b border-border pb-4 mb-4">
+    <article className="health-card wallet-id-card w-full max-w-md mx-auto overflow-hidden print:shadow-none" aria-label="Medora health card">
+      <header className="flex items-center justify-between gap-3 border-b border-border pb-3 mb-4">
         <div className="flex items-center gap-2.5">
           <Logo size={28} />
           <div>
-            <h2 className="font-display font-bold text-base text-foreground">Medora Card</h2>
-            <p className="text-xs text-muted-foreground">Digital Health ID</p>
+            <h2 className="font-display font-bold text-sm text-foreground">Medora Health ID</h2>
+            <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{shortId}</p>
           </div>
         </div>
         <span className={`flex items-center gap-1 text-xs font-medium ${patient.shareToken && !patient.shareRevoked ? 'text-success' : 'text-muted-foreground'}`}>
@@ -45,8 +45,8 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
         </span>
       </header>
 
-      <div className="flex items-start gap-3 mb-5">
-        <div className="w-12 h-14 sm:w-14 sm:h-16 rounded-lg overflow-hidden border border-border bg-primary/10 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-4 mb-5">
+        <div className="w-14 h-16 rounded-lg overflow-hidden border border-border bg-primary/10 flex items-center justify-center shrink-0">
           {photoUrl ? (
             <img src={photoUrl} alt={`${patient.fullName} photo`} className="w-full h-full object-cover" />
           ) : (
@@ -54,14 +54,13 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs text-muted-foreground mb-1">Cardholder</p>
           <p className="font-display font-bold text-foreground text-xl leading-snug break-words [overflow-wrap:anywhere]">{patient.fullName}</p>
           <p className="text-xs text-muted-foreground mt-1">Born {formatDate(patient.dateOfBirth)}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-[minmax(0,1fr)_116px] sm:grid-cols-[minmax(0,1fr)_140px] gap-4 items-start">
-        <div className="min-w-0 space-y-4">
+        <div className="min-w-0 space-y-3">
           <div className="flex flex-wrap gap-2">
             {patient.bloodGroup && (
               <span className="inline-flex items-center gap-1 rounded-md bg-destructive/10 text-destructive px-2 py-1 text-sm font-bold">
@@ -70,9 +69,9 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
             )}
             <span className="inline-flex items-center rounded-md bg-accent text-accent-foreground px-2 py-1 text-xs font-medium capitalize">{patient.gender}</span>
           </div>
-          <div>
+          <div className="pt-1">
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1"><Phone className="w-3.5 h-3.5 text-primary" />Emergency contact</p>
-            <p className="text-sm font-semibold text-foreground break-words [overflow-wrap:anywhere]">{patient.emergencyContact || 'Not provided'}</p>
+            <p className="text-base font-semibold text-foreground break-words [overflow-wrap:anywhere] tabular-nums">{patient.emergencyContact || 'Not provided'}</p>
           </div>
         </div>
         <div className="min-w-0 text-center">
@@ -83,7 +82,7 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
               <p className="text-xs text-muted-foreground">QR not available</p>
             )}
           </div>
-          <p className="text-[10px] font-mono text-muted-foreground mt-2">ID · {shortId}</p>
+          <p className="text-[10px] text-muted-foreground mt-1.5">Emergency QR</p>
         </div>
       </div>
 
@@ -96,7 +95,7 @@ export const HealthCard = ({ patient }: HealthCardProps) => {
           </div>
         </div>
       )}
-      <footer className="mt-4 pt-3 border-t border-border text-[10px] text-muted-foreground">Issued {formatDate(patient.createdAt)}</footer>
+      <footer className="mt-4 pt-3 border-t border-border flex justify-between gap-3 text-[10px] text-muted-foreground"><span>Private health wallet</span><span>Issued {formatDate(patient.createdAt)}</span></footer>
     </article>
   );
 };
