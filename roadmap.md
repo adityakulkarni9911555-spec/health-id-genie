@@ -84,4 +84,5 @@
 ## Background record reminders (2026-10-26)
 - [ ] Connect Firebase Messaging with web push enabled; blocked: connection card declined, no service linked. Closed-website delivery cannot run yet.
 - [ ] Implement permission-aware website/Android registration, owner-scoped reminder preferences and scheduled generic notifications; keep medical details out of notifications.
-- [ ] Improve reminder controls and verify available checks; native delivery requires Firebase Android configuration and an updated APK.
+- [x] In-app reminder redesigned as a compact unframed notice with Add a record, explicit 14-day device snooze and Undo; removed misleading notification opt-in from the notice. Existing 90-day due rule unchanged. Legacy opt-in notifications now use generic content and do not fire while the page is hidden.
+- [x] Isolated empty-record browser check (not a live patient): Add callback, snooze and Undo work, 320/390/1280 widths have no overflow; screenshot reviewed, no page errors. Two notification privacy tests pass, changed-file ESLint exit 0; automatic preview build OK (2026-10-26T05:14:59Z). No database changes, no publish; native runtime and closed-app delivery not tested.
