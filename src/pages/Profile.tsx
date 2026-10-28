@@ -28,7 +28,7 @@ type PinStatus = { locked: boolean; locked_until?: string; attempts_left: number
 const rpc = (fn: string, args: Record<string, unknown>) => (supabase.rpc as any)(fn, args);
 
 const Glass = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <section className={`profile-section rounded-lg border border-border bg-card ${className}`}>
+  <section className={`profile-section border-b border-border ${className}`}>
     {children}
   </section>
 );
@@ -38,7 +38,7 @@ const Row = ({ icon, title, detail, onClick, to, trailing }: {
 }) => {
   const inner = (
     <>
-      <span className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">{icon}</span>
+      <span className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">{icon}</span>
       <span className="flex-1 min-w-0 text-left">
         <span className="block text-sm font-semibold text-foreground">{title}</span>
         {detail && <span className="block text-xs text-muted-foreground whitespace-normal break-words">{detail}</span>}
@@ -173,7 +173,7 @@ const Profile = () => {
           </div>
         ) : (
           <>
-            <Glass className="p-4 sm:p-6">
+            <Glass className="py-4">
               <div className="relative flex items-center gap-4">
                 <div className="w-14 h-16 sm:w-16 sm:h-20 shrink-0 rounded-lg overflow-hidden bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">
                   {photoUrl ? <img src={photoUrl} alt="Your profile" className="w-full h-full object-cover" /> : initials}
@@ -187,8 +187,8 @@ const Profile = () => {
               {patient && (
                 <div className="relative grid grid-cols-3 gap-2 mt-5">
                   <Stat icon={<Droplet className="w-4 h-4" />} label="Blood" value={patient.bloodGroup || '—'} />
-                  <Stat icon={<FileText className="w-4 h-4" />} label="Documents" value={String(docCount)} />
-                  <Stat icon={<QrCode className="w-4 h-4" />} label="QR" value={qrActive ? 'Active' : 'Paused'} />
+                  <Link to="/?section=records" className="min-h-14" aria-label="Open records"><Stat icon={<FileText className="w-4 h-4" />} label="Documents" value={String(docCount)} /></Link>
+                  <Link to="/?section=manage" className="min-h-14" aria-label="Manage emergency QR"><Stat icon={<QrCode className="w-4 h-4" />} label="QR" value={qrActive ? 'Active' : 'Paused'} /></Link>
                 </div>
               )}
             </Glass>

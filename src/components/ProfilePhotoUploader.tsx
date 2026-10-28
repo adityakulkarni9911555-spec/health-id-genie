@@ -60,9 +60,9 @@ export const ProfilePhotoUploader = ({ patientId, fullName, photoPath, onChange 
   };
 
   return (
-    <div className="form-section no-print">
+    <div className="no-print border-b border-border py-4">
       <div className="flex items-start gap-3 sm:gap-4">
-        <div className="relative w-[72px] h-[88px] rounded-xl overflow-hidden bg-primary/10 border border-border flex items-center justify-center flex-shrink-0">
+        <div className="relative w-12 h-14 rounded-lg overflow-hidden bg-primary/10 border border-border flex items-center justify-center flex-shrink-0">
           {url ? (
             <img src={url} alt={`${fullName} profile`} className="w-full h-full object-cover" />
           ) : (
@@ -75,13 +75,13 @@ export const ProfilePhotoUploader = ({ patientId, fullName, photoPath, onChange 
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-display text-base font-semibold text-foreground">Profile photo</h3>
-          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mt-3">
+          <h3 className="font-display text-sm font-semibold text-foreground">Profile photo</h3>
+          <div className="flex flex-wrap gap-2 mt-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="min-h-14 justify-start sm:justify-center"
+              className="min-h-14 flex-1"
               disabled={busy}
               onClick={() => fileRef.current?.click()}
             >
@@ -92,7 +92,7 @@ export const ProfilePhotoUploader = ({ patientId, fullName, photoPath, onChange 
               type="button"
               variant="outline"
               size="sm"
-              className="min-h-14 justify-start sm:justify-center"
+              className="min-h-14 flex-1"
               disabled={busy}
               onClick={() => cameraRef.current?.click()}
             >
@@ -100,9 +100,8 @@ export const ProfilePhotoUploader = ({ patientId, fullName, photoPath, onChange 
               Take selfie
             </Button>
             {photoPath && (
-              <Button type="button" variant="ghost" size="sm" className="min-h-14 justify-start sm:justify-center" disabled={busy} onClick={handleRemove}>
-                <Trash2 className="w-4 h-4 mr-1.5" />
-                Remove
+              <Button type="button" variant="ghost" size="icon" className="h-14 w-14 text-destructive" aria-label="Remove profile photo" title="Remove photo" disabled={busy} onClick={handleRemove}>
+                <Trash2 className="w-4 h-4" />
               </Button>
             )}
           </div>
