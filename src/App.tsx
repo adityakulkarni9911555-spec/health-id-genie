@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import Auth from "./pages/Auth";
 import { SplashScreen } from "./components/SplashScreen";
 import { RouteLoader } from "./components/RouteLoader";
+import { PageLoadBoundary } from "./components/PageLoadBoundary";
 
 
 // Code-split every non-auth route. /auth is the landing page and stays eager.
@@ -70,9 +71,11 @@ const App = () => {
         <Sonner />
         {!splashDone && <SplashScreen onDone={handleSplashDone} />}
         <BrowserRouter>
+          <PageLoadBoundary>
           <Suspense fallback={<RouteLoader />}>
             <AnimatedRoutes />
           </Suspense>
+          </PageLoadBoundary>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

@@ -91,3 +91,6 @@
 - [x] Refined health-card identity/actions and bottom-navigation selection; removed stacked framing from Records/Manage and Profile, compacted photo controls, added Profile record/QR shortcuts, collapsed upcoming card ordering. Signed-in 484×954 navigation checked with no overflow/page errors; screenshots reviewed. Changed-file lint and automatic preview build pass.
 - [x] Built Android 1.1 debug APK (versionCode 2); native Java compilation successful, APK metadata and v1/v2 signatures verified. Delivered medora-debug-v1.1.apk. Loads the published site; screen changes remain preview-only until publishing is authorised.
 - [ ] Physical Android install and native save-picker execution not verified; no emulator/device available. Older debug APK signing compatibility not established—do not advise uninstalling and losing local state.
+
+## Page-loading recovery (2026-10-28)
+- [ ] Check current Index module fetch and reproduce an interrupted fetch; verify visible recovery and successful user-triggered retry rather than a blank screen.
