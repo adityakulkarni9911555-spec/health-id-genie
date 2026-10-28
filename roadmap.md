@@ -79,7 +79,7 @@
 ## Health-card download (2026-10-26)
 - [x] Removed Print action; two-column Download/Edit details row. Download prepares PDF in memory, then Save PDF uses a fresh click for browser sharing/download or Android's registered CardFile system document picker. Cancellation does not report success; old APK without plugin shows an update-required error.
 - [x] Existing account browser check: actual 1,133,178-byte PDF downloaded, %PDF header verified, first page rendered with pdftoppm and visually reviewed; card/photo/QR present. Print absent, 390×844 no overflow, no page errors. No patient records changed. Changed-file ESLint exit 0; automatic preview build OK (2026-10-26T05:10:05Z).
-- [ ] Native Android save-picker execution and APK rebuild not verified: this sandbox has no Java/Android SDK or emulator. Native source checked against installed Capacitor API; updated APK must be synced/rebuilt and installed before native saving works. Nothing published, no database changes.
+- [ ] Native Android save-picker execution still requires a physical device; Android 1.1 rebuilt successfully on 2026-10-28 with CardFile registered. Nothing published, no database changes.
 
 ## Background record reminders (2026-10-26)
 - [ ] Connect Firebase Messaging with web push enabled; blocked: connection card declined, no service linked. Closed-website delivery cannot run yet.
@@ -88,5 +88,9 @@
 - [x] Isolated empty-record browser check (not a live patient): Add callback, snooze and Undo work, 320/390/1280 widths have no overflow; screenshot reviewed, no page errors. Two notification privacy tests pass, changed-file ESLint exit 0; automatic preview build OK (2026-10-26T05:14:59Z). No database changes, no publish; native runtime and closed-app delivery not tested.
 
 ## Phone polish and updated APK (2026-10-27)
-- [ ] Refine health-card hierarchy, identity spacing, compact actions and bottom-navigation selection; check signed-in phone views.
-- [ ] Build Android 1.1 debug APK with CardFile save support; verify APK metadata and deliver a new versioned file. Remote-shell UI still needs publishing; do not publish without permission.
+- [x] Refined health-card identity/actions and bottom-navigation selection; removed stacked framing from Records/Manage and Profile, compacted photo controls, added Profile record/QR shortcuts, collapsed upcoming card ordering. Signed-in 484×954 navigation checked with no overflow/page errors; screenshots reviewed. Changed-file lint and automatic preview build pass.
+- [x] Built Android 1.1 debug APK (versionCode 2); native Java compilation successful, APK metadata and v1/v2 signatures verified. Delivered medora-debug-v1.1.apk. Loads the published site; screen changes remain preview-only until publishing is authorised.
+- [ ] Physical Android install and native save-picker execution not verified; no emulator/device available. Older debug APK signing compatibility not established—do not advise uninstalling and losing local state.
+
+## Page-loading recovery (2026-10-28)
+- [x] Current Index module returns HTTP 200; interrupted module fetch reproduced with browser interception. Error boundary shows recovery instead of blank screen; removing interruption and clicking Try again restores the homepage. Screenshot reviewed; lint and automatic build pass. No automatic reload or stored-data clearing.

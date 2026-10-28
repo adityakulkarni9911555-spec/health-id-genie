@@ -293,10 +293,6 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
       {tab === 'manage' && (
       <section className="wallet-panel">
       <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">Manage</h1>
-      {/* Order a physical card */}
-      <div className="mt-6 no-print">
-        <PrintedCardOrder patient={patient} />
-      </div>
 
 
 
@@ -374,7 +370,7 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
               className="btn-touch w-full"
             >
               {busy === 'rotate' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-              Rotate & reprint
+              Replace QR code
             </Button>
           </div>
         </div>
@@ -512,6 +508,10 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
           </div>
         )}
       </div>
+      <details className="mt-6 border-t border-border pt-4 no-print">
+        <summary className="min-h-14 flex items-center cursor-pointer text-sm font-semibold text-muted-foreground">Physical card · Coming soon</summary>
+        <PrintedCardOrder patient={patient} />
+      </details>
       </section>
       )}
 
