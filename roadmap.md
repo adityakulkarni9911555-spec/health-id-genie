@@ -93,4 +93,4 @@
 - [ ] Physical Android install and native save-picker execution not verified; no emulator/device available. Older debug APK signing compatibility not established—do not advise uninstalling and losing local state.
 
 ## Page-loading recovery (2026-10-28)
-- [ ] Check current Index module fetch and reproduce an interrupted fetch; verify visible recovery and successful user-triggered retry rather than a blank screen.
+- [x] Current Index module returns HTTP 200; interrupted module fetch reproduced with browser interception. Error boundary shows recovery instead of blank screen; removing interruption and clicking Try again restores the homepage. Screenshot reviewed; lint and automatic build pass. No automatic reload or stored-data clearing.
