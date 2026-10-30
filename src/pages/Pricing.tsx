@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSubscription, loadPlans, type SubscriptionPlan } from '@/hooks/useSubscription';
 
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Check, Loader2, Sparkles, Users, Zap } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, Lock, ShieldCheck, Sparkles, Users, Zap } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 const planIcons: Record<string, React.ReactNode> = {
@@ -84,141 +84,118 @@ export default function Pricing() {
         })}</script>
       </Helmet>
       <header className="sticky top-0 z-50 glass-nav border-b border-border/60">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Logo size={36} />
-            <div>
-              <p className="font-display text-lg font-bold text-foreground tracking-tight">Medora Pricing</p>
-              <p className="text-xs text-muted-foreground">Choose your plan</p>
-            </div>
-          </div>
+        <div className="container mx-auto px-3 h-16 flex items-center justify-between gap-2">
+          <Button variant="ghost" size="icon" className="h-12 w-12 rounded-full" onClick={() => navigate('/')} aria-label="Back to Medora wallet">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')} aria-label="Back to Medora wallet">
-              Back to Medora wallet
-            </Button>
-
-            <ThemeToggle compact />
+            <Logo size={28} />
+            <p className="font-display text-base font-bold text-foreground tracking-tight">Medora Plans</p>
           </div>
+          <ThemeToggle compact />
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12 md:py-20">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Simple pricing for your health
+      <main className="container mx-auto px-4 pt-8 pb-16 md:py-16 max-w-5xl">
+        <div className="text-center max-w-xl mx-auto mb-8">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 text-success px-3 py-1 text-xs font-semibold mb-4">
+            <ShieldCheck className="w-3.5 h-3.5" /> Medora is free right now
+          </span>
+          <h1 className="font-display text-[1.75rem] leading-tight md:text-4xl font-bold text-foreground mb-3">
+            Choose the plan that fits you
           </h1>
-          <p className="text-muted-foreground text-lg">
-            Start free. Upgrade when you need more space for your family’s records.
+          <p className="text-muted-foreground text-[0.95rem]">
+            Start free. Upgrade later for more space and your whole family.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {plans.map((plan) => {
             const isCurrent = plan.slug === planSlug;
             const isDisabled = isPaid && plan.slug === 'free';
+            const featured = plan.slug === 'family';
+            const features = [
+              `${plan.max_profiles} profile${plan.max_profiles > 1 ? 's' : ''}`,
+              plan.max_documents === null ? 'Unlimited documents' : `Up to ${plan.max_documents} documents`,
+              'Emergency QR access',
+              'Sync across devices',
+            ];
             return (
-              <Card
+              <section
                 key={plan.slug}
-                className={`relative flex flex-col ${
-                  plan.slug === 'family'
-                    ? 'border-primary/50 shadow-lg shadow-primary/10'
-                    : 'border-border'
-                }`}
+                className={`relative flex flex-col rounded-3xl border bg-card p-5 md:p-6 ${
+                  featured ? 'border-primary shadow-xl shadow-primary/10 ring-1 ring-primary/30' : 'border-border shadow-sm'
+                } ${isCurrent ? 'ring-2 ring-success/50' : ''}`}
               >
-                {plan.slug === 'family' && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                    Best value
-                  </div>
-                )}
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${featured ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}>
                       {planIcons[plan.slug]}
                     </div>
-                    <h2 className="font-display text-xl font-semibold">{plan.name}</h2>
-                  </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="font-display text-3xl font-bold">{formatPrice(plan.price_inr)}</span>
-                    {plan.price_inr > 0 && <span className="text-muted-foreground">/month</span>}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col">
-                  <ul className="space-y-3 mb-6 flex-1">
-                    <li className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                      <span>
-                        {plan.max_profiles} profile{plan.max_profiles > 1 ? 's' : ''}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                      <span>
-                        {plan.max_documents === null
-                          ? 'Unlimited documents'
-                          : `Up to ${plan.max_documents} documents`}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                      <span>QR emergency access</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                      <span>Sync across devices</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                      <span>Printed wallet card delivered to your door — coming soon</span>
-                    </li>
-                  </ul>
-
-                  {plan.slug === 'family' && (
-                    <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/20 text-sm">
-                      <p className="font-medium text-foreground mb-1">How it works</p>
-                      <ul className="space-y-1 text-muted-foreground">
-                        <li className="flex gap-2">
-                          <span className="text-primary">•</span>
-                          <span>One subscription covers you + up to 4 family members.</span>
-                        </li>
-                        <li className="flex gap-2">
-                          <span className="text-primary">•</span>
-                          <span>Each member stores their own private records.</span>
-                        </li>
-                        <li className="flex gap-2">
-                          <span className="text-primary">•</span>
-                          <span>Total of 5 profiles under one bill.</span>
-                        </li>
-                      </ul>
+                    <div>
+                      <h2 className="font-display text-lg font-bold leading-tight">{plan.name}</h2>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{plan.description}</p>
                     </div>
+                  </div>
+                  {isCurrent ? (
+                    <span className="shrink-0 rounded-full bg-success/10 text-success px-2.5 py-1 text-[11px] font-semibold">Your plan</span>
+                  ) : featured ? (
+                    <span className="shrink-0 rounded-full bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-semibold">Best value</span>
+                  ) : null}
+                </div>
+
+                <div className="flex items-baseline gap-1 mt-5">
+                  <span className="font-display text-4xl font-extrabold tracking-tight">{formatPrice(plan.price_inr)}</span>
+                  {plan.price_inr > 0 && <span className="text-sm text-muted-foreground">/month</span>}
+                </div>
+
+                <ul className="mt-5 space-y-2.5 flex-1">
+                  {features.map((f) => (
+                    <li key={f} className="flex items-center gap-3 text-sm">
+                      <span className="w-5 h-5 rounded-full bg-success/15 text-success flex items-center justify-center shrink-0">
+                        <Check className="w-3 h-3" strokeWidth={3} />
+                      </span>
+                      <span className="text-foreground">{f}</span>
+                    </li>
+                  ))}
+                  {featured && (
+                    <li className="flex items-center gap-3 text-sm">
+                      <span className="w-5 h-5 rounded-full bg-success/15 text-success flex items-center justify-center shrink-0">
+                        <Check className="w-3 h-3" strokeWidth={3} />
+                      </span>
+                      <span className="text-foreground">Each member keeps private records</span>
+                    </li>
                   )}
-                  <Button
-                    className="w-full btn-touch"
-                    variant={plan.slug === 'free' ? 'outline' : 'default'}
-                    disabled={isCurrent || isDisabled || busyPlan === plan.slug || (!paidPlansEnabled && plan.price_inr > 0)}
-                    onClick={() => handleUpgrade(plan)}
-                  >
-                    {busyPlan === plan.slug && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    {isCurrent
-                      ? 'Current plan'
-                      : isDisabled
-                      ? 'Downgrade in settings'
-                      : plan.price_inr === 0
-                      ? 'Continue free'
-                      : !paidPlansEnabled
-                      ? 'Coming soon'
-                      : 'Upgrade'}
-                  </Button>
-                </CardContent>
-              </Card>
+                </ul>
+
+                <Button
+                  className="w-full min-h-14 rounded-2xl mt-6 text-base font-semibold"
+                  variant={featured && !isCurrent ? 'default' : 'outline'}
+                  disabled={isCurrent || isDisabled || busyPlan === plan.slug || (!paidPlansEnabled && plan.price_inr > 0)}
+                  onClick={() => handleUpgrade(plan)}
+                >
+                  {busyPlan === plan.slug && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  {isCurrent
+                    ? 'Current plan'
+                    : isDisabled
+                    ? 'Downgrade in settings'
+                    : plan.price_inr === 0
+                    ? 'Continue free'
+                    : !paidPlansEnabled
+                    ? 'Coming soon'
+                    : 'Upgrade'}
+                </Button>
+              </section>
             );
           })}
         </div>
 
-        <p className="text-center text-sm text-muted-foreground mt-10 max-w-xl mx-auto">
-          All plans keep your data private and encrypted. Paid plans launch soon — for now, enjoy Medora free.
-        </p>
-
+        <div className="mt-8 rounded-2xl border border-border bg-muted/40 p-4 flex gap-3 items-start max-w-xl mx-auto">
+          <Lock className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground">
+            Every plan keeps your records private — only you decide who sees them. Printed wallet cards are coming soon.
+          </p>
+        </div>
       </main>
     </div>
   );
