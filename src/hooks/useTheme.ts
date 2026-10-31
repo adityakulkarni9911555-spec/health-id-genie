@@ -10,7 +10,7 @@ export function getStoredTheme(): ThemeMode {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
     if (v === 'light' || v === 'dark' || v === 'system') return v;
-  } catch {}
+  } catch { /* Storage may be unavailable in restricted WebViews. */ }
   return 'system';
 }
 
@@ -49,7 +49,7 @@ export function useTheme() {
   const setMode = useCallback((next: ThemeMode) => {
     try {
       localStorage.setItem(STORAGE_KEY, next);
-    } catch {}
+    } catch { /* Apply the theme even when persistence is unavailable. */ }
     setModeState(next);
     applyTheme(next);
     setResolved(resolveTheme(next));
