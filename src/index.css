@@ -236,19 +236,19 @@
 
   .brand-island {
     pointer-events: auto;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);
   }
 
   @media (max-width: 767px) {
     .brand-island {
-      width: 100%;
-      max-width: 440px;
+      width: fit-content;
+      max-width: 100%;
       min-height: 56px;
-      padding-right: 8px;
-      background: hsl(var(--background));
+      padding-right: 0;
+      background: hsl(var(--card));
     }
     .brand-badge {
-      padding-inline: 14px;
+      padding-inline: 18px;
     }
   }
 

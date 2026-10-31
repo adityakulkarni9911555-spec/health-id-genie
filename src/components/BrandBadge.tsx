@@ -11,17 +11,17 @@ export const BrandBadge = () => {
   return (
     <Button
       variant="ghost"
-      className="brand-badge h-14 shrink-0 gap-3 rounded-full px-5 hover:bg-accent/40 [&_svg]:!size-9"
+      className="brand-badge h-14 shrink-0 gap-2.5 rounded-xl px-4 hover:bg-muted/60 [&_svg]:!size-7"
       aria-label="Medora — replay brand animation"
       title="Medora"
       onClick={() => setCycle((value) => value + 1)}
     >
-      <span className="brand-perspective relative block h-9 w-9 shrink-0" aria-hidden="true">
-        <span key={cycle} className={`brand-mark block h-9 w-9 ${animate ? 'brand-mark-enter' : ''}`}>
-          <Logo size={36} />
+      <span className="brand-perspective relative block h-7 w-7 shrink-0" aria-hidden="true">
+        <span key={cycle} className={`brand-mark block h-7 w-7 ${animate ? 'brand-mark-enter' : ''}`}>
+          <Logo size={28} />
         </span>
       </span>
-      <span className="text-lg font-bold text-foreground">Medora</span>
+      <span className="text-base font-semibold text-foreground">Medora</span>
     </Button>
   );
 };

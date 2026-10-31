@@ -85,7 +85,7 @@ const Index = () => {
       </Helmet>
       {/* Header */}
       <header className="wallet-brand-header fixed inset-x-0 z-50 flex justify-center px-3 no-print">
-        <div className="brand-island max-w-full rounded-full border border-border bg-card md:px-2">
+        <div className="brand-island max-w-full rounded-xl border border-border bg-card md:px-2">
           <div className="flex items-center justify-between gap-1 md:gap-3">
             <BrandBadge />
 
