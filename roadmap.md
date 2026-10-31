@@ -1,5 +1,9 @@
 # Medora security upgrade roadmap (verified 2026-10-13)
 
+## Android screen integration (2026-10-31)
+- [ ] Match system status/navigation bars to the current theme, keep web content outside phone system bars, and check compact wallet layout.
+- [ ] Installed-phone verification requires a rebuilt APK and authorised publication of web changes.
+
 ## Phase 1 — critical security
 - [x] Edge functions: login + owner check + folder boundary; generic errors (live negative tests)
 - [x] Public emergency data limited to name, blood group, allergies, conditions, emergency contact

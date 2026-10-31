@@ -16,6 +16,7 @@
 - Uploads write to the legacy patients.documents list (the single write path); the documents table is a derived read model synced one-way by a DB trigger that only accepts `<owner>/<patient>/` paths, and removing a document deletes only its AI_EXTRACTED medicine/lab rows and search snippets; why: one source of truth with no two-way sync, without breaking older app versions.
 
 - Android app is a Capacitor shell (`android/`, `capacitor.config.ts`) loading the published site via server.url; why: one codebase, web updates reach the app without rebuilding.
+- Android system bars use SystemBarsPlugin to mirror the resolved CSS background and icon contrast, with non-overlay window fitting; why: phone chrome must match the page without covering content, and older APKs must remain usable.
 - Wallet section selection uses the section query parameter and shared WalletNavigation on the wallet and Profile; why: section links survive navigation and provide consistent phone navigation without storing patient data.
 - Password changes from the Profile page require the account PIN check (verify_account_pin: 3 wrong tries = 24h lock, separate from the emergency PIN counter); passwords are never readable or shown; why: stored only as one-way hashes.
 - Recovery security lookup failures must stop password entry, never behave as a missing PIN; why: transient errors must not bypass existing PIN protection. Email-only recovery applies only to explicitly confirmed no-patient/no-PIN accounts.

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { syncSystemBars } from '@/lib/systemBars';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
@@ -30,6 +31,7 @@ export function applyTheme(mode: ThemeMode) {
     document.documentElement.classList.remove('dark');
     document.documentElement.classList.add('light');
     document.documentElement.style.colorScheme = 'light';
+    syncSystemBars(false);
     return;
   }
   const resolved = resolveTheme(mode);
@@ -37,6 +39,7 @@ export function applyTheme(mode: ThemeMode) {
   root.classList.remove('light', 'dark');
   root.classList.add(resolved);
   root.style.colorScheme = resolved;
+  syncSystemBars(resolved === 'dark');
 }
 
 export function useTheme() {

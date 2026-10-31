@@ -239,6 +239,19 @@
     box-shadow: var(--shadow-md);
   }
 
+  @media (max-width: 767px) {
+    .brand-island {
+      width: 100%;
+      max-width: 440px;
+      min-height: 56px;
+      padding-right: 8px;
+      background: hsl(var(--background));
+    }
+    .brand-badge {
+      padding-inline: 14px;
+    }
+  }
+
   .brand-perspective { perspective: 360px; }
   .wallet-panel:not([hidden]) {
     animation: wallet-reveal 160ms ease-out both;

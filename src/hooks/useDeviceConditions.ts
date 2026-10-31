@@ -183,8 +183,10 @@ const init = async () => {
   const refresh = () => publish(compute(battery, readReducedMotion()));
 
   if (battery) {
-    battery.addEventListener('levelchange', refresh);
-    battery.addEventListener('chargingchange', refresh);
+    if (typeof battery.addEventListener === 'function') {
+      battery.addEventListener('levelchange', refresh);
+      battery.addEventListener('chargingchange', refresh);
+    }
   }
 
   const conn = getConnection();
