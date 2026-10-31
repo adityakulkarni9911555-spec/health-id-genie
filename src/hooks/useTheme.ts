@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { syncSystemBars } from '@/lib/systemBars';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
@@ -9,7 +10,7 @@ export function getStoredTheme(): ThemeMode {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
     if (v === 'light' || v === 'dark' || v === 'system') return v;
-  } catch {}
+  } catch { /* Storage may be unavailable in restricted WebViews. */ }
   return 'system';
 }
 
@@ -30,6 +31,7 @@ export function applyTheme(mode: ThemeMode) {
     document.documentElement.classList.remove('dark');
     document.documentElement.classList.add('light');
     document.documentElement.style.colorScheme = 'light';
+    syncSystemBars(false);
     return;
   }
   const resolved = resolveTheme(mode);
@@ -37,6 +39,7 @@ export function applyTheme(mode: ThemeMode) {
   root.classList.remove('light', 'dark');
   root.classList.add(resolved);
   root.style.colorScheme = resolved;
+  syncSystemBars(resolved === 'dark');
 }
 
 export function useTheme() {
@@ -46,7 +49,7 @@ export function useTheme() {
   const setMode = useCallback((next: ThemeMode) => {
     try {
       localStorage.setItem(STORAGE_KEY, next);
-    } catch {}
+    } catch { /* Apply the theme even when persistence is unavailable. */ }
     setModeState(next);
     applyTheme(next);
     setResolved(resolveTheme(next));

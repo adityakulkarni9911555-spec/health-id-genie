@@ -1,5 +1,9 @@
 # Medora security upgrade roadmap (verified 2026-10-13)
 
+## Android screen integration (2026-10-31)
+- [x] Added native system-bar theme matching and non-overlay window fitting; compact phone header checked signed-in at 320, 393 and 484px without overflow. Light/dark browser chrome matches semantic page colors. Incomplete battery API reproduction now opens without page errors; changed-file lint and automatic preview build pass.
+- [ ] Native compilation and installed-phone verification blocked: Android SDK/JDK unavailable in this sandbox. Requires a rebuilt APK, local project update followed by `npx cap sync`, and authorised publication of web changes; nothing published.
+
 ## Phase 1 — critical security
 - [x] Edge functions: login + owner check + folder boundary; generic errors (live negative tests)
 - [x] Public emergency data limited to name, blood group, allergies, conditions, emergency contact
