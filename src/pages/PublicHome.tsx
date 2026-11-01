@@ -29,7 +29,7 @@ const PublicHome = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background hero-surface">
+    <div className="min-h-screen bg-background hero-surface overflow-x-clip">
       <Helmet>
         <title>Medora Health — Your Personal Health Wallet</title>
         <meta
