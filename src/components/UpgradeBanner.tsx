@@ -46,13 +46,10 @@ export function UpgradeBanner({ variant = 'compact', reason = 'generic', remaini
         <Crown className="w-4 h-4" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground truncate">
-          <span className="text-primary">Coming soon:</span> {message}
-        </p>
+        <p className="text-sm font-semibold text-foreground truncate">{message}</p>
+        <p className="text-xs text-muted-foreground truncate">Premium plans coming soon</p>
       </div>
-      <span className="hidden sm:inline text-xs font-medium text-primary flex items-center gap-1">
-        See plans <ArrowRight className="w-3 h-3 inline" />
-      </span>
+      <ArrowRight className="w-4 h-4 text-primary shrink-0" />
     </Link>
   );
 }
