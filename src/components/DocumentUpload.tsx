@@ -168,13 +168,15 @@ export const DocumentUpload = ({
 
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-medium text-foreground flex items-center gap-2">
-        <Paperclip className="w-4 h-4 text-primary" />
-        Documents & Reports
-        <span className="text-xs font-normal text-muted-foreground">
-          (PDF or images, up to {maxSizeMB} MB each)
-        </span>
-      </Label>
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+          <Paperclip className="w-4 h-4 text-primary" />
+        </div>
+        <div className="min-w-0">
+          <Label className="text-base font-semibold text-foreground">Documents & reports</Label>
+          <p className="text-xs text-muted-foreground">PDF or images · up to {maxSizeMB} MB each</p>
+        </div>
+      </div>
 
       <div
         className={`rounded-2xl border-2 border-dashed transition-colors p-5 md:p-6 text-center ${
