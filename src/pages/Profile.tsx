@@ -326,7 +326,7 @@ const Profile = () => {
 };
 
 const Stat = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
-  <div className="min-w-0 border-t border-border px-1 pt-3">
+  <div className="min-w-0 h-full rounded-xl bg-muted/60 px-3 py-2.5">
     <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">{icon}{label}</div>
     <p className="text-sm font-bold text-foreground mt-0.5">{value}</p>
   </div>
