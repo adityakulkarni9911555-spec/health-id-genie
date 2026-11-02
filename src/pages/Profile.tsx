@@ -28,25 +28,36 @@ type PinStatus = { locked: boolean; locked_until?: string; attempts_left: number
 const rpc = (fn: string, args: Record<string, unknown>) => (supabase.rpc as any)(fn, args);
 
 const Glass = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <section className={`profile-section border-b border-border ${className}`}>
+  <section className={`profile-section rounded-2xl border border-border bg-card shadow-sm ${className}`}>
     {children}
   </section>
 );
 
-const Row = ({ icon, title, detail, onClick, to, trailing }: {
-  icon: React.ReactNode; title: string; detail?: string; onClick?: () => void; to?: string; trailing?: React.ReactNode;
+type Tone = 'primary' | 'teal' | 'danger';
+const toneCls: Record<Tone, string> = {
+  primary: 'bg-primary/10 text-primary',
+  teal: 'bg-accent text-accent-foreground',
+  danger: 'bg-destructive/10 text-destructive',
+};
+
+const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+  <h2 className="px-1 pb-2 pt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{children}</h2>
+);
+
+const Row = ({ icon, title, detail, onClick, to, trailing, tone = 'primary' }: {
+  icon: React.ReactNode; title: string; detail?: string; onClick?: () => void; to?: string; trailing?: React.ReactNode; tone?: Tone;
 }) => {
   const inner = (
     <>
-      <span className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">{icon}</span>
+      <span className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${toneCls[tone]}`}>{icon}</span>
       <span className="flex-1 min-w-0 text-left">
-        <span className="block text-sm font-semibold text-foreground">{title}</span>
+        <span className={`block text-sm font-semibold ${tone === 'danger' ? 'text-destructive' : 'text-foreground'}`}>{title}</span>
         {detail && <span className="block text-xs text-muted-foreground whitespace-normal break-words">{detail}</span>}
       </span>
       {trailing ?? <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />}
     </>
   );
-  const cls = 'group w-full flex items-center gap-3 px-4 min-h-[64px] transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:bg-accent/60';
+  const cls = 'group w-full flex items-center gap-3 px-4 min-h-[64px] transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:bg-muted/60';
   if (to) return <Link to={to} className={cls}>{inner}</Link>;
   return <Button variant="ghost" type="button" onClick={onClick} disabled={!onClick} className={`${cls} h-auto rounded-none justify-start whitespace-normal`}>{inner}</Button>;
 };
