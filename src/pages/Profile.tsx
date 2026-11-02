@@ -28,25 +28,36 @@ type PinStatus = { locked: boolean; locked_until?: string; attempts_left: number
 const rpc = (fn: string, args: Record<string, unknown>) => (supabase.rpc as any)(fn, args);
 
 const Glass = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <section className={`profile-section border-b border-border ${className}`}>
+  <section className={`profile-section rounded-2xl border border-border bg-card shadow-sm ${className}`}>
     {children}
   </section>
 );
 
-const Row = ({ icon, title, detail, onClick, to, trailing }: {
-  icon: React.ReactNode; title: string; detail?: string; onClick?: () => void; to?: string; trailing?: React.ReactNode;
+type Tone = 'primary' | 'teal' | 'danger';
+const toneCls: Record<Tone, string> = {
+  primary: 'bg-primary/10 text-primary',
+  teal: 'bg-accent text-accent-foreground',
+  danger: 'bg-destructive/10 text-destructive',
+};
+
+const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+  <h2 className="px-1 pb-2 pt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{children}</h2>
+);
+
+const Row = ({ icon, title, detail, onClick, to, trailing, tone = 'primary' }: {
+  icon: React.ReactNode; title: string; detail?: string; onClick?: () => void; to?: string; trailing?: React.ReactNode; tone?: Tone;
 }) => {
   const inner = (
     <>
-      <span className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">{icon}</span>
+      <span className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${toneCls[tone]}`}>{icon}</span>
       <span className="flex-1 min-w-0 text-left">
-        <span className="block text-sm font-semibold text-foreground">{title}</span>
+        <span className={`block text-sm font-semibold ${tone === 'danger' ? 'text-destructive' : 'text-foreground'}`}>{title}</span>
         {detail && <span className="block text-xs text-muted-foreground whitespace-normal break-words">{detail}</span>}
       </span>
       {trailing ?? <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />}
     </>
   );
-  const cls = 'group w-full flex items-center gap-3 px-4 min-h-[64px] transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:bg-accent/60';
+  const cls = 'group w-full flex items-center gap-3 px-4 min-h-[64px] transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:bg-muted/60';
   if (to) return <Link to={to} className={cls}>{inner}</Link>;
   return <Button variant="ghost" type="button" onClick={onClick} disabled={!onClick} className={`${cls} h-auto rounded-none justify-start whitespace-normal`}>{inner}</Button>;
 };
@@ -173,70 +184,84 @@ const Profile = () => {
           </div>
         ) : (
           <>
-            <Glass className="py-4">
-              <div className="relative flex items-center gap-4">
-                <div className="w-14 h-16 sm:w-16 sm:h-20 shrink-0 rounded-lg overflow-hidden bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">
+            <Glass className="p-5">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-20 shrink-0 rounded-xl overflow-hidden bg-primary/10 text-primary ring-2 ring-primary/15 flex items-center justify-center text-xl font-bold">
                   {photoUrl ? <img src={photoUrl} alt="Your profile" className="w-full h-full object-cover" /> : initials}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-display text-xl font-bold text-foreground break-words [overflow-wrap:anywhere]">{patient?.fullName || 'Your account'}</p>
+                  <p className="font-display text-xl font-bold leading-tight text-foreground break-words [overflow-wrap:anywhere]">{patient?.fullName || 'Your account'}</p>
                   <p className="text-xs text-muted-foreground break-all mt-1">{user?.email}</p>
                   <Badge variant="secondary" className="mt-2 capitalize">{planSlug || 'free'} plan</Badge>
                 </div>
               </div>
               {patient && (
-                <div className="relative grid grid-cols-3 gap-2 mt-5">
+                <div className="grid grid-cols-3 gap-2 mt-5">
                   <Stat icon={<Droplet className="w-4 h-4" />} label="Blood" value={patient.bloodGroup || '—'} />
-                  <Link to="/?section=records" className="min-h-14" aria-label="Open records"><Stat icon={<FileText className="w-4 h-4" />} label="Documents" value={String(docCount)} /></Link>
-                  <Link to="/?section=manage" className="min-h-14" aria-label="Manage emergency QR"><Stat icon={<QrCode className="w-4 h-4" />} label="QR" value={qrActive ? 'Active' : 'Paused'} /></Link>
+                  <Link to="/?section=records" className="min-h-14 rounded-xl" aria-label="Open records"><Stat icon={<FileText className="w-4 h-4" />} label="Documents" value={String(docCount)} /></Link>
+                  <Link to="/?section=manage" className="min-h-14 rounded-xl" aria-label="Manage emergency QR"><Stat icon={<QrCode className="w-4 h-4" />} label="QR" value={qrActive ? 'Active' : 'Paused'} /></Link>
+                </div>
+              )}
+              {patient?.emergencyContact && (
+                <div className="mt-3 flex items-center gap-2 rounded-xl bg-muted/60 px-3 py-2.5 text-xs text-muted-foreground">
+                  <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
+                  <span className="min-w-0 break-words">Emergency contact: <span className="font-semibold text-foreground">{patient.emergencyContact}</span></span>
                 </div>
               )}
             </Glass>
 
             {patient && (
-              <ProfilePhotoUploader
-                patientId={patient.id}
-                fullName={patient.fullName}
-                photoPath={patient.photoPath}
-                onChange={(photoPath) => setPatient((prev) => (prev ? { ...prev, photoPath } : prev))}
-              />
+              <div>
+                <SectionTitle>Photo</SectionTitle>
+                <Glass className="p-4">
+                  <ProfilePhotoUploader
+                    patientId={patient.id}
+                    fullName={patient.fullName}
+                    photoPath={patient.photoPath}
+                    onChange={(photoPath) => setPatient((prev) => (prev ? { ...prev, photoPath } : prev))}
+                  />
+                </Glass>
+              </div>
             )}
 
             {patient && (
-              <Glass className="overflow-hidden">
-                <h2 className="px-4 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Health details</h2>
-                <div className="divide-y divide-border/60">
-                  <Row icon={<UserRound className="w-5 h-5" />} title="Personal & emergency info"
-                    detail={patient.emergencyContact ? `Emergency contact: ${patient.emergencyContact}` : 'Name, allergies, conditions'} to="/?section=manage" />
-                </div>
-              </Glass>
+              <div>
+                <SectionTitle>Health details</SectionTitle>
+                <Glass className="overflow-hidden">
+                  <Row tone="teal" icon={<UserRound className="w-5 h-5" />} title="Personal & emergency info"
+                    detail="Name, allergies, conditions" to="/?section=manage" />
+                </Glass>
+              </div>
             )}
 
-            <Glass className="overflow-hidden">
-              <h2 className="px-4 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Security</h2>
-              <div className="divide-y divide-border/60">
-                <Row icon={<KeyRound className="w-5 h-5" />} title="Change password"
-                  detail={!patient ? 'Create your health card first' : hasPin === false ? 'Set a PIN on your health card first' : locked ? `Locked until ${formatUntil(pinStatus?.locked_until)}` : 'Confirm with your 4-digit PIN'}
-                  onClick={patient && hasPin && !locked ? openPasswordDialog : undefined}
-                  trailing={locked ? <Lock className="w-4 h-4 text-warning" /> : undefined} />
-                <Row icon={<ShieldCheck className="w-5 h-5" />} title="Report PIN"
-                  detail={hasPin ? 'Set — reports stay locked without it' : 'Not set'} to="/?section=manage" />
-                <Row icon={<History className="w-5 h-5" />} title="Privacy & access history" detail="Who opened your card, and when" to="/privacy" />
-              </div>
-            </Glass>
+            <div>
+              <SectionTitle>Security</SectionTitle>
+              <Glass className="overflow-hidden">
+                <div className="divide-y divide-border/60">
+                  <Row icon={<KeyRound className="w-5 h-5" />} title="Change password"
+                    detail={!patient ? 'Create your health card first' : hasPin === false ? 'Set a PIN on your health card first' : locked ? `Locked until ${formatUntil(pinStatus?.locked_until)}` : 'Confirm with your 4-digit PIN'}
+                    onClick={patient && hasPin && !locked ? openPasswordDialog : undefined}
+                    trailing={locked ? <Lock className="w-4 h-4 text-warning" /> : undefined} />
+                  <Row icon={<ShieldCheck className="w-5 h-5" />} title="Report PIN"
+                    detail={hasPin ? 'Set — reports stay locked without it' : 'Not set'} to="/?section=manage" />
+                  <Row icon={<History className="w-5 h-5" />} title="Privacy & access history" detail="Who opened your card, and when" to="/privacy" />
+                </div>
+              </Glass>
+            </div>
 
-            <Glass className="overflow-hidden">
-              <h2 className="px-4 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Preferences</h2>
-              <div className="divide-y divide-border/60">
-                <Row icon={theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            <div>
+              <SectionTitle>Preferences</SectionTitle>
+              <Glass className="overflow-hidden">
+                <Row tone="teal" icon={theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                   title="Appearance" detail={theme === 'dark' ? 'Dark' : 'Light'} onClick={toggleTheme}
                   trailing={<span className="text-xs font-medium text-primary">Switch</span>} />
-              </div>
-            </Glass>
+              </Glass>
+            </div>
 
             <Glass className="overflow-hidden">
-              <Row icon={<LogOut className="w-5 h-5" />} title="Sign out" onClick={signOut} />
+              <Row tone="danger" icon={<LogOut className="w-5 h-5" />} title="Sign out" onClick={signOut} trailing={<span />} />
             </Glass>
+
 
             <p className="text-center text-xs text-muted-foreground px-6">
               For your safety, passwords are stored scrambled and can never be shown — not even to us. You can set a new one any time.
@@ -301,7 +326,7 @@ const Profile = () => {
 };
 
 const Stat = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
-  <div className="min-w-0 border-t border-border px-1 pt-3">
+  <div className="min-w-0 h-full rounded-xl bg-muted/60 px-3 py-2.5">
     <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">{icon}{label}</div>
     <p className="text-sm font-bold text-foreground mt-0.5">{value}</p>
   </div>
