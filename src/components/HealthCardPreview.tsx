@@ -42,6 +42,9 @@ import { PrintedCardOrder } from '@/components/PrintedCardOrder';
 import { DocumentReminder } from '@/components/DocumentReminder';
 import { DocumentPinSettings } from '@/components/DocumentPinSettings';
 import { ConflictReview } from '@/components/ConflictReview';
+import { PresentQrDialog } from '@/components/PresentQrDialog';
+import { tapFeedback } from '@/lib/haptics';
+import { QrCode } from 'lucide-react';
 
 
 import { publicEmergencyUrl } from '@/lib/publicUrl';
@@ -66,6 +69,7 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
     setVisited((previous) => previous.has(tab) ? previous : new Set(previous).add(tab));
   }, [tab]);
   const [openingPath, setOpeningPath] = useState<string | null>(null);
+  const [qrOpen, setQrOpen] = useState(false);
   const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
   const { toast } = useToast();
@@ -219,12 +223,23 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-foreground" aria-hidden="true"><ShieldCheck className="h-5 w-5" /></span>
           </div>
 
-          <div ref={cardRef} className="mb-4 print:shadow-none">
+          <div ref={cardRef} className="mb-3 print:shadow-none">
             <HealthCard patient={patient} />
           </div>
 
+          <p className="no-print mb-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+            <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+            Card saved on this device · works without internet
+          </p>
+
+          <Button onClick={() => { tapFeedback(); setQrOpen(true); }} className="no-print mb-2 w-full min-h-14 gap-2 text-base rounded-lg">
+            <QrCode className="h-5 w-5" />
+            Show emergency QR
+          </Button>
+          <PresentQrDialog patient={patient} open={qrOpen} onOpenChange={setQrOpen} />
+
           <div className="grid grid-cols-2 gap-2 md:gap-3 no-print mb-5">
-            <Button onClick={handleDownload} disabled={downloading} className="w-full min-h-14 py-2 gap-2 text-sm rounded-lg">
+            <Button variant="outline" onClick={() => { tapFeedback(); handleDownload(); }} disabled={downloading} className="w-full min-h-14 py-2 gap-2 text-sm rounded-lg">
               {downloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
               {downloading ? (preparedPdf ? 'Saving…' : 'Creating…') : preparedPdf ? 'Save PDF' : 'Download'}
             </Button>
