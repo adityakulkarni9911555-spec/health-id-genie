@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { FileText, Upload, X, Loader2, Paperclip, Sparkles, CheckCircle2, AlertCircle, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { categorizeDocument, CATEGORY_LABELS, type DocumentCategory } from '@/lib/documentCategory';
+import { tapFeedback } from '@/lib/haptics';
 
 export interface PatientDocument {
   path: string;
@@ -58,6 +60,12 @@ export const DocumentUpload = ({
   const [uploading, setUploading] = useState(false);
   const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const { toast } = useToast();
+  const [filter, setFilter] = useState<DocumentCategory | 'all'>('all');
+  const usedCategories = (Object.keys(CATEGORY_LABELS) as DocumentCategory[]).filter((c) =>
+    documents.some((d) => categorizeDocument(d) === c),
+  );
+  const activeFilter = filter !== 'all' && !usedCategories.includes(filter) ? 'all' : filter;
+  if (activeFilter !== filter) setFilter(activeFilter);
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -260,9 +268,26 @@ export const DocumentUpload = ({
         </div>
       </div>
 
+      {usedCategories.length > 1 && (
+        <div role="group" aria-label="Filter records" className="-mx-1 mb-3 flex gap-2 overflow-x-auto px-1 pb-1">
+          {(['all', ...usedCategories] as const).map((c) => (
+            <button
+              key={c}
+              type="button"
+              aria-pressed={filter === c}
+              onClick={() => { tapFeedback(); setFilter(c); }}
+              className={`shrink-0 min-h-11 rounded-full border px-4 text-sm font-medium transition-colors ${filter === c ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted'}`}
+            >
+              {c === 'all' ? `All (${documents.length})` : `${CATEGORY_LABELS[c]} (${documents.filter((d) => categorizeDocument(d) === c).length})`}
+            </button>
+          ))}
+        </div>
+      )}
+
       {(pendingFiles.length > 0 || documents.length > 0) && (
         <ul className="space-y-2">
           {documents.map((doc, idx) => {
+            if (filter !== 'all' && categorizeDocument(doc) !== filter) return null;
             const isAnalyzing = analyzingPaths.has(doc.path);
             const status = doc.status ?? 'pending';
             return (
