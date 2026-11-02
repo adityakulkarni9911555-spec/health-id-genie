@@ -60,7 +60,7 @@ export const ProfilePhotoUploader = ({ patientId, fullName, photoPath, onChange 
   };
 
   return (
-    <div className="no-print border-b border-border py-4">
+    <div className="no-print">
       <div className="flex items-start gap-3 sm:gap-4">
         <div className="relative w-12 h-14 rounded-lg overflow-hidden bg-primary/10 border border-border flex items-center justify-center flex-shrink-0">
           {url ? (
