@@ -37,6 +37,10 @@ public class MainActivity extends BridgeActivity {
     private View progressBar;
     private ValueAnimator progressAnim;
     private long startedAt;
+    private int ink = INK;
+    private int muted = MUTED;
+    private int trackColor = TRACK;
+    private int splashBg = Color.WHITE;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,7 +61,7 @@ public class MainActivity extends BridgeActivity {
         // Launch palette follows the phone surface: dark-mode users never see a white flash.
         ink = light ? INK : INK_DARK;
         muted = light ? MUTED : MUTED_DARK;
-        track = light ? TRACK : TRACK_DARK;
+        trackColor = light ? TRACK : TRACK_DARK;
         splashBg = surface;
         WebView webView = getBridge() != null ? getBridge().getWebView() : null;
         if (webView != null) {
@@ -97,7 +101,7 @@ public class MainActivity extends BridgeActivity {
 
         TextView word = new TextView(this);
         word.setText("Medora");
-        word.setTextColor(INK);
+        word.setTextColor(ink);
         word.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
         word.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
         word.setLetterSpacing(-0.01f);
@@ -108,7 +112,7 @@ public class MainActivity extends BridgeActivity {
 
         TextView tagline = new TextView(this);
         tagline.setText("Your health, always with you");
-        tagline.setTextColor(MUTED);
+        tagline.setTextColor(muted);
         tagline.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         LinearLayout.LayoutParams tagLp = new LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -123,7 +127,7 @@ public class MainActivity extends BridgeActivity {
         FrameLayout track = new FrameLayout(this);
         GradientDrawable trackBg = new GradientDrawable();
         trackBg.setCornerRadius(dp(2));
-        trackBg.setColor(TRACK);
+        trackBg.setColor(trackColor);
         track.setBackground(trackBg);
         track.setClipToOutline(true);
         progressBar = new View(this);
