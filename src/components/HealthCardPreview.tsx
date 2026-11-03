@@ -227,11 +227,6 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
             <HealthCard patient={patient} />
           </div>
 
-          <p className="no-print mb-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-            <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-            Card saved on this device · works without internet
-          </p>
-
           <Button onClick={() => { tapFeedback(); setQrOpen(true); }} className="no-print mb-2 w-full min-h-14 gap-2 text-base rounded-lg">
             <QrCode className="h-5 w-5" />
             Show emergency QR
