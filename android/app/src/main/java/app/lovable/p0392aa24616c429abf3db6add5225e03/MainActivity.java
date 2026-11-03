@@ -27,6 +27,9 @@ public class MainActivity extends BridgeActivity {
     private static final int MUTED = Color.parseColor("#6B7280");
     private static final int BRAND = Color.parseColor("#6D5DF6");
     private static final int TRACK = Color.parseColor("#ECEBFB");
+    private static final int INK_DARK = Color.parseColor("#F4F4F7");
+    private static final int MUTED_DARK = Color.parseColor("#9CA3AF");
+    private static final int TRACK_DARK = Color.parseColor("#232443");
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private FrameLayout splash;
@@ -51,6 +54,17 @@ public class MainActivity extends BridgeActivity {
             androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
         controller.setAppearanceLightStatusBars(light);
         controller.setAppearanceLightNavigationBars(light);
+        // Launch palette follows the phone surface: dark-mode users never see a white flash.
+        ink = light ? INK : INK_DARK;
+        muted = light ? MUTED : MUTED_DARK;
+        track = light ? TRACK : TRACK_DARK;
+        splashBg = surface;
+        WebView webView = getBridge() != null ? getBridge().getWebView() : null;
+        if (webView != null) {
+            webView.setBackgroundColor(surface);
+            // No glow/bounce at the ends of a scroll: the page itself already shows its own limits.
+            webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        }
         showBrandSplash();
     }
 
@@ -64,7 +78,7 @@ public class MainActivity extends BridgeActivity {
         PathInterpolator ease = new PathInterpolator(0.22f, 1f, 0.36f, 1f);
 
         splash = new FrameLayout(this);
-        splash.setBackgroundColor(Color.WHITE);
+        splash.setBackgroundColor(splashBg);
         splash.setClickable(true);
 
         LinearLayout column = new LinearLayout(this);
