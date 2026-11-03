@@ -2,7 +2,7 @@
 
 ## Android screen integration (2026-10-31)
 - [x] Added native system-bar theme matching and non-overlay window fitting; compact phone header checked signed-in at 320, 393 and 484px without overflow. Light/dark browser chrome matches semantic page colors. Incomplete battery API reproduction now opens without page errors; changed-file lint and automatic preview build pass.
-- [ ] Native compilation and installed-phone verification blocked: Android SDK/JDK unavailable in this sandbox. Requires a rebuilt APK, local project update followed by `npx cap sync`, and authorised publication of web changes; nothing published.
+- [ ] Installed-phone verification still blocked: no emulator or device here. Android SDK/JDK are restored in the sandbox and debug builds compile clean; each native change needs a rebuilt APK plus `npx cap sync` after the user updates their local project, and web changes need authorised publication.
 
 ## Phase 1 — critical security
 - [x] Edge functions: login + owner check + folder boundary; generic errors (live negative tests)
@@ -98,3 +98,9 @@
 
 ## Page-loading recovery (2026-10-28)
 - [x] Current Index module returns HTTP 200; interrupted module fetch reproduced with browser interception. Error boundary shows recovery instead of blank screen; removing interruption and clicking Try again restores the homepage. Screenshot reviewed; lint and automatic build pass. No automatic reload or stored-data clearing.
+
+## Android 1.4 launch polish (2026-11-03)
+- [x] Launch screen now follows the phone's light/dark surface (dark-mode users no longer get a white flash), the scroll glow/bounce at list ends is gone, the keyboard resizes the page instead of covering fields, and the tap-vibration permission is granted so in-app haptics can actually fire.
+- [x] Debug APK v1.4 built (versionCode 5, versionName 1.4, minSdk 22, target 34): Java compiled clean, package metadata and signature verified, saved copy hash-identical to the build output. Delivered medora-debug-v1.4.apk.
+- [ ] Physical install still needed to feel the dark-mode launch, haptics and keyboard behavior; the APK loads the published site, so the recent website screens (shield logo, Profile cards, full-screen QR, record filters) appear there only after publishing is authorised.
+
