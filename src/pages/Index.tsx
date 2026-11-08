@@ -16,15 +16,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { loadPatientForCurrentUser } from '@/lib/patientProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Helmet } from 'react-helmet-async';
+import { PresentQrDialog } from '@/components/PresentQrDialog';
+import { loadEmergencySnapshot, clearEmergencySnapshot } from '@/lib/emergencySnapshot';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const [registeredPatient, setRegisteredPatient] = useState<Patient | null>(null);
   const [loadingPatient, setLoadingPatient] = useState(true);
   const isOnline = useOnlineStatus();
+  const [offlineQrOpen, setOfflineQrOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const userId = user?.id;
+  const offlineSnapshot = userId ? loadEmergencySnapshot() : null;
 
   useEffect(() => {
     if (authLoading) return;
@@ -69,6 +73,7 @@ const Index = () => {
   };
 
   const handleSignOut = async () => {
+    clearEmergencySnapshot();
     await supabase.auth.signOut();
     toast({ title: 'Signed out', description: 'You can sign back in anytime.' });
   };
@@ -158,6 +163,14 @@ const Index = () => {
           </div>
         ) : registeredPatient ? (
           <HealthCardPreview patient={registeredPatient} onBack={handleEdit} />
+        ) : !isOnline && offlineSnapshot ? (
+          <div className="max-w-md mx-auto rounded-xl border border-border bg-card p-6 text-center space-y-4">
+            <WifiOff className="mx-auto h-8 w-8 text-muted-foreground" />
+            <h1 className="font-display text-xl font-bold">You're offline</h1>
+            <p className="text-sm text-muted-foreground">Your records need internet, but your emergency QR still works.</p>
+            <Button onClick={() => setOfflineQrOpen(true)} className="w-full min-h-14 gap-2 text-base">Show emergency QR</Button>
+            <PresentQrDialog patient={offlineSnapshot} open={offlineQrOpen} onOpenChange={setOfflineQrOpen} />
+          </div>
         ) : (
           <>
             {/* Hero Section */}

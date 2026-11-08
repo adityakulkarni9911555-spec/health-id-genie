@@ -83,6 +83,8 @@ const Emergency = () => {
     'loading' | 'ready' | 'notfound' | 'error' | 'ratelimited' | 'wiped'
   >('loading');
   const [reloadKey, setReloadKey] = useState(0);
+  const [lang, setLang] = useState<'en' | 'hi'>('en');
+  const t = (en: string, hi: string) => (lang === 'hi' ? hi : en);
   const [pinInput, setPinInput] = useState('');
   const [pinBusy, setPinBusy] = useState(false);
   const [pinError, setPinError] = useState<string | null>(null);
@@ -433,12 +435,15 @@ const Emergency = () => {
           <AlertTriangle className="w-6 h-6 shrink-0" />
           <div className="flex-1">
             <p className="text-xs uppercase tracking-widest opacity-90">
-              Emergency Medical Info
+              {t('Emergency Medical Info', 'आपातकालीन चिकित्सा जानकारी')}
             </p>
             <p className="text-sm font-semibold leading-tight">
               Shared by the patient via Medora
             </p>
           </div>
+          <button type="button" onClick={() => setLang(lang === 'en' ? 'hi' : 'en')} aria-label="Switch language / भाषा बदलें" className="min-h-11 rounded-full border border-destructive-foreground/50 px-3 text-sm font-semibold">
+            {lang === 'en' ? 'हिंदी' : 'EN'}
+          </button>
           <Logo size={32} />
         </div>
       </header>
@@ -459,14 +464,14 @@ const Emergency = () => {
         {/* Identity */}
         <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
-            Patient
+            {t('Patient', 'मरीज़')}
           </p>
           <h1 className="font-display text-2xl font-bold text-foreground mt-1">
             {p.full_name}
           </h1>
           <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
             <Field
-              label="Blood Group"
+              label={t('Blood Group', 'रक्त समूह')}
               value={p.blood_group || 'Not specified'}
               icon={<Droplets className="w-4 h-4 text-destructive" />}
               highlight
@@ -480,7 +485,7 @@ const Emergency = () => {
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="w-5 h-5 text-destructive" />
               <h2 className="font-semibold text-destructive uppercase text-sm tracking-wide">
-                Allergies
+                {t('Allergies', 'एलर्जी')}
               </h2>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -500,7 +505,7 @@ const Emergency = () => {
         {p.chronic_conditions.length > 0 && (
           <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
             <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
-              Chronic Conditions
+              {t('Chronic Conditions', 'पुरानी बीमारियाँ')}
             </h2>
             <div className="flex flex-wrap gap-2">
               {p.chronic_conditions.map((c) => (
@@ -518,7 +523,7 @@ const Emergency = () => {
         {/* Emergency contact — masked, tap to call */}
         <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
-            Emergency Contact
+            {t('Emergency Contact', 'आपातकालीन संपर्क')}
           </h2>
           <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 border border-border mb-3">
             <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center">

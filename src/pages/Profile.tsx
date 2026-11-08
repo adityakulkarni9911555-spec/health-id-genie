@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { clearEmergencySnapshot } from '@/lib/emergencySnapshot';
 import {
   ArrowLeft, ChevronRight, Droplet, FileText, KeyRound, Loader2, Lock, LogOut,
   Moon, QrCode, ShieldCheck, Sun, UserRound, History, Eye, EyeOff, Clock,
@@ -152,6 +153,7 @@ const Profile = () => {
   };
 
   const signOut = async () => {
+    clearEmergencySnapshot();
     await supabase.auth.signOut();
     navigate('/');
   };

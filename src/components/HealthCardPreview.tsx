@@ -44,7 +44,10 @@ import { DocumentPinSettings } from '@/components/DocumentPinSettings';
 import { ConflictReview } from '@/components/ConflictReview';
 import { PresentQrDialog } from '@/components/PresentQrDialog';
 import { tapFeedback } from '@/lib/haptics';
-import { QrCode } from 'lucide-react';
+import { QrCode, Smartphone } from 'lucide-react';
+import { ActiveMedications } from '@/components/ActiveMedications';
+import { saveEmergencySnapshot } from '@/lib/emergencySnapshot';
+import { createLockScreenWallpaper } from '@/lib/lockScreenWallpaper';
 
 
 import { publicEmergencyUrl } from '@/lib/publicUrl';
@@ -76,6 +79,25 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
   const { planSlug, isPaid, isFamily, familyGroupId, documentLimit, loading: subLoading } = useSubscription();
 
   const shareUrl = patient.shareToken ? publicEmergencyUrl(patient.shareToken) : null;
+
+  useEffect(() => { saveEmergencySnapshot(patient); }, [patient]);
+
+  const [wallpaperBusy, setWallpaperBusy] = useState(false);
+  const handleWallpaper = async () => {
+    if (!shareUrl) return;
+    tapFeedback();
+    setWallpaperBusy(true);
+    try {
+      const blob = await createLockScreenWallpaper(patient, shareUrl);
+      const id = patient.id.replace(/[^a-z0-9]/gi, '').slice(0, 8).toUpperCase();
+      const result = await deliverPdf({ blob, filename: `Medora-Lock-Screen-${id}.png` });
+      if (result !== 'cancelled') toast({ title: 'Wallpaper ready', description: 'Set it as your lock screen from your Photos or Files.' });
+    } catch (e) {
+      toast({ title: 'Could not save wallpaper', description: e instanceof Error ? e.message : 'Please try again.', variant: 'destructive' });
+    } finally {
+      setWallpaperBusy(false);
+    }
+  };
 
 
   const copyShareUrl = async () => {
@@ -232,6 +254,13 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
             Show emergency QR
           </Button>
           <PresentQrDialog patient={patient} open={qrOpen} onOpenChange={setQrOpen} />
+          {shareUrl && !patient.shareRevoked && (
+            <Button variant="ghost" onClick={handleWallpaper} disabled={wallpaperBusy} className="no-print mb-2 w-full min-h-14 gap-2 text-sm rounded-lg">
+              {wallpaperBusy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Smartphone className="h-5 w-5" />}
+              Save lock-screen wallpaper
+            </Button>
+          )}
+          <ActiveMedications patientId={patient.id} />
 
           <div className="grid grid-cols-2 gap-2 md:gap-3 no-print mb-5">
             <Button variant="outline" onClick={() => { tapFeedback(); handleDownload(); }} disabled={downloading} className="w-full min-h-14 py-2 gap-2 text-sm rounded-lg">

@@ -18,14 +18,15 @@ public class CardFilePlugin extends Plugin {
     public void savePdf(PluginCall call) {
         String data = call.getString("data");
         String filename = call.getString("filename");
-        if (data == null || data.length() > 14000000 || filename == null ||
-            !filename.matches("Medora-Health-Card-[A-Z0-9]+\\.pdf")) {
+        boolean isPdf = filename != null && filename.matches("Medora-Health-Card-[A-Z0-9]+\\.pdf");
+        boolean isPng = filename != null && filename.matches("Medora-Lock-Screen-[A-Z0-9]+\\.png");
+        if (data == null || data.length() > 14000000 || (!isPdf && !isPng)) {
             call.reject("Invalid health card file.");
             return;
         }
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/pdf");
+        intent.setType(isPng ? "image/png" : "application/pdf");
         intent.putExtra(Intent.EXTRA_TITLE, filename);
         startActivityForResult(call, intent, "saveResult");
     }
