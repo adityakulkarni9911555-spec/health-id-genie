@@ -152,6 +152,7 @@ const Profile = () => {
   };
 
   const signOut = async () => {
+    clearEmergencySnapshot();
     await supabase.auth.signOut();
     navigate('/');
   };
