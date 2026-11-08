@@ -23,7 +23,7 @@ export async function deliverPdf({ blob, filename }: PdfFile): Promise<'saved' |
     return result.saved ? 'saved' : 'cancelled';
   }
 
-  const file = new File([blob], filename, { type: 'application/pdf' });
+  const file = new File([blob], filename, { type: blob.type || 'application/pdf' });
   if (matchMedia('(pointer: coarse)').matches && navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: 'Medora health card' });
