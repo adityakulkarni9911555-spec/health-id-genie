@@ -25,10 +25,10 @@ const Index = () => {
   const [loadingPatient, setLoadingPatient] = useState(true);
   const isOnline = useOnlineStatus();
   const [offlineQrOpen, setOfflineQrOpen] = useState(false);
-  const offlineSnapshot = userId ? loadEmergencySnapshot() : null;
   const { toast } = useToast();
   const navigate = useNavigate();
   const userId = user?.id;
+  const offlineSnapshot = userId ? loadEmergencySnapshot() : null;
 
   useEffect(() => {
     if (authLoading) return;
