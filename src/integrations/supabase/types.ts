@@ -204,6 +204,50 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_passes: {
+        Row: {
+          code_hash: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          failed_attempts: number
+          id: string
+          patient_id: string
+          revoked_at: string | null
+          used_at: string | null
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string
+          created_by: string
+          expires_at: string
+          failed_attempts?: number
+          id?: string
+          patient_id: string
+          revoked_at?: string | null
+          used_at?: string | null
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          failed_attempts?: number
+          id?: string
+          patient_id?: string
+          revoked_at?: string | null
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_passes_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_chunks: {
         Row: {
           content: string
@@ -697,6 +741,8 @@ export type Database = {
       }
       patients: {
         Row: {
+          abha_address: string | null
+          abha_number: string | null
           allergies: string[] | null
           blood_group: string | null
           chronic_conditions: string[] | null
@@ -721,6 +767,8 @@ export type Database = {
           weight: string | null
         }
         Insert: {
+          abha_address?: string | null
+          abha_number?: string | null
           allergies?: string[] | null
           blood_group?: string | null
           chronic_conditions?: string[] | null
@@ -745,6 +793,8 @@ export type Database = {
           weight?: string | null
         }
         Update: {
+          abha_address?: string | null
+          abha_number?: string | null
           allergies?: string[] | null
           blood_group?: string | null
           chronic_conditions?: string[] | null
@@ -977,6 +1027,11 @@ export type Database = {
         Returns: Json
       }
       clear_document_pin: { Args: { _patient_id: string }; Returns: boolean }
+      create_doctor_pass: {
+        Args: { _minutes: number; _patient_id: string }
+        Returns: Json
+      }
+      doctor_pass_status: { Args: { _patient_id: string }; Returns: Json }
       effective_plan: { Args: { _user_id: string }; Returns: string }
       family_can_access: {
         Args: { _patient_id: string; _scope: string }
@@ -1021,6 +1076,7 @@ export type Database = {
         Args: { _access_id: string }
         Returns: boolean
       }
+      revoke_doctor_pass: { Args: { _patient_id: string }; Returns: boolean }
       rotate_share_token: { Args: { _patient_id: string }; Returns: Json }
       set_document_pin: {
         Args: { _patient_id: string; _pin: string }
@@ -1028,6 +1084,10 @@ export type Database = {
       }
       verify_account_pin: {
         Args: { _patient_id: string; _pin: string }
+        Returns: Json
+      }
+      verify_doctor_pass: {
+        Args: { _code: string; _patient_id: string }
         Returns: Json
       }
       verify_document_pin: {

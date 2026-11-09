@@ -41,6 +41,8 @@ interface EmergencyPayload {
   pin_status?: string | null;
   pin_retry_after?: number | null;
   pin_attempts_left?: number | null;
+  pass_status?: string | null;
+  pass_attempts_left?: number | null;
   override_status?: string | null;
 }
 
@@ -232,8 +234,9 @@ const Emergency = () => {
   };
 
   const submitPin = async () => {
-    if (!/^[0-9]{4}$/.test(pinInput)) {
-      setPinError('Enter the 4-digit PIN.');
+    const isPass = /^[0-9]{6}$/.test(pinInput);
+    if (!isPass && !/^[0-9]{4}$/.test(pinInput)) {
+      setPinError('Enter the 4-digit PIN or the 6-digit doctor pass.');
       return;
     }
     setPinBusy(true);
@@ -243,7 +246,7 @@ const Emergency = () => {
       // refused request (rate limit / challenge) can never wipe the
       // life-critical info already on screen.
       const { data: res, error } = await supabase.functions.invoke('emergency-lookup', {
-        body: { token, pin: pinInput },
+        body: isPass ? { token, pass: pinInput } : { token, pin: pinInput },
       });
       const errBody = (res as { error?: string } | null)?.error;
       if (error || !res || errBody) {
@@ -256,7 +259,16 @@ const Emergency = () => {
       }
       const payload = res as EmergencyPayload;
       if (payload.documents_locked) {
-        if (payload.pin_status === 'locked') {
+        if (isPass) {
+          const left = payload.pass_attempts_left;
+          setPinError(
+            payload.pass_status === 'no_pass'
+              ? 'This doctor pass has expired or was cancelled. Ask the patient for a new one.'
+              : left != null && left > 0
+                ? `Wrong doctor pass. ${left} ${left === 1 ? 'try' : 'tries'} left.`
+                : 'Wrong doctor pass. Ask the patient for a new one.',
+          );
+        } else if (payload.pin_status === 'locked') {
           const mins = Math.ceil((payload.pin_retry_after ?? 900) / 60);
           setPinError(`Too many wrong tries. Try again in about ${mins} minute${mins === 1 ? '' : 's'}.`);
         } else {
@@ -562,15 +574,7 @@ const Emergency = () => {
               · current
             </span>
           </div>
-          {data!.documents_locked && data!.pin_status === 'no_pin' ? (
-            <div className="rounded-xl border-2 border-dashed border-border bg-muted/40 p-5 text-center">
-              <Lock className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
-              <h3 className="font-display text-base font-semibold text-foreground">Documents not shared</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                The patient has not set a document PIN, so reports stay private. Use the emergency information above.
-              </p>
-            </div>
-          ) : data!.documents_locked ? (
+          {data!.documents_locked ? (
             <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-5 text-center">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
                 <Lock className="w-6 h-6 text-primary" />
@@ -579,28 +583,29 @@ const Emergency = () => {
                 Medical documents protected
               </h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4 leading-relaxed">
-                Enter the patient's 4-digit PIN to open lab reports and scans. The patient or
-                their family can share it with you.
+                {data!.pin_status === 'no_pin'
+                  ? 'Reports stay private. If the patient gave you a 6-digit doctor pass, enter it here.'
+                  : "Enter the patient's 4-digit PIN, or a 6-digit doctor pass the patient made for you, to open lab reports and scans."}
               </p>
               <div className="max-w-[220px] mx-auto space-y-3">
                 <Input
                   ref={pinInputRef}
                   inputMode="numeric"
                   autoComplete="off"
-                  maxLength={4}
+                  maxLength={6}
                   value={pinInput}
-                  onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') submitPin();
                   }}
-                  placeholder="••••"
-                  aria-label="4-digit document PIN"
-                  disabled={pinBusy || data!.pin_status === 'locked'}
+                  placeholder={data!.pin_status === 'no_pin' ? '••••••' : '••••'}
+                  aria-label="Document PIN or doctor pass"
+                  disabled={pinBusy}
                   className="text-center font-mono text-2xl tracking-[0.5em] min-h-[56px]"
                 />
                 <Button
                   onClick={submitPin}
-                  disabled={pinBusy || data!.pin_status === 'locked'}
+                  disabled={pinBusy || (data!.pin_status === 'locked' && pinInput.length !== 6)}
                   className="w-full min-h-[56px] text-base font-semibold"
                 >
                   {pinBusy ? (

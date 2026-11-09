@@ -64,6 +64,20 @@
       "when": 1791885595603,
       "tag": "0008_cleanup_chunks_on_document_removal",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794220162981,
+      "tag": "0009_abha_and_doctor_pass",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794220176159,
+      "tag": "0010_doctor_pass_secure_random",
+      "breakpoints": true
     }
   ]
 }
