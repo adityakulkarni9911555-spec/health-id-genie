@@ -6,6 +6,8 @@ const InputSchema = z.object({
   token: z.string().uuid(),
   turnstile_token: z.string().min(10).max(4096).optional(),
   pin: z.string().regex(/^[0-9]{4}$/).optional(),
+  // Temporary doctor pass: 6 digits, created by the patient, expires in 15/60 min.
+  pass: z.string().regex(/^[0-9]{6}$/).optional(),
   override: z
     .object({
       clinician_phone: z.string().regex(/^[6-9][0-9]{9}$/),
@@ -162,6 +164,34 @@ Deno.serve(async (req) => {
     let docsUnlocked = pinResult.ok && pinResult.reason !== 'no_pin';
     let overrideStatus: string | null = null;
 
+    // 5a) Temporary doctor pass — a short-lived alternative to the permanent PIN.
+    let passStatus: string | null = null;
+    let passExpiresAt: string | null = null;
+    let passAttemptsLeft: number | null = null;
+    if (!docsUnlocked && parsed.data.pass) {
+      const { data: passCheck, error: passErr } = await admin.rpc('verify_doctor_pass', {
+        _patient_id: patient.id,
+        _code: parsed.data.pass,
+      });
+      if (passErr) {
+        console.error('pass rpc failed', passErr);
+        return jsonResponse({ error: 'server_error' }, 500);
+      }
+      const pr = (passCheck ?? {}) as { ok?: boolean; reason?: string; expires_at?: string; attempts_left?: number };
+      passStatus = pr.reason ?? null;
+      passExpiresAt = pr.expires_at ?? null;
+      passAttemptsLeft = pr.attempts_left ?? null;
+      if (pr.ok) docsUnlocked = true;
+      await admin.from('audit_events').insert({
+        patient_id: patient.id,
+        actor_role: 'anonymous',
+        action: pr.ok ? 'DOCTOR_PASS_SUCCESS' : 'DOCTOR_PASS_FAILURE',
+        access_method: 'doctor_pass',
+        ip_hash: rawIp ? ip_hash : null,
+        user_agent: ua?.slice(0, 500) ?? null,
+      });
+    }
+
     // 5b) Break-glass request. A typed phone number is NOT proof of clinician
     // identity, so it never unlocks documents. The request is logged (rate-limited)
     // and the caller is told verified clinician access is required.
@@ -253,6 +283,9 @@ Deno.serve(async (req) => {
         pin_retry_after: pinResult.retry_after ?? null,
         pin_attempts_left: pinResult.attempts_left ?? null,
         override_status: overrideStatus,
+        pass_status: passStatus,
+        pass_expires_at: passExpiresAt,
+        pass_attempts_left: passAttemptsLeft,
       },
       200,
     );
