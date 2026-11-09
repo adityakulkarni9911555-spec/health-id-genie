@@ -41,6 +41,8 @@ import { RecordSearch } from '@/components/RecordSearch';
 import { PrintedCardOrder } from '@/components/PrintedCardOrder';
 import { DocumentReminder } from '@/components/DocumentReminder';
 import { DocumentPinSettings } from '@/components/DocumentPinSettings';
+import { DoctorPassSettings } from '@/components/DoctorPassSettings';
+import { AbhaSettings } from '@/components/AbhaSettings';
 import { ConflictReview } from '@/components/ConflictReview';
 import { PresentQrDialog } from '@/components/PresentQrDialog';
 import { tapFeedback } from '@/lib/haptics';
@@ -418,6 +420,10 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
       {/* Document PIN lock */}
       <div className="mt-6 no-print">
         <DocumentPinSettings patientId={patient.id} />
+      </div>
+      <div className="mt-4 no-print space-y-4">
+        <DoctorPassSettings patientId={patient.id} />
+        <AbhaSettings patientId={patient.id} />
       </div>
 
       {/* Patient Details */}
