@@ -600,7 +600,7 @@ const Emergency = () => {
                   }}
                   placeholder={data!.pin_status === 'no_pin' ? '••••••' : '••••'}
                   aria-label="Document PIN or doctor pass"
-                  disabled={pinBusy || (data!.pin_status === 'locked' && pinInput.length < 5)}
+                  disabled={pinBusy}
                   className="text-center font-mono text-2xl tracking-[0.5em] min-h-[56px]"
                 />
                 <Button
