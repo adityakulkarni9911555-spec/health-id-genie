@@ -41,8 +41,8 @@ export const AbhaSettings = ({ patientId }: { patientId: string }) => {
 
   const save = async () => {
     const check = validateAbha(number, address);
-    if (!check.ok) {
-      toast({ title: check.error, variant: 'destructive' });
+    if (check.ok === false) {
+      toast({ title: (check as { error: string }).error, variant: 'destructive' });
       return;
     }
     setBusy(true);
