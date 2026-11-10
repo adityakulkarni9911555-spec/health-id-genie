@@ -1,5 +1,11 @@
 # Medora security upgrade roadmap (verified 2026-10-13)
 
+## New-feature testing (2026-11-10)
+- [x] Signed-in desktop and phone Manage views checked with no horizontal overflow or page runtime errors. Short ABHA rejected; temporary valid-format number/address saved and read back after reload, then original values restored. This checks storage/format only, not government identity verification.
+- [x] Doctor pass: 15-minute and 60-minute creation/countdowns; wrong code leaves reports locked; correct code opens protected viewer; cancellation rejects the code; reload hides the code but retains status; five failures disable the pass and reject even the correct code. All test passes revoked.
+- [x] Actual browser wallpaper PNG download (1080×2340) and one-page PDF download (1,093,790 bytes) verified and visually reviewed. Hindi heading toggle and already-open offline QR displayed. Six existing recovery/reminder tests passed.
+- [ ] Android system save picker, wallpaper setting, splash and haptics need a physical device or emulator, unavailable here. Closed-app offline launch remains unverified; no publication performed.
+
 ## Android screen integration (2026-10-31)
 - [x] Added native system-bar theme matching and non-overlay window fitting; compact phone header checked signed-in at 320, 393 and 484px without overflow. Light/dark browser chrome matches semantic page colors. Incomplete battery API reproduction now opens without page errors; changed-file lint and automatic preview build pass.
 - [ ] Installed-phone verification still blocked: no emulator or device here. Android SDK/JDK are restored in the sandbox and debug builds compile clean; each native change needs a rebuilt APK plus `npx cap sync` after the user updates their local project, and web changes need authorised publication.
