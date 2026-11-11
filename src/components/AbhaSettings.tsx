@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { formatAbhaNumber, validateAbha } from '@/lib/abha';
+import { formatAbhaNumber, validateAbha, ABHA_UPDATED_EVENT } from '@/lib/abha';
 
 export const AbhaSettings = ({ patientId }: { patientId: string }) => {
   const { toast } = useToast();
@@ -57,6 +57,7 @@ export const AbhaSettings = ({ patientId }: { patientId: string }) => {
     }
     setSaved({ number: check.number, address: check.address });
     setEditing(false);
+    window.dispatchEvent(new Event(ABHA_UPDATED_EVENT));
     toast({ title: 'ABHA details saved' });
   };
 

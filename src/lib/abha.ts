@@ -19,3 +19,7 @@ export const validateAbha = (number: string, address: string): AbhaCheck => {
   }
   return { ok: true, number: digits || null, address: addr || null };
 };
+
+/** Official Ayushman Bharat Health Account portal (NHA / ABDM). */
+export const ABHA_PORTAL_URL = 'https://abha.abdm.gov.in/abha/v3/';
+export const ABHA_UPDATED_EVENT = 'medora:abha-updated';

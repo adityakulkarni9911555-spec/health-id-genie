@@ -21,6 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { loadPatientForCurrentUser } from '@/lib/patientProfile';
 import type { Patient } from '@/types/patient';
 import { ProfilePhotoUploader } from '@/components/ProfilePhotoUploader';
+import { AbhaSettings } from '@/components/AbhaSettings';
 import { usePatientPhotoUrl } from '@/lib/patientPhoto';
 import { WalletNavigation } from '@/components/WalletNavigation';
 
@@ -222,6 +223,15 @@ const Profile = () => {
                     photoPath={patient.photoPath}
                     onChange={(photoPath) => setPatient((prev) => (prev ? { ...prev, photoPath } : prev))}
                   />
+                </Glass>
+              </div>
+            )}
+
+            {patient && (
+              <div>
+                <SectionTitle>National health ID (ABHA)</SectionTitle>
+                <Glass className="p-4">
+                  <AbhaSettings patientId={patient.id} />
                 </Glass>
               </div>
             )}

@@ -43,6 +43,7 @@ import { DocumentReminder } from '@/components/DocumentReminder';
 import { DocumentPinSettings } from '@/components/DocumentPinSettings';
 import { DoctorPassSettings } from '@/components/DoctorPassSettings';
 import { AbhaSettings } from '@/components/AbhaSettings';
+import { AbhaBadge } from '@/components/AbhaBadge';
 import { ConflictReview } from '@/components/ConflictReview';
 import { PresentQrDialog } from '@/components/PresentQrDialog';
 import { tapFeedback } from '@/lib/haptics';
@@ -250,6 +251,7 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
           <div ref={cardRef} className="mb-3 print:shadow-none">
             <HealthCard patient={patient} />
           </div>
+          <AbhaBadge patientId={patient.id} />
 
           <Button onClick={() => { tapFeedback(); setQrOpen(true); }} className="no-print mb-2 w-full min-h-14 gap-2 text-base rounded-lg">
             <QrCode className="h-5 w-5" />
