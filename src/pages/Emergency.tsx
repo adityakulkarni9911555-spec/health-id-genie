@@ -13,8 +13,10 @@ import {
   Lock,
   Unlock,
   Scale,
+  Landmark,
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
+import { formatAbhaNumber } from '@/lib/abha';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SecureDocumentViewer } from '@/components/SecureDocumentViewer';
@@ -34,6 +36,8 @@ interface EmergencyPayload {
     allergies: string[];
     chronic_conditions: string[];
     emergency_contact: string;
+    abha_number?: string | null;
+    abha_address?: string | null;
   };
   documents: EmergencyDoc[];
   documents_locked?: boolean;
@@ -96,6 +100,7 @@ const Emergency = () => {
   const [overrideBusy, setOverrideBusy] = useState(false);
   const [overrideError, setOverrideError] = useState<string | null>(null);
   const [overridePhone, setOverridePhone] = useState<string | null>(null);
+  const [abhaCopied, setAbhaCopied] = useState(false);
   const [viewing, setViewing] = useState<EmergencyDoc | null>(null);
   const [sessionId] = useState(() =>
     Array.from(crypto.getRandomValues(new Uint8Array(4)))
@@ -489,6 +494,48 @@ const Emergency = () => {
               highlight
             />
           </div>
+
+          {/* National health ID — helps hospitals look the patient up in the
+              national system. Shown only when the patient has saved one. */}
+          {(p.abha_number || p.abha_address) && (
+            <div className="mt-3 rounded-xl border border-border bg-background p-3 flex items-center gap-3">
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground"
+                aria-hidden="true"
+              >
+                <Landmark className="w-5 h-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t('National Health ID · ABHA', 'राष्ट्रीय स्वास्थ्य आईडी · अब्हा')}
+                </p>
+                {p.abha_number && (
+                  <p className="font-mono text-sm font-semibold text-foreground tracking-wider">
+                    {formatAbhaNumber(p.abha_number)}
+                  </p>
+                )}
+                {p.abha_address && (
+                  <p className="text-xs text-muted-foreground break-all">{p.abha_address}</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  const id = p.abha_number || p.abha_address || '';
+                  if (!id) return;
+                  try {
+                    await navigator.clipboard.writeText(id);
+                    setAbhaCopied(true);
+                    window.setTimeout(() => setAbhaCopied(false), 2000);
+                  } catch { /* clipboard unavailable */ }
+                }}
+                className="min-h-11 shrink-0 rounded-lg px-3 text-xs font-semibold text-primary hover:bg-accent"
+                aria-label="Copy ABHA ID"
+              >
+                {abhaCopied ? t('Copied', 'कॉपी हआ') : t('Copy', 'कॉपी')}
+              </button>
+            </div>
+          )}
         </section>
 
         {/* Allergies */}
