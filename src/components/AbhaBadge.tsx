@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { ExternalLink, Landmark } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { formatAbhaNumber, ABHA_PORTAL_URL, ABHA_UPDATED_EVENT } from '@/lib/abha';
+import { formatAbhaNumber, ABHA_LOGIN_URL, ABHA_UPDATED_EVENT } from '@/lib/abha';
 
 /** National health ID badge shown under the card. Display only. */
 export const AbhaBadge = ({ patientId }: { patientId: string }) => {
@@ -21,6 +22,15 @@ export const AbhaBadge = ({ patientId }: { patientId: string }) => {
   if (!abha) return null;
   const linked = Boolean(abha.number || abha.address);
 
+  // Opens the official government sign-in page. Medora never sees ABHA passwords or OTPs.
+  const signIn = async () => {
+    const id = abha.address || abha.number;
+    if (id) {
+      try { await navigator.clipboard.writeText(id); toast.success('ABHA ID copied — paste it on the sign-in page'); } catch { /* clipboard unavailable */ }
+    }
+    window.open(ABHA_LOGIN_URL, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="no-print mb-3 rounded-xl border border-border bg-card p-3 flex items-center gap-3">
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground" aria-hidden="true">
@@ -37,11 +47,11 @@ export const AbhaBadge = ({ patientId }: { patientId: string }) => {
           <Link to="/profile" className="text-sm font-medium text-primary">Add your ABHA number</Link>
         )}
       </div>
-      <a href={ABHA_PORTAL_URL} target="_blank" rel="noopener noreferrer"
-        className="flex min-h-11 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-medium text-primary hover:bg-accent"
-        aria-label="Open the official ABHA portal">
-        Portal <ExternalLink className="h-3.5 w-3.5" />
-      </a>
+      <button type="button" onClick={signIn}
+        className="flex min-h-11 shrink-0 items-center gap-1 rounded-lg px-3 text-xs font-semibold text-primary hover:bg-accent"
+        aria-label="Sign in on the official ABHA website">
+        Sign in <ExternalLink className="h-3.5 w-3.5" />
+      </button>
     </div>
   );
 };
