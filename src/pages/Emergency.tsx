@@ -99,6 +99,7 @@ const Emergency = () => {
   const [overrideReason, setOverrideReason] = useState('');
   const [overrideBusy, setOverrideBusy] = useState(false);
   const [overrideError, setOverrideError] = useState<string | null>(null);
+  const [overrideLogged, setOverrideLogged] = useState<string | null>(null);
   const [overridePhone, setOverridePhone] = useState<string | null>(null);
   const [abhaCopied, setAbhaCopied] = useState(false);
   const [viewing, setViewing] = useState<EmergencyDoc | null>(null);
@@ -222,9 +223,7 @@ const Emergency = () => {
         return;
       }
       if (payload.documents_locked) {
-        setOverrideError(
-          'Request logged. Reports stay locked until verified clinician access is available. Call the emergency contact above for the PIN — the life-saving details on this page are always visible.',
-        );
+        setOverrideLogged(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         return;
       }
       setOverridePhone(clinicianPhone);
@@ -678,6 +677,36 @@ const Emergency = () => {
                     Request clinical access
                   </Button>
                 ) : (
+                  overrideLogged ? (
+                  <div className="space-y-3 rounded-xl border border-border bg-muted/40 p-4" role="status" aria-live="polite">
+                    <p className="text-sm font-semibold text-foreground">
+                      {t('Access request logged at', 'पहुँच अनुरोध दर्ज हुआ:')} {overrideLogged}
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {t(
+                        'The patient will see your number in their access history. Reports stay locked until the PIN or a doctor pass is entered.',
+                        'मरीज़ अपनी एक्सेस हिस्ट्री में आपका नंबर देखेगा। PIN या डॉक्टर पास डालने तक रिपोर्ट बंद रहेंगी।',
+                      )}
+                    </p>
+                    <ol className="text-sm text-foreground list-decimal pl-5 space-y-1">
+                      <li>{t('Treat using blood group, allergies and conditions shown above.', 'ऊपर दिए ब्लड ग्रुप, एलर्जी और बीमारियों के अनुसार इलाज करें।')}</li>
+                      <li>{t('Call the emergency contact and ask for the 4-digit PIN or a 6-digit doctor pass.', 'इमरजेंसी संपर्क को कॉल करें और 4 अंकों का PIN या 6 अंकों का डॉक्टर पास माँगें।')}</li>
+                      <li>{t('Enter it in the box above to open reports.', 'रिपोर्ट खोलने के लिए ऊपर के बॉक्स में डालें।')}</li>
+                    </ol>
+                    {data!.patient.emergency_contact && (
+                      <Button asChild className="w-full min-h-[56px] text-base font-semibold">
+                        <a href={`tel:${data!.patient.emergency_contact}`}>{t('Call emergency contact', 'इमरजेंसी संपर्क को कॉल करें')}</a>
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      className="w-full min-h-[56px]"
+                      onClick={() => { setOverrideLogged(null); setShowOverride(false); window.setTimeout(() => pinInputRef.current?.focus(), 0); }}
+                    >
+                      {t('I have the PIN / pass', 'मेरे पास PIN / पास है')}
+                    </Button>
+                  </div>
+                  ) : (
                   <div className="space-y-3">
                     <p className="text-sm font-semibold text-foreground">
                       Patient unconscious or can't give the PIN?
@@ -716,6 +745,7 @@ const Emergency = () => {
                       <p className="text-sm text-destructive font-medium">{overrideError}</p>
                     )}
                   </div>
+                  )
                 )}
               </div>
             </div>
