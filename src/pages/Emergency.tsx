@@ -684,8 +684,8 @@ const Emergency = () => {
                     </p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {t(
-                        'The patient will see your number in their access history. Reports stay locked until the PIN or a doctor pass is entered.',
-                        'मरीज़ अपनी एक्सेस हिस्ट्री में आपका नंबर देखेगा। PIN या डॉक्टर पास डालने तक रिपोर्ट बंद रहेंगी।',
+                        'The patient will see this request in their access history. Reports stay locked until the PIN or a doctor pass is entered.',
+                        'मरीज़ यह अनुरोध अपनी एक्सेस हिस्ट्री में देखेगा। PIN या डॉक्टर पास डालने तक रिपोर्ट बंद रहेंगी।',
                       )}
                     </p>
                     <ol className="text-sm text-foreground list-decimal pl-5 space-y-1">

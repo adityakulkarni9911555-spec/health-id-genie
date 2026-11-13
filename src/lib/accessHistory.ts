@@ -26,6 +26,14 @@ export function describeAudit(row: AuditRow): AccessEvent {
       return { ...base, kind: 'pin_success', title: 'Reports opened with your PIN', detail: 'Someone entered the correct document PIN on your emergency page.' };
     case 'PIN_FAILURE':
       return { ...base, kind: 'pin_failure', title: 'Wrong PIN entered', detail: 'Reports stayed locked.' };
+    case 'DOCTOR_PASS_SUCCESS':
+      return { ...base, kind: 'break_glass', title: 'Reports opened with doctor pass', detail: 'Someone entered your temporary doctor pass and opened your reports.' };
+    case 'DOCTOR_PASS_FAILURE':
+      return { ...base, kind: 'break_glass', title: 'Wrong doctor pass entered', detail: 'Reports stayed locked.' };
+    case 'DOCTOR_PASS_CREATED':
+      return { ...base, kind: 'break_glass', title: 'Doctor pass created', detail: 'You made a temporary code for a doctor.' };
+    case 'DOCTOR_PASS_REVOKED':
+      return { ...base, kind: 'break_glass', title: 'Doctor pass cancelled', detail: 'The code no longer works.' };
     case 'BREAK_GLASS_REQUESTED':
       return { ...base, kind: 'break_glass', title: 'Clinical access requested', detail: 'The person was not verified, so no reports were unlocked.' };
     case 'AI_EXTRACTION':
