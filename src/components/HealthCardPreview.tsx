@@ -47,7 +47,8 @@ import { AbhaBadge } from '@/components/AbhaBadge';
 import { ConflictReview } from '@/components/ConflictReview';
 import { PresentQrDialog } from '@/components/PresentQrDialog';
 import { tapFeedback } from '@/lib/haptics';
-import { QrCode, Smartphone } from 'lucide-react';
+import { QrCode, Smartphone, Eye, EyeOff, History as HistoryIcon, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { ActiveMedications } from '@/components/ActiveMedications';
 import { saveEmergencySnapshot } from '@/lib/emergencySnapshot';
 import { createLockScreenWallpaper } from '@/lib/lockScreenWallpaper';
@@ -75,6 +76,8 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
     setVisited((previous) => previous.has(tab) ? previous : new Set(previous).add(tab));
   }, [tab]);
   const [openingPath, setOpeningPath] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState<Set<string>>(new Set());
+  const toggleReveal = (path: string) => setRevealed((prev) => { const n = new Set(prev); if (n.has(path)) n.delete(path); else n.add(path); return n; });
   const [qrOpen, setQrOpen] = useState(false);
   const [analyzingPaths, setAnalyzingPaths] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<'revoke' | 'restore' | 'rotate' | null>(null);
@@ -425,6 +428,14 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
       <div className="mt-4 no-print space-y-4">
         <DoctorPassSettings patientId={patient.id} />
         <AbhaSettings patientId={patient.id} />
+        <Link to="/privacy" className="mt-4 flex min-h-16 items-center gap-3 rounded-xl border border-border bg-card p-4 hover:bg-muted/50">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><HistoryIcon className="h-5 w-5" /></span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-sm font-semibold text-foreground">Privacy & access history</span>
+            <span className="block text-xs text-muted-foreground">See who scanned your QR, opened reports or asked for access</span>
+          </span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
       </div>
 
       {/* Patient Details */}
@@ -540,7 +551,14 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
 
                     {doc.extractedData && (
                       <div className="mt-3 pt-3 border-t border-dashed border-border">
-                        <ExtractionSummary data={doc.extractedData} />
+                        <button type="button" onClick={() => toggleReveal(doc.path)} aria-expanded={revealed.has(doc.path)}
+                          className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2 text-sm font-medium text-primary hover:bg-muted/50">
+                          {revealed.has(doc.path) ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {revealed.has(doc.path) ? 'Hide health details' : 'Reveal health details'}
+                        </button>
+                        {revealed.has(doc.path) ? <ExtractionSummary data={doc.extractedData} /> : (
+                          <p className="px-2 text-xs text-muted-foreground">Diagnoses, medicines and findings are hidden so people near your screen can't read them.</p>
+                        )}
                         <p className="mt-2 text-[11px] text-muted-foreground">
                           {doc.provenance?.verification_status === 'USER_VERIFIED' ? 'Reviewed by you' : 'AI-extracted'} · the original document is the source of truth
                         </p>

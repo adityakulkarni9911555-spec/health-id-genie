@@ -13,10 +13,20 @@ const ICONS: Record<AccessEventKind, JSX.Element> = {
   other: <Activity className="w-4 h-4 text-muted-foreground" />,
 };
 
+type Filter = 'all' | 'scans' | 'opened' | 'requests' | 'failed';
+const FILTERS: { id: Filter; label: string; match: (e: AccessEvent) => boolean }[] = [
+  { id: 'all', label: 'All', match: () => true },
+  { id: 'scans', label: 'QR scans', match: (e) => e.kind === 'scan' },
+  { id: 'opened', label: 'Reports opened', match: (e) => e.kind === 'pin_success' || /opened/i.test(e.title) },
+  { id: 'requests', label: 'Access requests', match: (e) => /requested/i.test(e.title) },
+  { id: 'failed', label: 'Wrong codes', match: (e) => e.kind === 'pin_failure' || /^wrong/i.test(e.title) },
+];
+
 export const AccessHistory = ({ patientId }: { patientId: string }) => {
   const [events, setEvents] = useState<AccessEvent[] | null>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<Filter>('all');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -58,8 +68,31 @@ export const AccessHistory = ({ patientId }: { patientId: string }) => {
           No one has opened your emergency page yet.
         </div>
       ) : (
+        <>
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          {(['scans', 'opened', 'requests'] as const).map((id) => {
+            const f = FILTERS.find((x) => x.id === id)!;
+            return (
+              <div key={id} className="rounded-xl bg-muted/60 p-3 text-center">
+                <p className="font-display text-xl font-bold text-foreground">{events.filter(f.match).length}</p>
+                <p className="text-[11px] text-muted-foreground">{f.label}</p>
+              </div>
+            );
+          })}
+        </div>
+        <div role="group" aria-label="Filter history" className="-mx-1 mb-3 flex gap-2 overflow-x-auto px-1 pb-1">
+          {FILTERS.map((f) => (
+            <button key={f.id} type="button" aria-pressed={filter === f.id} onClick={() => setFilter(f.id)}
+              className={`shrink-0 min-h-11 rounded-full border px-4 text-sm font-medium ${filter === f.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted'}`}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+        {events.filter(FILTERS.find((x) => x.id === filter)!.match).length === 0 && (
+          <p className="py-6 text-center text-sm text-muted-foreground">Nothing in this group yet.</p>
+        )}
         <ol className="space-y-2">
-          {events.map((e) => (
+          {events.filter(FILTERS.find((x) => x.id === filter)!.match).map((e) => (
             <li key={e.id} className="flex gap-3 rounded-xl border border-border p-3">
               <div className="mt-0.5 shrink-0">{ICONS[e.kind]}</div>
               <div className="min-w-0">
@@ -72,6 +105,7 @@ export const AccessHistory = ({ patientId }: { patientId: string }) => {
             </li>
           ))}
         </ol>
+        </>
       )}
     </section>
   );
