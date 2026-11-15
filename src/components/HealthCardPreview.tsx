@@ -251,31 +251,30 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
           <div ref={cardRef} className="mb-3 print:shadow-none">
             <HealthCard patient={patient} />
           </div>
-          <AbhaBadge patientId={patient.id} />
 
-          <Button onClick={() => { tapFeedback(); setQrOpen(true); }} className="no-print mb-2 w-full min-h-14 gap-2 text-base rounded-lg">
+          <Button onClick={() => { tapFeedback(); setQrOpen(true); }} className="no-print mb-3 w-full min-h-14 gap-2 text-base font-semibold rounded-xl">
             <QrCode className="h-5 w-5" />
             Show emergency QR
           </Button>
           <PresentQrDialog patient={patient} open={qrOpen} onOpenChange={setQrOpen} />
-          {shareUrl && !patient.shareRevoked && (
-            <Button variant="ghost" onClick={handleWallpaper} disabled={wallpaperBusy} className="no-print mb-2 w-full min-h-14 gap-2 text-sm rounded-lg">
-              {wallpaperBusy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Smartphone className="h-5 w-5" />}
-              Save lock-screen wallpaper
-            </Button>
-          )}
-          <ActiveMedications patientId={patient.id} />
 
-          <div className="grid grid-cols-2 gap-2 md:gap-3 no-print mb-5">
-            <Button variant="outline" onClick={() => { tapFeedback(); handleDownload(); }} disabled={downloading} className="w-full min-h-14 py-2 gap-2 text-sm rounded-lg">
-              {downloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
+          <div className="no-print mb-5 grid grid-cols-3 gap-2">
+            <button type="button" onClick={() => { tapFeedback(); handleDownload(); }} disabled={downloading} className="flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-2 text-xs font-medium text-foreground transition-colors active:bg-accent disabled:opacity-60">
+              {downloading ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <Download className="h-5 w-5 text-primary" />}
               {downloading ? (preparedPdf ? 'Saving…' : 'Creating…') : preparedPdf ? 'Save PDF' : 'Download'}
-            </Button>
-            <Button variant="outline" onClick={onBack} className="w-full min-h-14 py-2 gap-2 text-sm rounded-lg">
-              <Pencil className="w-4 h-4" />
+            </button>
+            <button type="button" onClick={() => { tapFeedback(); handleWallpaper(); }} disabled={wallpaperBusy || !shareUrl || patient.shareRevoked} className="flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-2 text-xs font-medium text-foreground transition-colors active:bg-accent disabled:opacity-50">
+              {wallpaperBusy ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <Smartphone className="h-5 w-5 text-primary" />}
+              Wallpaper
+            </button>
+            <button type="button" onClick={() => { tapFeedback(); onBack(); }} className="flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-2 text-xs font-medium text-foreground transition-colors active:bg-accent">
+              <Pencil className="h-5 w-5 text-primary" />
               Edit details
-            </Button>
+            </button>
           </div>
+
+          <AbhaBadge patientId={patient.id} />
+          <ActiveMedications patientId={patient.id} />
 
           <div className="no-print">
             <DocumentReminder

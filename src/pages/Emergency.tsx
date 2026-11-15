@@ -464,18 +464,12 @@ const Emergency = () => {
         </div>
       </header>
 
-      {/* Access notice */}
-      <div className="bg-warning/10 border-b border-warning/30">
-        <div className="container mx-auto px-4 py-2.5 max-w-2xl flex items-start gap-2">
-          <Scale className="w-4 h-4 text-warning mt-0.5 shrink-0" />
-          <p className="text-[11px] leading-relaxed text-foreground/80">
-            <span className="font-semibold">Emergency information only · access logged.</span>{' '}
-            Medical documents are protected. Please use this information only to provide care.
-          </p>
-        </div>
-      </div>
+      <p className="border-b border-border bg-muted/50 px-4 py-2 text-center text-[11px] text-muted-foreground">
+        <Scale className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
+        {t('For care only · every visit is logged', 'केवल इलाज के लिए · हर विज़िट दर्ज होती है')}
+      </p>
 
-      <main className="container mx-auto px-4 py-6 max-w-2xl space-y-5">
+      <main className="container mx-auto px-4 py-5 max-w-2xl space-y-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
 
         {/* Identity */}
         <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
@@ -485,13 +479,22 @@ const Emergency = () => {
           <h1 className="font-display text-2xl font-bold text-foreground mt-1">
             {p.full_name}
           </h1>
-          <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-            <Field
-              label={t('Blood Group', 'रक्त समूह')}
-              value={p.blood_group || 'Not specified'}
-              icon={<Droplets className="w-4 h-4 text-destructive" />}
-              highlight
-            />
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            <div className="rounded-xl bg-destructive/10 p-3 text-center">
+              <Droplets className="mx-auto h-4 w-4 text-destructive" />
+              <p className="mt-1 font-display text-xl font-bold text-destructive">{p.blood_group || '—'}</p>
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t('Blood', 'रक्त')}</p>
+            </div>
+            <div className={`rounded-xl p-3 text-center ${p.allergies.length ? 'bg-destructive/10' : 'bg-muted/60'}`}>
+              <AlertTriangle className={`mx-auto h-4 w-4 ${p.allergies.length ? 'text-destructive' : 'text-muted-foreground'}`} />
+              <p className={`mt-1 font-display text-xl font-bold ${p.allergies.length ? 'text-destructive' : 'text-foreground'}`}>{p.allergies.length || t('None', 'नहीं')}</p>
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t('Allergies', 'एलर्जी')}</p>
+            </div>
+            <div className="rounded-xl bg-muted/60 p-3 text-center">
+              <Lock className="mx-auto h-4 w-4 text-muted-foreground" />
+              <p className="mt-1 font-display text-xl font-bold text-foreground">{p.chronic_conditions.length || t('None', 'नहीं')}</p>
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t('Conditions', 'बीमारियाँ')}</p>
+            </div>
           </div>
 
           {/* National health ID — helps hospitals look the patient up in the
@@ -789,6 +792,17 @@ const Emergency = () => {
             app.
           </p>
         </section>
+
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur no-print">
+          <div className="mx-auto grid max-w-2xl grid-cols-2 gap-2">
+            <Button asChild className="min-h-14 bg-success text-success-foreground hover:bg-success/90 text-base font-semibold rounded-xl">
+              <a href={`tel:${p.emergency_contact}`}><Phone className="mr-2 h-5 w-5" />{t('Call family', 'परिवार को कॉल')}</a>
+            </Button>
+            <Button variant="outline" className="min-h-14 text-base font-semibold rounded-xl" onClick={() => { pinInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); window.setTimeout(() => pinInputRef.current?.focus(), 350); }}>
+              <Unlock className="mr-2 h-5 w-5" />{t('Open reports', 'रिपोर्ट खोलें')}
+            </Button>
+          </div>
+        </div>
 
         {/* Privacy footer — wiping is automatic on tab close/hide */}
         <section className="text-center pt-2 pb-8">
