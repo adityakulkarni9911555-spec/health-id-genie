@@ -321,6 +321,103 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
           <div className="mb-6 no-print">
             <RecordSearch patientId={patient.id} />
           </div>
+          <div className="no-print">
+        {patient.documents && patient.documents.length > 0 && (
+          <div className="mt-6 pt-6 border-t border-border">
+            <h4 className="font-display text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-primary" />
+              Attached Documents ({patient.documents.length})
+            </h4>
+            <ul className="space-y-3">
+              {patient.documents.map((doc) => {
+                const isAnalyzing = analyzingPaths.has(doc.path);
+                const status = doc.status ?? 'pending';
+                return (
+                  <li
+                    key={doc.path}
+                    className="p-3 rounded-xl border border-border bg-card"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{doc.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(doc.size / 1024).toFixed(1)} KB
+                          {status === 'processed' && (
+                            <span className="inline-flex items-center gap-1 ml-2 text-success">
+                              <CheckCircle2 className="w-3 h-3" /> Analyzed
+                            </span>
+                          )}
+                          {status === 'failed' && (
+                            <span className="inline-flex items-center gap-1 ml-2 text-destructive">
+                              <AlertCircle className="w-3 h-3" /> Analysis failed
+                            </span>
+                          )}
+                          {(status === 'processing' || isAnalyzing) && (
+                            <span className="inline-flex items-center gap-1 ml-2 text-primary">
+                              <Loader2 className="w-3 h-3 animate-spin" /> Analyzing…
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleAnalyze(doc.path)}
+                        disabled={isAnalyzing || status === 'processing' || status === 'processed'}
+                        aria-label={status === 'processed' ? `${doc.name} already analyzed` : `Analyze ${doc.name} with AI`}
+                        title={status === 'processed' ? 'Already analyzed' : 'Analyze with AI'}
+                      >
+                        {isAnalyzing || status === 'processing' ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Sparkles className={`w-4 h-4 ${status === 'processed' ? 'text-success' : 'text-primary'}`} />
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openDocument(doc.path)}
+                        disabled={openingPath === doc.path}
+                      >
+                        {openingPath === doc.path ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <>
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            Open
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {doc.extractedData && (
+                      <div className="mt-3 pt-3 border-t border-dashed border-border">
+                        <button type="button" onClick={() => toggleReveal(doc.path)} aria-expanded={revealed.has(doc.path)}
+                          className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2 text-sm font-medium text-primary hover:bg-muted/50">
+                          {revealed.has(doc.path) ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {revealed.has(doc.path) ? 'Hide health details' : 'Reveal health details'}
+                        </button>
+                        {revealed.has(doc.path) ? <ExtractionSummary data={doc.extractedData} /> : (
+                          <p className="px-2 text-xs text-muted-foreground">Diagnoses, medicines and findings are hidden so people near your screen can't read them.</p>
+                        )}
+                        <p className="mt-2 text-[11px] text-muted-foreground">
+                          {doc.provenance?.verification_status === 'USER_VERIFIED' ? 'Reviewed by you' : 'AI-extracted'} · the original document is the source of truth
+                        </p>
+                        <ConflictReview patient={patient} doc={doc} onUpdated={setPatient} />
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+          </div>
         </section>
       )}
 
@@ -438,140 +535,6 @@ export const HealthCardPreview = ({ patient: initialPatient, onBack }: HealthCar
         </Link>
       </div>
 
-      {/* Patient Details */}
-      <div className="mt-8 form-section no-print">
-        <h3 className="font-display text-lg font-semibold text-foreground mb-4">
-          Your details
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-
-          <DetailItem label="Patient ID" value={patient.id.slice(0, 8).toUpperCase()} />
-          <DetailItem label="Full Name" value={patient.fullName} />
-          <DetailItem label="Date of Birth" value={new Date(patient.dateOfBirth).toLocaleDateString()} />
-          <DetailItem label="Gender" value={patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)} />
-          <DetailItem label="Phone" value={patient.phoneNumber} />
-          <DetailItem label="Blood Group" value={patient.bloodGroup || 'Not specified'} />
-          <DetailItem label="Height" value={patient.height ? `${patient.height} cm` : 'Not specified'} />
-          <DetailItem label="Weight" value={patient.weight ? `${patient.weight} kg` : 'Not specified'} />
-          <DetailItem label="Emergency Contact" value={patient.emergencyContact} />
-          {patient.chronicConditions.length > 0 && (
-            <DetailItem
-              label="Chronic Conditions"
-              value={patient.chronicConditions.join(', ')}
-              className="sm:col-span-2"
-            />
-          )}
-          {patient.allergies.length > 0 && (
-            <DetailItem
-              label="Allergies"
-              value={patient.allergies.join(', ')}
-              className="sm:col-span-2 md:col-span-1"
-            />
-          )}
-          {patient.insuranceProvider && (
-            <DetailItem label="Insurance Provider" value={patient.insuranceProvider} />
-          )}
-          {patient.policyNumber && (
-            <DetailItem label="Policy Number" value={patient.policyNumber} />
-          )}
-        </div>
-
-        {patient.documents && patient.documents.length > 0 && (
-          <div className="mt-6 pt-6 border-t border-border">
-            <h4 className="font-display text-base font-semibold text-foreground mb-3 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-primary" />
-              Attached Documents ({patient.documents.length})
-            </h4>
-            <ul className="space-y-3">
-              {patient.documents.map((doc) => {
-                const isAnalyzing = analyzingPaths.has(doc.path);
-                const status = doc.status ?? 'pending';
-                return (
-                  <li
-                    key={doc.path}
-                    className="p-3 rounded-xl border border-border bg-card"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-5 h-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{doc.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {(doc.size / 1024).toFixed(1)} KB
-                          {status === 'processed' && (
-                            <span className="inline-flex items-center gap-1 ml-2 text-success">
-                              <CheckCircle2 className="w-3 h-3" /> Analyzed
-                            </span>
-                          )}
-                          {status === 'failed' && (
-                            <span className="inline-flex items-center gap-1 ml-2 text-destructive">
-                              <AlertCircle className="w-3 h-3" /> Analysis failed
-                            </span>
-                          )}
-                          {(status === 'processing' || isAnalyzing) && (
-                            <span className="inline-flex items-center gap-1 ml-2 text-primary">
-                              <Loader2 className="w-3 h-3 animate-spin" /> Analyzing…
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleAnalyze(doc.path)}
-                        disabled={isAnalyzing || status === 'processing' || status === 'processed'}
-                        aria-label={status === 'processed' ? `${doc.name} already analyzed` : `Analyze ${doc.name} with AI`}
-                        title={status === 'processed' ? 'Already analyzed' : 'Analyze with AI'}
-                      >
-                        {isAnalyzing || status === 'processing' ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Sparkles className={`w-4 h-4 ${status === 'processed' ? 'text-success' : 'text-primary'}`} />
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openDocument(doc.path)}
-                        disabled={openingPath === doc.path}
-                      >
-                        {openingPath === doc.path ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            Open
-                          </>
-                        )}
-                      </Button>
-                    </div>
-
-                    {doc.extractedData && (
-                      <div className="mt-3 pt-3 border-t border-dashed border-border">
-                        <button type="button" onClick={() => toggleReveal(doc.path)} aria-expanded={revealed.has(doc.path)}
-                          className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2 text-sm font-medium text-primary hover:bg-muted/50">
-                          {revealed.has(doc.path) ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          {revealed.has(doc.path) ? 'Hide health details' : 'Reveal health details'}
-                        </button>
-                        {revealed.has(doc.path) ? <ExtractionSummary data={doc.extractedData} /> : (
-                          <p className="px-2 text-xs text-muted-foreground">Diagnoses, medicines and findings are hidden so people near your screen can't read them.</p>
-                        )}
-                        <p className="mt-2 text-[11px] text-muted-foreground">
-                          {doc.provenance?.verification_status === 'USER_VERIFIED' ? 'Reviewed by you' : 'AI-extracted'} · the original document is the source of truth
-                        </p>
-                        <ConflictReview patient={patient} doc={doc} onUpdated={setPatient} />
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-      </div>
       <details className="mt-6 border-t border-border pt-4 no-print">
         <summary className="min-h-14 flex items-center cursor-pointer text-sm font-semibold text-muted-foreground">Physical card · Coming soon</summary>
         <PrintedCardOrder patient={patient} />

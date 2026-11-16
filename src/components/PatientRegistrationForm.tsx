@@ -53,7 +53,26 @@ const patientSchema = z
 
 interface PatientRegistrationFormProps {
   onPatientRegistered: (patient: Patient) => void;
+  /** When set, the form edits this existing record instead of creating a new one. */
+  initialPatient?: Patient | null;
+  onCancel?: () => void;
 }
+
+const toFormData = (p: Patient): PatientFormData => ({
+  fullName: p.fullName || '',
+  dateOfBirth: p.dateOfBirth ? String(p.dateOfBirth).slice(0, 10) : '',
+  phoneNumber: p.phoneNumber || '',
+  gender: p.gender || '',
+  bloodGroup: p.bloodGroup || '',
+  height: p.height || '',
+  weight: p.weight || '',
+  allergies: (p.allergies || []).join(', '),
+  chronicConditions: '',
+  emergencyContact: p.emergencyContact || '',
+  insuranceProvider: p.insuranceProvider || '',
+  policyNumber: p.policyNumber || '',
+  tpaContact: p.tpaContact || '',
+});
 
 const initialFormData: PatientFormData = {
   fullName: '',
@@ -71,10 +90,11 @@ const initialFormData: PatientFormData = {
   tpaContact: '',
 };
 
-export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistrationFormProps) => {
-  const [formData, setFormData] = useState<PatientFormData>(initialFormData);
+export const PatientRegistrationForm = ({ onPatientRegistered, initialPatient, onCancel }: PatientRegistrationFormProps) => {
+  const isEdit = Boolean(initialPatient);
+  const [formData, setFormData] = useState<PatientFormData>(() => initialPatient ? toFormData(initialPatient) : initialFormData);
   const [errors, setErrors] = useState<Partial<Record<keyof PatientFormData, string>>>({});
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>(() => initialPatient?.chronicConditions ?? []);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -196,6 +216,42 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         return;
       }
       const payload = parsed.data;
+
+      if (initialPatient) {
+        const { error: updErr } = await supabase
+          .from('patients')
+          .update(rawPayload)
+          .eq('id', initialPatient.id);
+        if (updErr) {
+          toast({
+            title: updErr.code === '23505' ? 'Phone number already used' : 'Could not save changes',
+            description: updErr.code === '23505' ? 'Another record uses this phone number.' : 'Nothing was lost. Check your internet and try again.',
+            variant: 'destructive',
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        toast({ title: 'Changes saved', description: 'Your health card is up to date.' });
+        onPatientRegistered({
+          ...initialPatient,
+          fullName: payload.full_name,
+          dateOfBirth: payload.date_of_birth,
+          phoneNumber: payload.phone_number,
+          gender: payload.gender as Patient['gender'],
+          bloodGroup: (payload.blood_group || '') as Patient['bloodGroup'],
+          height: payload.height || '',
+          weight: payload.weight || '',
+          allergies: payload.allergies,
+          chronicConditions: payload.chronic_conditions,
+          emergencyContact: payload.emergency_contact,
+          insuranceProvider: payload.insurance_provider || undefined,
+          policyNumber: payload.policy_number || undefined,
+          tpaContact: payload.tpa_contact || undefined,
+          updatedAt: new Date().toISOString(),
+        });
+        setIsSubmitting(false);
+        return;
+      }
 
       const buildLocalPatient = (localId: string, createdAt: string): Patient => ({
         id: localId,
@@ -561,10 +617,11 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         />
       </div>
 
-      {!subLoading && !isPaid && pendingFiles.length >= documentLimit && (
+      {!isEdit && !subLoading && !isPaid && pendingFiles.length >= documentLimit && (
         <UpgradeBanner variant="card" reason="documents" />
       )}
 
+      {!isEdit && (
       <DocumentUpload
         documents={[]}
         onChange={() => {}}
@@ -572,6 +629,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
         onPendingChange={setPendingFiles}
         maxFiles={isPaid ? undefined : documentLimit}
       />
+      )}
 
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-foreground/80 flex gap-3">
         <Shield className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
@@ -651,7 +709,7 @@ export const PatientRegistrationForm = ({ onPatientRegistered }: PatientRegistra
               ) : (
                 <>
                   <Heart className="w-5 h-5 mr-2" />
-                  {isOnline ? 'Register Patient' : 'Save Offline'}
+                  {isEdit ? 'Save changes' : isOnline ? 'Register Patient' : 'Save Offline'}
                 </>
               )}
             </Button>

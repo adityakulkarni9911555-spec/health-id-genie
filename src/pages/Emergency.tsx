@@ -87,7 +87,12 @@ const Emergency = () => {
   const [data, setData] = useState<EmergencyPayload | null>(null);
   const [state, setState] = useState<
     'loading' | 'ready' | 'notfound' | 'error' | 'ratelimited' | 'wiped'
-  >('loading');
+  >(() => {
+    try {
+      if (window.location.hash === '#ended' || sessionStorage.getItem('medora:emergency-ended:' + (token ?? ''))) return 'wiped';
+    } catch { /* ignore */ }
+    return 'loading';
+  });
   const [reloadKey, setReloadKey] = useState(0);
   const [lang, setLang] = useState<'en' | 'hi'>('en');
   const t = (en: string, hi: string) => (lang === 'hi' ? hi : en);
@@ -135,6 +140,11 @@ const Emergency = () => {
       setViewing(null);
       setData(null);
       setState('wiped');
+      // Lock this tab for good: refresh or back must not reload the record.
+      try {
+        sessionStorage.setItem('medora:emergency-ended:' + (token ?? ''), '1');
+        window.history.replaceState(null, '', window.location.pathname + '#ended');
+      } catch { /* ignore */ }
 
       // Belt-and-suspenders: also clear any strays this route could have created.
       try {
@@ -302,6 +312,10 @@ const Emergency = () => {
 
   useEffect(() => {
     let cancelled = false;
+    // A closed session stays closed: never fetch the record again in this tab.
+    try {
+      if (window.location.hash === '#ended' || sessionStorage.getItem('medora:emergency-ended:' + (token ?? ''))) return;
+    } catch { /* ignore */ }
 
     // Watchdog: never leave the user staring at a spinner. If neither the
     // Turnstile challenge nor the lookup resolves within 8s, show the
@@ -383,12 +397,12 @@ const Emergency = () => {
           <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <ShieldAlert className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="font-display text-xl font-bold mb-2">Emergency info hidden</h1>
-          <p className="text-sm text-muted-foreground mb-4">
-            For privacy, the record was cleared from this device when you left the
-            page. Tap below to load the latest info again.
+          <h1 className="font-display text-xl font-bold mb-2">Emergency session ended</h1>
+          <p className="text-sm text-muted-foreground">
+            For patient privacy, all information was wiped from this device when the
+            page was closed or put in the background. To view it again, scan the
+            patient's QR card.
           </p>
-          <Button onClick={retry}>Show emergency info again</Button>
         </div>
       </div>
     );

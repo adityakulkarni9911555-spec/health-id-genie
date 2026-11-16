@@ -22,6 +22,7 @@ import { loadEmergencySnapshot, clearEmergencySnapshot } from '@/lib/emergencySn
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const [registeredPatient, setRegisteredPatient] = useState<Patient | null>(null);
+  const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
   const [loadingPatient, setLoadingPatient] = useState(true);
   const isOnline = useOnlineStatus();
   const [offlineQrOpen, setOfflineQrOpen] = useState(false);
@@ -65,11 +66,13 @@ const Index = () => {
   }
 
   const handlePatientRegistered = (patient: Patient) => {
+    setEditingPatient(null);
     setRegisteredPatient(patient);
   };
 
+  // Keep the current record so the form opens pre-filled; nothing is cleared.
   const handleEdit = () => {
-    setRegisteredPatient(null);
+    setEditingPatient(registeredPatient);
   };
 
   const handleSignOut = async () => {
@@ -160,6 +163,14 @@ const Index = () => {
               <div className="h-32 rounded bg-muted/50" />
             </div>
             <span className="sr-only">Loading your health card…</span>
+          </div>
+        ) : editingPatient ? (
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h1 className="font-display text-xl font-bold text-foreground">Edit details</h1>
+              <Button variant="outline" onClick={() => setEditingPatient(null)} className="min-h-12">Cancel</Button>
+            </div>
+            <PatientRegistrationForm initialPatient={editingPatient} onPatientRegistered={handlePatientRegistered} onCancel={() => setEditingPatient(null)} />
           </div>
         ) : registeredPatient ? (
           <HealthCardPreview patient={registeredPatient} onBack={handleEdit} />
