@@ -117,6 +117,61 @@ const Emergency = () => {
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const pinInputRef = useRef<HTMLInputElement>(null);
+  const [shielded, setShielded] = useState(false);
+  const [captureWarning, setCaptureWarning] = useState(false);
+
+  // Screenshot / copy deterrents. Browsers cannot fully block OS screenshots,
+  // so this blocks common shortcuts, hides content when focus leaves the page
+  // (snipping tools), warns the viewer, and relies on the session watermark.
+  useEffect(() => {
+    let warnTimer: number | undefined;
+    const warn = () => {
+      setCaptureWarning(true);
+      window.clearTimeout(warnTimer);
+      warnTimer = window.setTimeout(() => setCaptureWarning(false), 3500);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      const k = e.key.toLowerCase();
+      const mod = e.ctrlKey || e.metaKey;
+      if (
+        k === 'printscreen' ||
+        (mod && ['p', 's', 'c'].includes(k)) ||
+        (mod && e.shiftKey && ['3', '4', '5', 's'].includes(k))
+      ) {
+        e.preventDefault();
+        if (k === 'printscreen') {
+          try { navigator.clipboard.writeText(''); } catch { /* ignore */ }
+        }
+        setShielded(true);
+        warn();
+        window.setTimeout(() => setShielded(false), 1500);
+      }
+    };
+    const block = (e: Event) => { e.preventDefault(); warn(); };
+    const onBlur = () => setShielded(true);
+    const onFocus = () => setShielded(false);
+    window.addEventListener('keydown', onKey, true);
+    window.addEventListener('keyup', onKey, true);
+    document.addEventListener('contextmenu', block);
+    document.addEventListener('copy', block);
+    document.addEventListener('cut', block);
+    document.addEventListener('dragstart', block);
+    window.addEventListener('beforeprint', warn);
+    window.addEventListener('blur', onBlur);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      window.clearTimeout(warnTimer);
+      window.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('keyup', onKey, true);
+      document.removeEventListener('contextmenu', block);
+      document.removeEventListener('copy', block);
+      document.removeEventListener('cut', block);
+      document.removeEventListener('dragstart', block);
+      window.removeEventListener('beforeprint', warn);
+      window.removeEventListener('blur', onBlur);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -458,7 +513,37 @@ const Emergency = () => {
   const p = data!.patient;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="emergency-protected relative min-h-screen bg-background select-none">
+      {/* Session watermark across the whole page — screenshots stay traceable */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-30 overflow-hidden opacity-[0.06]">
+        <div className="absolute -inset-1/2 flex rotate-[-30deg] flex-col justify-center gap-16">
+          {Array.from({ length: 16 }).map((_, i) => (
+            <p key={i} className="whitespace-nowrap text-sm font-semibold tracking-widest text-foreground">
+              {`CONFIDENTIAL · SESSION ${sessionId} · ACCESS LOGGED   ·   `.repeat(4)}
+            </p>
+          ))}
+        </div>
+      </div>
+
+      {shielded && (
+        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-3 bg-background/95 px-6 text-center backdrop-blur-xl">
+          <ShieldAlert className="h-10 w-10 text-primary" />
+          <p className="font-display text-lg font-bold text-foreground">{t('Protected medical information', 'सुरक्षित चिकित्सा जानकारी')}</p>
+          <p className="max-w-xs text-sm text-muted-foreground">{t('Tap here to continue viewing. Screenshots and copying are not allowed.', 'देखना जारी रखने के लिए टैप करें। स्क्रीनशॉट और कॉपी की अनुमति नहीं है।')}</p>
+          <Button className="mt-2 min-h-12 rounded-xl px-6" onClick={() => setShielded(false)}>{t('Continue', 'जारी रखें')}</Button>
+        </div>
+      )}
+
+      {captureWarning && (
+        <div role="alert" className="fixed inset-x-4 top-4 z-[70] mx-auto flex max-w-md items-start gap-3 rounded-2xl border border-destructive/40 bg-card p-4 shadow-lg animate-in fade-in slide-in-from-top-2">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+          <div>
+            <p className="text-sm font-semibold text-foreground">{t('Screenshots are not allowed', 'स्क्रीनशॉट की अनुमति नहीं है')}</p>
+            <p className="text-xs text-muted-foreground">{t(`This page is stamped with session ${sessionId}. Any capture can be traced and this visit is logged.`, `यह पेज सत्र ${sessionId} से चिह्नित है। हर कैप्चर ट्रेस किया जा सकता है।`)}</p>
+          </div>
+        </div>
+      )}
+
       {/* Red emergency banner so it's unmistakable */}
       <header className="bg-destructive text-destructive-foreground">
         <div className="container mx-auto px-4 py-3 flex items-center gap-3">
@@ -478,10 +563,15 @@ const Emergency = () => {
         </div>
       </header>
 
-      <p className="border-b border-border bg-muted/50 px-4 py-2 text-center text-[11px] text-muted-foreground">
-        <Scale className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
-        {t('For care only · every visit is logged', 'केवल इलाज के लिए · हर विज़िट दर्ज होती है')}
-      </p>
+      <div className="border-b border-warning/30 bg-warning/10 px-4 py-2.5">
+        <div className="container mx-auto flex max-w-2xl items-center gap-2 text-xs text-foreground">
+          <ShieldAlert className="h-4 w-4 shrink-0 text-warning" />
+          <p className="leading-snug">
+            <span className="font-semibold">{t('Confidential — no screenshots or copying.', 'गोपनीय — स्क्रीनशॉट या कॉपी न करें।')}</span>{' '}
+            <span className="text-muted-foreground">{t(`For care only · visit logged · session ${sessionId}`, `केवल इलाज हेतु · विज़िट दर्ज · सत्र ${sessionId}`)}</span>
+          </p>
+        </div>
+      </div>
 
       <main className="container mx-auto px-4 py-5 max-w-2xl space-y-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
 
@@ -807,12 +897,12 @@ const Emergency = () => {
           </p>
         </section>
 
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur no-print">
-          <div className="mx-auto grid max-w-2xl grid-cols-2 gap-2">
+        <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] no-print">
+          <div className="mx-auto grid max-w-2xl grid-cols-2 gap-2 rounded-2xl border border-border bg-card/95 p-2 shadow-lg backdrop-blur">
             <Button asChild className="min-h-14 bg-success text-success-foreground hover:bg-success/90 text-base font-semibold rounded-xl">
               <a href={`tel:${p.emergency_contact}`}><Phone className="mr-2 h-5 w-5" />{t('Call family', 'परिवार को कॉल')}</a>
             </Button>
-            <Button variant="outline" className="min-h-14 text-base font-semibold rounded-xl" onClick={() => { pinInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); window.setTimeout(() => pinInputRef.current?.focus(), 350); }}>
+            <Button className="min-h-14 text-base font-semibold rounded-xl" onClick={() => { pinInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); window.setTimeout(() => pinInputRef.current?.focus(), 350); }}>
               <Unlock className="mr-2 h-5 w-5" />{t('Open reports', 'रिपोर्ट खोलें')}
             </Button>
           </div>

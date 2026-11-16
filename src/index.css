@@ -418,3 +418,9 @@
     scroll-behavior: auto !important;
   }
 }
+
+@media print {
+  .emergency-protected { display: none !important; }
+}
+.emergency-protected input { user-select: text; -webkit-user-select: text; }
+.emergency-protected { -webkit-touch-callout: none; }
