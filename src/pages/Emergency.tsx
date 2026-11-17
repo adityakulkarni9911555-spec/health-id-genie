@@ -12,7 +12,6 @@ import {
   ShieldAlert,
   Lock,
   Unlock,
-  Scale,
   Landmark,
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
