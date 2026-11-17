@@ -207,19 +207,41 @@ const Emergency = () => {
           .forEach((k) => sessionStorage.removeItem(k));
       } catch { /* storage unavailable */ }
     };
+    // A responder tapping a "Call" button leaves for the phone dialer. Give
+    // that call a bounded grace period (3 min hidden) instead of wiping
+    // instantly; any other hide/close still wipes at once.
+    const CALL_GRACE_MS = 3 * 60 * 1000;
+    let hiddenTimer: number | undefined;
+    const inCallGrace = () => Date.now() < ((window as any).__medoraCallGraceUntil ?? 0);
     const onVisibility = () => {
-      if (document.visibilityState === 'hidden') wipe();
+      if (document.visibilityState === 'hidden') {
+        if (inCallGrace()) {
+          (window as any).__medoraCallGraceUntil = 0;
+          hiddenTimer = window.setTimeout(wipe, CALL_GRACE_MS);
+        } else wipe();
+      } else if (hiddenTimer) {
+        window.clearTimeout(hiddenTimer);
+        hiddenTimer = undefined;
+      }
     };
+    const onBeforeUnload = () => { if (!inCallGrace()) wipe(); };
+    const markCall = (e: Event) => {
+      const a = (e.target as HTMLElement | null)?.closest?.('a[href^="tel:"]');
+      if (a) (window as any).__medoraCallGraceUntil = Date.now() + 5000;
+    };
+    document.addEventListener('click', markCall, true);
     // `beforeunload` also disables bfcache in Chrome/Safari, so a "Back" from
     // another tab re-runs the challenge + lookup rather than showing cached data.
     window.addEventListener('pagehide', wipe);
-    window.addEventListener('beforeunload', wipe);
+    window.addEventListener('beforeunload', onBeforeUnload);
     document.addEventListener('visibilitychange', onVisibility);
 
     return () => {
       window.removeEventListener('pagehide', wipe);
-      window.removeEventListener('beforeunload', wipe);
+      window.removeEventListener('beforeunload', onBeforeUnload);
       document.removeEventListener('visibilitychange', onVisibility);
+      document.removeEventListener('click', markCall, true);
+      if (hiddenTimer) window.clearTimeout(hiddenTimer);
       metas.forEach((m) => m.remove());
       // Note: do NOT call wipe() here — React StrictMode double-invokes effects
       // in dev, and wiping on cleanup would reset an in-flight lookup to
