@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { EmergencyAccessRequest } from '@/components/EmergencyAccessRequest';
 import { supabase } from '@/integrations/supabase/client';
 import {
   AlertTriangle,
@@ -322,6 +323,12 @@ const Emergency = () => {
       setOverrideBusy(false);
     }
   };
+
+  const handleRequestApproved = useCallback((payload: EmergencyPayload) => {
+    setData(payload);
+    setShowOverride(false);
+    if (payload.documents.length > 0) setViewing(payload.documents[0]);
+  }, []);
 
   const submitPin = async () => {
     const isPass = /^[0-9]{6}$/.test(pinInput);
@@ -805,75 +812,13 @@ const Emergency = () => {
                     Request clinical access
                   </Button>
                 ) : (
-                  overrideLogged ? (
-                  <div className="space-y-3 rounded-xl border border-border bg-muted/40 p-4" role="status" aria-live="polite">
-                    <p className="text-sm font-semibold text-foreground">
-                      {t('Access request logged at', 'पहुँच अनुरोध दर्ज हुआ:')} {overrideLogged}
-                    </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {t(
-                        'The patient will see this request in their access history. Reports stay locked until the PIN or a doctor pass is entered.',
-                        'मरीज़ यह अनुरोध अपनी एक्सेस हिस्ट्री में देखेगा। PIN या डॉक्टर पास डालने तक रिपोर्ट बंद रहेंगी।',
-                      )}
-                    </p>
-                    <ol className="text-sm text-foreground list-decimal pl-5 space-y-1">
-                      <li>{t('Treat using blood group, allergies and conditions shown above.', 'ऊपर दिए ब्लड ग्रुप, एलर्जी और बीमारियों के अनुसार इलाज करें।')}</li>
-                      <li>{t('Call the emergency contact and ask for the 4-digit PIN or a 6-digit doctor pass.', 'इमरजेंसी संपर्क को कॉल करें और 4 अंकों का PIN या 6 अंकों का डॉक्टर पास माँगें।')}</li>
-                      <li>{t('Enter it in the box above to open reports.', 'रिपोर्ट खोलने के लिए ऊपर के बॉक्स में डालें।')}</li>
-                    </ol>
-                    {data!.patient.emergency_contact && (
-                      <Button asChild className="w-full min-h-[56px] text-base font-semibold">
-                        <a href={`tel:${data!.patient.emergency_contact}`}>{t('Call emergency contact', 'इमरजेंसी संपर्क को कॉल करें')}</a>
-                      </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      className="w-full min-h-[56px]"
-                      onClick={() => { setOverrideLogged(null); setShowOverride(false); window.setTimeout(() => pinInputRef.current?.focus(), 0); }}
-                    >
-                      {t('I have the PIN / pass', 'मेरे पास PIN / पास है')}
-                    </Button>
-                  </div>
-                  ) : (
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold text-foreground">
-                      Patient unconscious or can't give the PIN?
-                    </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      A typed phone number can't verify who you are, so it won't unlock reports.
-                      Your request is logged and the patient can see it. Call the emergency
-                      contact for the PIN; verified clinician access is coming soon.
-                    </p>
-                    <Input
-                      inputMode="numeric"
-                      autoComplete="tel"
-                      value={clinicianPhone}
-                      onChange={(e) => setClinicianPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      placeholder="Your mobile number (10 digits)"
-                      aria-label="Clinician mobile number"
-                      className="min-h-[56px] text-base"
-                    />
-                    <Input
-                      value={overrideReason}
-                      onChange={(e) => setOverrideReason(e.target.value.slice(0, 200))}
-                      placeholder="Hospital / reason (optional)"
-                      aria-label="Hospital or reason"
-                      className="min-h-[56px] text-base"
-                    />
-                    <Button
-                      variant="destructive"
-                      onClick={submitOverride}
-                      disabled={overrideBusy}
-                      className="w-full min-h-[56px] text-base font-semibold"
-                    >
-                      {overrideBusy && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
-                      Log access request
-                    </Button>
-                    {overrideError && (
-                      <p className="text-sm text-destructive font-medium">{overrideError}</p>
-                    )}
-                  </div>
-                  )
+                  <EmergencyAccessRequest
+                    token={token!}
+                    t={t}
+                    emergencyContact={data!.patient.emergency_contact}
+                    onApproved={handleRequestApproved}
+                    onHavePin={() => { setShowOverride(false); window.setTimeout(() => pinInputRef.current?.focus(), 0); }}
+                  />
                 )}
               </div>
             </div>

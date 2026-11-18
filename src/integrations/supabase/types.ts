@@ -380,6 +380,75 @@ export type Database = {
           },
         ]
       }
+      emergency_access_requests: {
+        Row: {
+          access_until: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          expires_at: string
+          facility_id: string | null
+          facility_name: string
+          facility_verified: boolean
+          id: string
+          patient_id: string
+          poll_secret_hash: string
+          reason: string
+          requester_kind: string
+          requester_phone: string
+          status: string
+        }
+        Insert: {
+          access_until?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          expires_at?: string
+          facility_id?: string | null
+          facility_name: string
+          facility_verified?: boolean
+          id?: string
+          patient_id: string
+          poll_secret_hash: string
+          reason: string
+          requester_kind: string
+          requester_phone: string
+          status?: string
+        }
+        Update: {
+          access_until?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          expires_at?: string
+          facility_id?: string | null
+          facility_name?: string
+          facility_verified?: boolean
+          id?: string
+          patient_id?: string
+          poll_secret_hash?: string
+          reason?: string
+          requester_kind?: string
+          requester_phone?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_access_requests_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "healthcare_facilities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emergency_access_requests_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       emergency_override_logs: {
         Row: {
           clinician_phone: string
@@ -523,6 +592,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      healthcare_facilities: {
+        Row: {
+          city: string | null
+          created_at: string
+          facility_type: string
+          id: string
+          name: string
+          ownership: string
+          registration_id: string | null
+          state: string
+          verified: boolean
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          facility_type: string
+          id?: string
+          name: string
+          ownership: string
+          registration_id?: string | null
+          state?: string
+          verified?: boolean
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          facility_type?: string
+          id?: string
+          name?: string
+          ownership?: string
+          registration_id?: string | null
+          state?: string
+          verified?: boolean
+        }
+        Relationships: []
       }
       patient_clinician_access: {
         Row: {
@@ -1029,6 +1134,10 @@ export type Database = {
       clear_document_pin: { Args: { _patient_id: string }; Returns: boolean }
       create_doctor_pass: {
         Args: { _minutes: number; _patient_id: string }
+        Returns: Json
+      }
+      decide_emergency_request: {
+        Args: { _approve: boolean; _request_id: string }
         Returns: Json
       }
       doctor_pass_status: { Args: { _patient_id: string }; Returns: Json }

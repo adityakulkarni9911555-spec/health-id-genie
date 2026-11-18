@@ -14,7 +14,24 @@ const InputSchema = z.object({
       reason: z.string().trim().max(200).optional(),
     })
     .optional(),
+  // Patient-approval flow: responder asks, patient approves in their app.
+  access_request: z
+    .object({
+      phone: z.string().regex(/^[6-9][0-9]{9}$/),
+      kind: z.enum(['hospital', 'clinic']),
+      facility_name: z.string().trim().min(3).max(120),
+      facility_id: z.string().uuid().optional(),
+      reason: z.string().trim().min(5).max(200),
+    })
+    .optional(),
+  poll: z.object({ request_id: z.string().uuid(), secret: z.string().min(32).max(128) }).optional(),
+  facility_search: z.string().trim().min(2).max(60).optional(),
 });
+
+const sha256 = async (v: string) => {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
+  return Array.from(new Uint8Array(d)).map((b) => b.toString(16).padStart(2, '0')).join('');
+};
 
 const jsonResponse = (body: unknown, status: number, extraHeaders: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
@@ -105,9 +122,46 @@ Deno.serve(async (req) => {
       { auth: { persistSession: false } },
     );
 
+    // Facility registry search (no patient data). Token must still be valid.
+    if (parsed.data.facility_search) {
+      const { data: tp } = await admin.from('patients').select('id, share_revoked').eq('share_token', parsed.data.token).maybeSingle();
+      if (!tp || tp.share_revoked) return notFound();
+      const q = parsed.data.facility_search.replace(/[%_,()]/g, ' ');
+      const { data: rows } = await admin
+        .from('healthcare_facilities')
+        .select('id, name, facility_type, ownership, city, state')
+        .eq('verified', true)
+        .ilike('name', `%${q}%`)
+        .limit(8);
+      return jsonResponse({ facilities: rows ?? [] }, 200);
+    }
+
+    // Poll a pending request (secret-protected, so it skips the lookup rate limit).
+    let pollStatus: string | null = null;
+    let pollAccessUntil: string | null = null;
+    if (parsed.data.poll) {
+      const { data: rq } = await admin
+        .from('emergency_access_requests')
+        .select('id, patient_id, status, expires_at, access_until, poll_secret_hash, patients!inner(share_token, share_revoked)')
+        .eq('id', parsed.data.poll.request_id)
+        .maybeSingle();
+      const pt = (rq as any)?.patients;
+      if (!rq || !pt || pt.share_token !== parsed.data.token || pt.share_revoked) return notFound();
+      if (rq.poll_secret_hash !== (await sha256(parsed.data.poll.secret))) return notFound();
+      let st = rq.status as string;
+      if (st === 'pending' && new Date(rq.expires_at).getTime() < Date.now()) {
+        await admin.from('emergency_access_requests').update({ status: 'expired' }).eq('id', rq.id).eq('status', 'pending');
+        st = 'expired';
+      }
+      if (st === 'approved' && (!rq.access_until || new Date(rq.access_until).getTime() < Date.now())) st = 'access_ended';
+      if (st !== 'approved') return jsonResponse({ request_status: st }, 200);
+      pollStatus = 'approved';
+      pollAccessUntil = rq.access_until;
+    }
+
     // 2) Rate limit (per token + per IP, sliding windows).
     const ip_hash = rawIp ? await hashIp(rawIp) : 'unknown';
-    const { data: rl, error: rlErr } = await admin.rpc('check_emergency_rate_limit', {
+    const { data: rl, error: rlErr } = pollStatus ? { data: { ok: true }, error: null } : await admin.rpc('check_emergency_rate_limit', {
       _ip_hash: ip_hash,
       _token: parsed.data.token,
     });
@@ -125,7 +179,7 @@ Deno.serve(async (req) => {
     }
 
     // 3) Turnstile check (only enforced if TURNSTILE_SECRET_KEY is set).
-    const challenge = await verifyTurnstile(parsed.data.turnstile_token, rawIp);
+    const challenge = pollStatus ? { ok: true } as { ok: boolean; reason?: string } : await verifyTurnstile(parsed.data.turnstile_token, rawIp);
     if (!challenge.ok) {
       return jsonResponse({ error: 'challenge_required', reason: challenge.reason }, 401);
     }
@@ -161,7 +215,84 @@ Deno.serve(async (req) => {
       attempts_left?: number;
     };
     // Documents are never public: they open only with a patient-set PIN entered correctly.
-    let docsUnlocked = pinResult.ok && pinResult.reason !== 'no_pin';
+    let docsUnlocked = (pinResult.ok && pinResult.reason !== 'no_pin') || pollStatus === 'approved';
+    if (pollStatus === 'approved') {
+      await admin.from('audit_events').insert({
+        patient_id: patient.id,
+        actor_role: 'requesting_clinician',
+        action: 'EMERGENCY_REQUEST_REPORTS_OPENED',
+        access_method: 'patient_approval',
+        resource_type: 'emergency_access_request',
+        resource_id: parsed.data.poll!.request_id,
+        ip_hash: rawIp ? ip_hash : null,
+        user_agent: ua?.slice(0, 500) ?? null,
+      });
+    }
+
+    // 5c) New approval request: the patient decides in their Medora app.
+    let requestId: string | null = null;
+    let requestSecret: string | null = null;
+    let requestStatus: string | null = null;
+    if (!docsUnlocked && parsed.data.access_request) {
+      const ar = parsed.data.access_request;
+      const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { count } = await admin
+        .from('emergency_access_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('patient_id', patient.id)
+        .gte('created_at', since);
+      if ((count ?? 0) >= 3) {
+        requestStatus = 'limit';
+      } else {
+        let verified = false;
+        let facilityName = ar.facility_name;
+        if (ar.facility_id) {
+          const { data: f } = await admin
+            .from('healthcare_facilities')
+            .select('id, name, facility_type, verified')
+            .eq('id', ar.facility_id)
+            .maybeSingle();
+          if (f?.verified && f.facility_type === ar.kind) {
+            verified = true;
+            facilityName = f.name;
+          }
+        }
+        requestSecret = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+          .map((b) => b.toString(16).padStart(2, '0')).join('');
+        const { data: ins, error: insErr } = await admin
+          .from('emergency_access_requests')
+          .insert({
+            patient_id: patient.id,
+            requester_phone: ar.phone,
+            requester_kind: ar.kind,
+            facility_name: facilityName,
+            facility_id: verified ? ar.facility_id : null,
+            facility_verified: verified,
+            reason: ar.reason,
+            poll_secret_hash: await sha256(requestSecret),
+          })
+          .select('id')
+          .single();
+        if (insErr || !ins) {
+          console.error('request insert failed', insErr);
+          return jsonResponse({ error: 'server_error' }, 500);
+        }
+        requestId = ins.id;
+        requestStatus = 'pending';
+        await admin.from('audit_events').insert({
+          patient_id: patient.id,
+          actor_role: 'requesting_clinician',
+          action: 'EMERGENCY_REQUEST_SENT',
+          access_method: verified ? 'verified_facility' : 'unverified_facility',
+          resource_type: 'emergency_access_request',
+          resource_id: ins.id,
+          reason: ar.reason,
+          ip_hash: rawIp ? ip_hash : null,
+          user_agent: ua?.slice(0, 500) ?? null,
+          metadata: { facility: facilityName, facility_verified: verified, kind: ar.kind },
+        });
+      }
+    }
     let overrideStatus: string | null = null;
 
     // 5a) Temporary doctor pass — a short-lived alternative to the permanent PIN.
@@ -288,6 +419,10 @@ Deno.serve(async (req) => {
         pass_status: passStatus,
         pass_expires_at: passExpiresAt,
         pass_attempts_left: passAttemptsLeft,
+        request_id: requestId,
+        request_secret: requestSecret,
+        request_status: pollStatus ?? requestStatus,
+        access_until: pollAccessUntil,
       },
       200,
     );
