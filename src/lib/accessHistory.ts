@@ -36,6 +36,14 @@ export function describeAudit(row: AuditRow): AccessEvent {
       return { ...base, kind: 'break_glass', title: 'Doctor pass cancelled', detail: 'The code no longer works.' };
     case 'BREAK_GLASS_REQUESTED':
       return { ...base, kind: 'break_glass', title: 'Clinical access requested', detail: 'The person was not verified, so no reports were unlocked.' };
+    case 'EMERGENCY_REQUEST_SENT':
+      return { ...base, kind: 'break_glass', title: 'Doctor asked to see your reports', detail: 'A responder sent you an access request from your emergency QR.' };
+    case 'EMERGENCY_REQUEST_APPROVED':
+      return { ...base, kind: 'break_glass', title: 'You approved a doctor request', detail: 'Reports opened for 15 minutes.' };
+    case 'EMERGENCY_REQUEST_REJECTED':
+      return { ...base, kind: 'break_glass', title: 'You rejected a doctor request', detail: 'Reports stayed locked.' };
+    case 'EMERGENCY_REQUEST_REPORTS_OPENED':
+      return { ...base, kind: 'break_glass', title: 'Reports opened after your approval', detail: 'The approved doctor opened your reports.' };
     case 'AI_EXTRACTION':
       return { ...base, kind: 'ai', title: 'You analysed a document', detail: 'Read by Medora AI from your own account.' };
     default:

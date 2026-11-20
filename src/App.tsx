@@ -19,6 +19,7 @@ const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const Emergency = lazy(() => import("./pages/Emergency"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const AdminCardOrders = lazy(() => import("./pages/AdminCardOrders"));
+const AdminFacilities = lazy(() => import("./pages/AdminFacilities"));
 const PrivacyCenter = lazy(() => import("./pages/PrivacyCenter"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -96,6 +97,7 @@ const AnimatedRoutes = () => {
         <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/admin/card-orders" element={<AdminCardOrders />} />
+        <Route path="/admin/facilities" element={<AdminFacilities />} />
 
         <Route path="/blog/benefits-of-personal-health-records" element={<BlogBenefitsPHR />} />
         <Route path="/blog/digital-medical-id-vs-bracelets" element={<BlogDigitalIdVsBracelets />} />

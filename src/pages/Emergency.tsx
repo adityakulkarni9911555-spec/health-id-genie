@@ -48,6 +48,8 @@ interface EmergencyPayload {
   pass_status?: string | null;
   pass_attempts_left?: number | null;
   override_status?: string | null;
+  /** When a patient-approved window stops working. */
+  access_until?: string | null;
 }
 
 /** Show only the first 2 and last 3 digits: +91 98••• ••214 */
@@ -85,6 +87,8 @@ const Emergency = () => {
   const [searchParams] = useSearchParams();
   const shouldOpenProtectedReport = searchParams.get('view') === 'report';
   const [data, setData] = useState<EmergencyPayload | null>(null);
+  // Set by the wipe handler so an finished approval window can lock this tab.
+  const lockRef = useRef<() => void>(() => {});
   const [state, setState] = useState<
     'loading' | 'ready' | 'notfound' | 'error' | 'ratelimited' | 'wiped'
   >(() => {
@@ -208,6 +212,7 @@ const Emergency = () => {
           .forEach((k) => sessionStorage.removeItem(k));
       } catch { /* storage unavailable */ }
     };
+    lockRef.current = wipe;
     // A responder tapping a "Call" button leaves for the phone dialer. Give
     // that call a bounded grace period (3 min hidden) instead of wiping
     // instantly; any other hide/close still wipes at once.
@@ -328,6 +333,12 @@ const Emergency = () => {
     setData(payload);
     setShowOverride(false);
     if (payload.documents.length > 0) setViewing(payload.documents[0]);
+    // The patient's approval is time-boxed. When the window ends, lock this tab
+    // exactly like closing it would, so the record cannot linger on screen.
+    const until = payload.access_until ? new Date(payload.access_until).getTime() : 0;
+    if (until > 0) {
+      window.setTimeout(() => lockRef.current(), Math.max(0, until - Date.now()) + 1500);
+    }
   }, []);
 
   const submitPin = async () => {
