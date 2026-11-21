@@ -110,3 +110,14 @@
 - [x] Debug APK v1.4 built (versionCode 5, versionName 1.4, minSdk 22, target 34): Java compiled clean, package metadata and signature verified, saved copy hash-identical to the build output. Delivered medora-debug-v1.4.apk.
 - [ ] Physical install still needed to feel the dark-mode launch, haptics and keyboard behavior; the APK loads the published site, so the recent website screens (shield logo, Profile cards, full-screen QR, record filters) appear there only after publishing is authorised.
 
+
+## Emergency access approval flow (2026-11-20)
+- [x] Responder side verified in the browser: the request form (hospital/clinic, +91 mobile, facility name, reason) sends a request; the patient's in-app pop-up shows facility, verified badge, masked number, reason and countdown; Approve opens the responder's protected viewer with watermark and identity shielding; Reject leaves reports locked and clears the dialog.
+- [x] Audit trail verified: EMERGENCY_REQUEST_SENT then APPROVED/REJECTED then REPORTS_OPENED; the access history page now reads "Doctor asked to see your reports", "You approved a doctor request", "You rejected a doctor request", "Reports opened after your approval".
+- [x] 15-minute window enforced server-side: with the window cut short, the responder's poll returns access_ended and zero documents.
+- [x] Admin registry page /admin/facilities: add facility (name, type, ownership, city, state, registration number) marked verified, search, toggle verified, delete; a verified name appears in the responder's search dropdown as "Verified registered facility" and the patient sees the Verified badge. Test facility removed afterwards.
+- [x] Changed-file ESLint clean for AdminFacilities.tsx, accessHistory.ts and App.tsx; the remaining `any` findings in Emergency.tsx / EmergencyAccessRequest.tsx predate this round. Test request rows removed; audit history untouched.
+- [ ] Responder's tab auto-locks when the 15-minute window ends: the scheduled lock reuses the existing wipe handler but was not exercised on screen; only the server-side cut-off was verified.
+- [ ] No notification when the patient's app is closed; a responder with no answer falls back to calling the emergency contact.
+- [ ] Hospital registry is empty: real government/private facility data must be added by the team before "verified" means anything.
+- [ ] Nothing published this round; the Android app shows these screens only after publishing is authorised.
