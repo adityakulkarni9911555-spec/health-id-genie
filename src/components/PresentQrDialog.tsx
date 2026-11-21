@@ -1,17 +1,37 @@
+import { useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Droplets, Phone, AlertTriangle, X } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { publicEmergencyUrl } from '@/lib/publicUrl';
 import type { Patient } from '@/types/patient';
 
 export function PresentQrDialog({ patient, open, onOpenChange }: { patient: Patient; open: boolean; onOpenChange: (v: boolean) => void }) {
+  // On Android, the hardware back button should close this screen instead of
+  // leaving the app or doing nothing.
+  useEffect(() => {
+    if (!open || !Capacitor.isNativePlatform()) return;
+    const handle = App.addListener('backButton', () => onOpenChange(false));
+    return () => { handle.then(h => h.remove()); };
+  }, [open, onOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-none w-screen h-[100dvh] sm:h-auto sm:max-w-md sm:rounded-2xl rounded-none border-0 p-6 flex flex-col items-center justify-center gap-5 [&>button]:hidden">
-        <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} aria-label="Close" className="absolute right-3 top-3 h-14 w-14">
-          <X className="!h-6 !w-6" />
-        </Button>
+        {/* Wrapped in a div: DialogContent hides its direct-child buttons (the built-in close), so the wrapper keeps this one visible. */}
+        <div className="absolute right-4 z-10" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={() => onOpenChange(false)}
+            aria-label="Close"
+            className="h-12 w-12 rounded-full shadow-sm"
+          >
+            <X className="!h-6 !w-6" />
+          </Button>
+        </div>
         <div className="text-center">
           <DialogTitle className="font-display text-2xl font-bold">{patient.fullName}</DialogTitle>
           <DialogDescription className="mt-1">Scan for emergency information</DialogDescription>

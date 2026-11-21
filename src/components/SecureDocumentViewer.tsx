@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Eye, EyeOff, X, ShieldAlert, Loader2 } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { getDocument, GlobalWorkerOptions, type PDFDocumentProxy } from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { Button } from '@/components/ui/button';
@@ -183,9 +185,14 @@ export const SecureDocumentViewer = ({
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKey);
+    // Android hardware back button closes the viewer.
+    const backHandle = Capacitor.isNativePlatform()
+      ? App.addListener('backButton', () => onClose())
+      : null;
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
+      backHandle?.then(h => h.remove());
     };
   }, [onClose]);
 
