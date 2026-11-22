@@ -9,7 +9,7 @@ import {
   AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { ShieldAlert, BadgeCheck } from 'lucide-react';
+import { ShieldAlert, BadgeCheck, Building2, Phone, FileText, Clock, Check, X, AlertTriangle } from 'lucide-react';
 
 type Req = {
   id: string; facility_name: string; facility_verified: boolean; requester_kind: string;
@@ -78,29 +78,63 @@ export default function EmergencyRequestPrompt() {
     void load();
   };
 
+  const urgent = secs < 60;
+  const pct = Math.min(100, (secs / 180) * 100);
   return (
     <AlertDialog open>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5 text-destructive" /> Emergency access request</AlertDialogTitle>
-          <AlertDialogDescription asChild>
-            <div className="space-y-2 text-sm">
-              <p className="flex items-center gap-1 font-medium text-foreground">
-                {current.facility_name}
-                {current.facility_verified
-                  ? <span className="inline-flex items-center gap-1 text-xs text-primary"><BadgeCheck className="h-4 w-4" />Verified</span>
-                  : <span className="text-xs text-muted-foreground">(not verified)</span>}
-              </p>
-              <p>{current.requester_kind === 'clinic' ? 'Clinic' : 'Hospital'} · {masked}</p>
-              <p>Reason: {current.reason}</p>
-              <p>Approving opens your reports to them for 15 minutes. Expires in {Math.floor(secs / 60)}:{String(secs % 60).padStart(2, '0')}.</p>
+      <AlertDialogContent className="max-w-[calc(100vw-1.5rem)] gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-md">
+        <div className="h-1 w-full bg-muted">
+          <div className={`h-full transition-all duration-1000 ${urgent ? 'bg-destructive' : 'bg-primary'}`} style={{ width: `${pct}%` }} />
+        </div>
+        <div className="space-y-4 p-5">
+          <AlertDialogHeader className="space-y-3 text-left">
+            <div className="flex items-center justify-between gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-destructive/10">
+                <ShieldAlert className="h-6 w-6 text-destructive" />
+              </span>
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold tabular-nums ${urgent ? 'bg-destructive/10 text-destructive' : 'bg-muted text-foreground'}`}>
+                <Clock className="h-4 w-4" />{Math.floor(secs / 60)}:{String(secs % 60).padStart(2, '0')}
+              </span>
             </div>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="gap-2">
-          <Button variant="outline" className="min-h-14" disabled={busy} onClick={() => decide(false)}>Reject</Button>
-          <Button className="min-h-14" disabled={busy} onClick={() => decide(true)}>Approve</Button>
-        </AlertDialogFooter>
+            <AlertDialogTitle className="text-xl leading-tight">Someone wants to see your reports</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">A responder scanned your emergency QR and asked for access.</AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="divide-y divide-border rounded-2xl border border-border bg-muted/40">
+            <div className="flex items-start gap-3 p-3">
+              <Building2 className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground">{current.requester_kind === 'clinic' ? 'Clinic' : 'Hospital'}</p>
+                <p className="truncate font-semibold text-foreground">{current.facility_name}</p>
+              </div>
+              {current.facility_verified
+                ? <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"><BadgeCheck className="h-3.5 w-3.5" />Verified</span>
+                : <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive"><AlertTriangle className="h-3.5 w-3.5" />Not verified</span>}
+            </div>
+            <div className="flex items-center gap-3 p-3">
+              <Phone className="h-5 w-5 shrink-0 text-muted-foreground" />
+              <div><p className="text-xs text-muted-foreground">Phone</p><p className="font-medium tabular-nums text-foreground">{masked}</p></div>
+            </div>
+            <div className="flex items-start gap-3 p-3">
+              <FileText className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+              <div className="min-w-0"><p className="text-xs text-muted-foreground">Reason</p><p className="break-words font-medium text-foreground">{current.reason}</p></div>
+            </div>
+          </div>
+
+          {!current.facility_verified && (
+            <p className="rounded-xl bg-destructive/10 p-3 text-xs text-destructive">This hospital is not in our verified list. Approve only if you expect this request.</p>
+          )}
+          <p className="text-xs text-muted-foreground">If you approve, they can view your reports for 15 minutes only. You can see this in your access history.</p>
+
+          <AlertDialogFooter className="grid grid-cols-2 gap-3 sm:space-x-0">
+            <Button variant="outline" className="min-h-14 rounded-2xl text-base" disabled={busy} onClick={() => decide(false)}>
+              <X className="mr-1 h-5 w-5" />Reject
+            </Button>
+            <Button className="min-h-14 rounded-2xl text-base" disabled={busy} onClick={() => decide(true)}>
+              <Check className="mr-1 h-5 w-5" />Approve
+            </Button>
+          </AlertDialogFooter>
+        </div>
       </AlertDialogContent>
     </AlertDialog>
   );
