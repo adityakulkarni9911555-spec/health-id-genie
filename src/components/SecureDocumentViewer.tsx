@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Eye, EyeOff, X, ShieldAlert, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, X, ShieldAlert, ShieldCheck, Loader2 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { getDocument, GlobalWorkerOptions, type PDFDocumentProxy } from 'pdfjs-dist';
@@ -136,12 +136,16 @@ const PdfDocument = ({ url, revealHeader }: { url: string; revealHeader: boolean
 };
 
 const IdentityShield = () => (
-  <div className="absolute inset-x-0 top-0 h-[18%] min-h-[90px] pointer-events-none">
-    <div className="absolute inset-0 backdrop-blur-xl bg-foreground/20" />
-    <div className="absolute inset-0 flex items-center justify-center">
-      <span className="text-[11px] font-semibold tracking-wide uppercase text-background bg-foreground/60 rounded-full px-3 py-1">
-        Patient identity shielded
+  <div className="absolute inset-x-0 top-0 h-[26%] min-h-[120px] pointer-events-none overflow-hidden">
+    <div className="absolute inset-0 bg-card/90 backdrop-blur-2xl" />
+    <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,hsl(var(--muted))_0_10px,transparent_10px_20px)] opacity-60" />
+    <div className="absolute inset-x-0 bottom-0 h-px bg-border" />
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 px-4 text-center">
+      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/5">
+        <ShieldCheck className="h-5 w-5 text-primary" />
       </span>
+      <span className="text-xs font-semibold text-foreground">Patient identity protected</span>
+      <span className="text-[10px] text-muted-foreground">Name, address and phone hidden</span>
     </div>
   </div>
 );

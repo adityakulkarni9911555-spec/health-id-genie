@@ -16,6 +16,36 @@ type Req = {
   requester_phone: string; reason: string; expires_at: string;
 };
 
+/** Short two-tone chime so the request is noticed even if the screen isn't watched. */
+function chime() {
+  try {
+    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new Ctx();
+    [880, 660].forEach((f, i) => {
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
+      const t = ctx.currentTime + i * 0.25;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      o.start(t); o.stop(t + 0.24);
+    });
+    window.setTimeout(() => void ctx.close(), 800);
+  } catch { /* audio unavailable */ }
+}
+
+function alertNewRequest(r: Req) {
+  chime();
+  // System notification while Medora is open in the background (no patient details in the text).
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && document.hidden) {
+    try {
+      new Notification('Emergency access request', {
+        body: `${r.requester_kind === 'clinic' ? 'A clinic' : 'A hospital'} is asking to see your reports. Open Medora to approve or reject.`,
+        icon: '/favicon.ico', tag: `medora-emergency-${r.id}`, requireInteraction: true,
+      });
+    } catch { /* unavailable */ }
+  }
+}
+
 /** Signed-in patient: shows pending emergency access requests to approve or reject. */
 export default function EmergencyRequestPrompt() {
   const { user } = useAuth();
@@ -33,7 +63,8 @@ export default function EmergencyRequestPrompt() {
       .order('created_at', { ascending: true });
     setQueue((prev) => {
       const next = (data ?? []) as Req[];
-      if (next.some((r) => !prev.find((p) => p.id === r.id))) tapFeedback(400);
+      const fresh = next.filter((r) => !prev.find((p) => p.id === r.id));
+      if (fresh.length) { tapFeedback(400); alertNewRequest(fresh[0]); }
       return next;
     });
   }, []);
@@ -41,6 +72,9 @@ export default function EmergencyRequestPrompt() {
   useEffect(() => {
     if (!user) { setQueue([]); return; }
     void load();
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      void Notification.requestPermission().catch(() => undefined);
+    }
     const channel = supabase
       .channel(`emergency-requests-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'emergency_access_requests' }, () => void load())
