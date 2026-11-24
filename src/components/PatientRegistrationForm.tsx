@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/FormInput';
 import { FormSelect } from '@/components/ui/FormSelect';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Patient, PatientFormData, BLOOD_GROUPS } from '@/types/patient';
