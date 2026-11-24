@@ -370,6 +370,17 @@ Deno.serve(async (req) => {
       });
     }
 
+    // AI summaries come from the derived documents read model, only once unlocked.
+    const meta = new Map<string, { summary: string | null; document_type: string | null; document_date: string | null; provider_name: string | null }>();
+    if (docsUnlocked) {
+      const { data: rows } = await admin
+        .from('documents')
+        .select('storage_path, summary, document_type, document_date, provider_name')
+        .eq('patient_id', patient.id)
+        .eq('status', 'active');
+      for (const r of rows ?? []) meta.set(r.storage_path, r);
+    }
+
     const signed = docsUnlocked
       ? await Promise.all(
           docs.map(async (d) => {
@@ -384,6 +395,10 @@ Deno.serve(async (req) => {
               type: d.type ?? null,
               size: d.size ?? null,
               uploaded_at: d.uploaded_at ?? null,
+              summary: meta.get(d.path)?.summary?.slice(0, 600) ?? null,
+              document_type: meta.get(d.path)?.document_type ?? null,
+              document_date: meta.get(d.path)?.document_date ?? null,
+              provider_name: meta.get(d.path)?.provider_name ?? null,
             };
           }),
         )

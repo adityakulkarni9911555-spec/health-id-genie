@@ -27,6 +27,10 @@ interface EmergencyDoc {
   type: string | null;
   size: number | null;
   uploaded_at: string | null;
+  summary?: string | null;
+  document_type?: string | null;
+  document_date?: string | null;
+  provider_name?: string | null;
 }
 
 interface EmergencyPayload {
@@ -841,28 +845,45 @@ const Emergency = () => {
 
             <ul className="space-y-2">
               {data!.documents.map((d) => (
-                <li
-                  key={d.url}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-border"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-5 h-5 text-primary" />
+                <li key={d.url} className="rounded-xl border border-border p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{d.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {[
+                          d.document_type ? d.document_type.replace(/_/g, ' ') : null,
+                          d.provider_name,
+                          d.document_date
+                            ? new Date(d.document_date).toLocaleDateString()
+                            : d.uploaded_at
+                              ? `uploaded ${new Date(d.uploaded_at).toLocaleDateString()}`
+                              : null,
+                        ].filter(Boolean).join(' · ')}
+                      </p>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => setViewing(d)}>
+                      <ExternalLink className="w-4 h-4 mr-1" />
+                      {t('View', 'देखें')}
+                    </Button>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{d.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {d.size ? `${(d.size / 1024).toFixed(1)} KB` : ''}
-                      {d.uploaded_at
-                        ? ` · uploaded ${new Date(
-                            d.uploaded_at
-                          ).toLocaleDateString()}`
-                        : ''}
+                  {d.summary ? (
+                    <div className="mt-3 rounded-lg bg-muted/60 p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
+                        {t('AI summary', 'AI सारांश')}
+                      </p>
+                      <p className="mt-1 text-sm leading-relaxed text-foreground break-words">{d.summary}</p>
+                      <p className="mt-2 text-[10px] text-muted-foreground">
+                        {t('Auto-generated — check the original report before acting.', 'स्वचालित — निर्णय से पहले मूल रिपोर्ट देखें।')}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {t('No AI summary yet — open the report to read it.', 'अभी कोई सारांश नहीं — रिपोर्ट खोलें।')}
                     </p>
-                  </div>
-                  <Button size="sm" variant="outline" onClick={() => setViewing(d)}>
-                    <ExternalLink className="w-4 h-4 mr-1" />
-                    View
-                  </Button>
+                  )}
                 </li>
               ))}
             </ul>
