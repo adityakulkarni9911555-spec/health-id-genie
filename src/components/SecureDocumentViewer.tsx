@@ -154,7 +154,7 @@ const IdentityShield = () => (
  * Full-screen viewer for emergency medical records.
  * - Burns a forensic watermark (session + timestamp) across the document.
  * - Shields the report header band, which on Indian lab reports carries the
- *   patient's address, phone and billing details. Clinicians can reveal it.
+ *   patient's address, phone and billing details. It can never be lifted.
  * - Blocks right-click / drag-save / text selection / printing.
  */
 export const SecureDocumentViewer = ({
@@ -165,7 +165,8 @@ export const SecureDocumentViewer = ({
   clinicianPhone,
   onClose,
 }: SecureDocumentViewerProps) => {
-  const [revealHeader, setRevealHeader] = useState(false);
+  // Identity shield is permanent: no way to lift it from the emergency viewer.
+  const revealHeader = false;
 
   const stamp = useMemo(() => {
     const now = new Date();
@@ -218,24 +219,6 @@ export const SecureDocumentViewer = ({
             Protected view · access logged
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="min-h-[44px]"
-          onClick={() => setRevealHeader((v) => !v)}
-        >
-          {revealHeader ? (
-            <>
-              <EyeOff className="w-4 h-4 mr-1.5" />
-              Hide identity
-            </>
-          ) : (
-            <>
-              <Eye className="w-4 h-4 mr-1.5" />
-              Reveal identity
-            </>
-          )}
-        </Button>
         <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={onClose} aria-label="Close document">
           <X className="w-5 h-5" />
         </Button>
