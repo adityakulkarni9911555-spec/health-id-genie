@@ -7,7 +7,8 @@ import { FormSelect } from '@/components/ui/FormSelect';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Patient, PatientFormData, BLOOD_GROUPS, CHRONIC_CONDITIONS } from '@/types/patient';
+import { Patient, PatientFormData, BLOOD_GROUPS } from '@/types/patient';
+import { ConditionPicker } from '@/components/ConditionPicker';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -532,27 +533,13 @@ export const PatientRegistrationForm = ({ onPatientRegistered, initialPatient, o
       <div className="space-y-3">
         <Label className="text-sm font-medium text-foreground flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-warning" />
-          Chronic Conditions
+          Long-term conditions
         </Label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          {CHRONIC_CONDITIONS.map((condition) => (
-            <label
-              key={condition}
-              className={`flex items-center gap-3 min-h-[56px] px-4 py-3 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none ${
-                selectedConditions.includes(condition)
-                  ? 'border-primary bg-primary/5 shadow-sm'
-                  : 'border-input bg-card hover:border-primary/50'
-              }`}
-            >
-              <Checkbox
-                checked={selectedConditions.includes(condition)}
-                onCheckedChange={() => toggleCondition(condition)}
-                className="h-5 w-5"
-              />
-              <span className="text-sm md:text-base font-medium">{condition}</span>
-            </label>
-          ))}
-        </div>
+        <ConditionPicker
+          value={selectedConditions}
+          onToggle={toggleCondition}
+          onAdd={(c) => setSelectedConditions((prev) => [...prev, c])}
+        />
       </div>
 
       <div className="space-y-2">

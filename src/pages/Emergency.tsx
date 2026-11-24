@@ -711,9 +711,9 @@ const Emergency = () => {
 
         {/* Chronic conditions */}
         {p.chronic_conditions.length > 0 && (
-          <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-            <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
-              {t('Chronic Conditions', 'पुरानी बीमारियाँ')}
+          <section className="bg-card border border-warning/40 rounded-2xl p-5 shadow-sm">
+            <h2 className="text-xs uppercase tracking-widest text-warning mb-3 font-semibold">
+              {t('Medical conditions', 'बीमारियाँ')} · {p.chronic_conditions.length}
             </h2>
             <div className="flex flex-wrap gap-2">
               {p.chronic_conditions.map((c) => (
