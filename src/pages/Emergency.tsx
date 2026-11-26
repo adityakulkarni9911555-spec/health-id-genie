@@ -15,7 +15,6 @@ import {
   Unlock,
   Landmark,
 } from 'lucide-react';
-import { Logo } from '@/components/Logo';
 import { formatAbhaNumber } from '@/lib/abha';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -587,62 +586,63 @@ const Emergency = () => {
         </div>
       )}
 
-      {/* Red emergency banner so it's unmistakable */}
-      <header className="bg-destructive text-destructive-foreground">
-        <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-          <AlertTriangle className="w-6 h-6 shrink-0" />
-          <div className="flex-1">
-            <p className="text-xs uppercase tracking-widest opacity-90">
+      {/* Clinical session header */}
+      <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur pt-[env(safe-area-inset-top)]">
+        <div className="container mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive text-destructive-foreground shadow-sm">
+            <AlertTriangle className="h-5 w-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-sm font-bold leading-tight text-foreground">
               {t('Emergency Medical Info', 'आपातकालीन चिकित्सा जानकारी')}
             </p>
-            <p className="text-sm font-semibold leading-tight">
-              Shared by the patient via Medora
+            <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60 motion-reduce:hidden" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+              </span>
+              {t(`Secure session · ${sessionId}`, `सुरक्षित सत्र · ${sessionId}`)}
             </p>
           </div>
-          <button type="button" onClick={() => setLang(lang === 'en' ? 'hi' : 'en')} aria-label="Switch language / भाषा बदलें" className="min-h-11 rounded-full border border-destructive-foreground/50 px-3 text-sm font-semibold">
+          <button type="button" onClick={() => setLang(lang === 'en' ? 'hi' : 'en')} aria-label="Switch language / भाषा बदलें" className="min-h-11 rounded-full border border-border bg-background px-3.5 text-sm font-semibold text-foreground hover:bg-muted">
             {lang === 'en' ? 'हिंदी' : 'EN'}
           </button>
-          <Logo size={32} />
         </div>
-      </header>
-
-      <div className="border-b border-warning/30 bg-warning/10 px-4 py-2.5">
-        <div className="container mx-auto flex max-w-2xl items-center gap-2 text-xs text-foreground">
-          <ShieldAlert className="h-4 w-4 shrink-0 text-warning" />
-          <p className="leading-snug">
-            <span className="font-semibold">{t('Confidential — no screenshots or copying.', 'गोपनीय — स्क्रीनशॉट या कॉपी न करें।')}</span>{' '}
-            <span className="text-muted-foreground">{t(`For care only · visit logged · session ${sessionId}`, `केवल इलाज हेतु · विज़िट दर्ज · सत्र ${sessionId}`)}</span>
+        <div className="border-t border-warning/30 bg-warning/10">
+          <p className="container mx-auto flex max-w-2xl items-center gap-2 px-4 py-1.5 text-[11px] text-foreground">
+            <ShieldAlert className="h-3.5 w-3.5 shrink-0 text-warning" />
+            {t('Confidential · for care only · screenshots traceable · visit logged', 'गोपनीय · केवल इलाज हेतु · स्क्रीनशॉट ट्रेस होते हैं · विज़िट दर्ज')}
           </p>
         </div>
-      </div>
+      </header>
 
       <main className="container mx-auto px-4 py-5 max-w-2xl space-y-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
 
         {/* Identity */}
-        <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">
+        <section className="rounded-3xl border border-border bg-card p-5 shadow-md">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             {t('Patient', 'मरीज़')}
           </p>
           <h1 className="font-display text-2xl font-bold text-foreground mt-1">
             {p.full_name}
           </h1>
-          <div className="grid grid-cols-3 gap-2 mt-4">
-            <div className="rounded-xl bg-destructive/10 p-3 text-center">
-              <Droplets className="mx-auto h-4 w-4 text-destructive" />
-              <p className="mt-1 font-display text-xl font-bold text-destructive">{p.blood_group || '—'}</p>
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t('Blood', 'रक्त')}</p>
+          <div className="mt-4 grid grid-cols-3 gap-2.5">
+            <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-3">
+              <p className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-destructive"><Droplets className="h-3.5 w-3.5" />{t('Blood', 'रक्त')}</p>
+              <p className="mt-1.5 font-display text-2xl font-extrabold leading-none text-destructive">{p.blood_group || '—'}</p>
             </div>
-            <div className={`rounded-xl p-3 text-center ${p.allergies.length ? 'bg-destructive/10' : 'bg-muted/60'}`}>
-              <AlertTriangle className={`mx-auto h-4 w-4 ${p.allergies.length ? 'text-destructive' : 'text-muted-foreground'}`} />
-              <p className={`mt-1 font-display text-xl font-bold ${p.allergies.length ? 'text-destructive' : 'text-foreground'}`}>{p.allergies.length || t('None', 'नहीं')}</p>
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t('Allergies', 'एलर्जी')}</p>
+            <div className={`rounded-2xl border p-3 ${p.allergies.length ? 'border-destructive/30 bg-destructive/10' : 'border-success/30 bg-success/10'}`}>
+              <p className={`flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider ${p.allergies.length ? 'text-destructive' : 'text-success'}`}><AlertTriangle className="h-3.5 w-3.5" />{t('Allergies', 'एलर्जी')}</p>
+              <p className={`mt-1.5 font-display text-2xl font-extrabold leading-none ${p.allergies.length ? 'text-destructive' : 'text-success'}`}>{p.allergies.length || 'NKDA'}</p>
             </div>
-            <div className="rounded-xl bg-muted/60 p-3 text-center">
-              <Lock className="mx-auto h-4 w-4 text-muted-foreground" />
-              <p className="mt-1 font-display text-xl font-bold text-foreground">{p.chronic_conditions.length || t('None', 'नहीं')}</p>
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t('Conditions', 'बीमारियाँ')}</p>
+            <div className={`rounded-2xl border p-3 ${p.chronic_conditions.length ? 'border-warning/30 bg-warning/10' : 'border-border bg-muted/50'}`}>
+              <p className={`flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider ${p.chronic_conditions.length ? 'text-warning' : 'text-muted-foreground'}`}><FileText className="h-3.5 w-3.5" />{t('Conditions', 'बीमारियाँ')}</p>
+              <p className="mt-1.5 font-display text-2xl font-extrabold leading-none text-foreground">{p.chronic_conditions.length || t('None', 'नहीं')}</p>
             </div>
           </div>
+          {p.allergies.length === 0 && (
+            <p className="mt-2 text-[11px] text-muted-foreground">{t('NKDA = no known drug allergies recorded by the patient.', 'NKDA = मरीज़ ने कोई ज्ञात दवा एलर्जी दर्ज नहीं की।')}</p>
+          )}
 
           {/* National health ID — helps hospitals look the patient up in the
               national system. Shown only when the patient has saved one. */}
@@ -845,7 +845,7 @@ const Emergency = () => {
 
             <ul className="space-y-2">
               {data!.documents.map((d) => (
-                <li key={d.url} className="rounded-xl border border-border p-3">
+                <li key={d.url} className="rounded-2xl border border-border bg-background p-3.5 transition-shadow hover:shadow-md">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <FileText className="w-5 h-5 text-primary" />
@@ -864,13 +864,13 @@ const Emergency = () => {
                         ].filter(Boolean).join(' · ')}
                       </p>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => setViewing(d)}>
+                    <Button size="sm" variant="outline" className="min-h-11 rounded-xl" onClick={() => setViewing(d)}>
                       <ExternalLink className="w-4 h-4 mr-1" />
                       {t('View', 'देखें')}
                     </Button>
                   </div>
                   {d.summary ? (
-                    <div className="mt-3 rounded-lg bg-muted/60 p-3">
+                    <div className="mt-3 rounded-xl border-l-4 border-primary bg-primary/5 p-3">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
                         {t('AI summary', 'AI सारांश')}
                       </p>
